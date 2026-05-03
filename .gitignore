@@ -1,0 +1,19 @@
+# oh-my-claudecode runtime state
+.omc/
+
+# macOS
+.DS_Store
+
+# Build artifacts (v0.2+)
+build/
+*.dylib
+*.o
+vendor/
+
+# LLM model files (v0.2+, downloaded on first launch)
+models/
+*.gguf
+
+# Test artifacts
+.pytest_cache/
+__pycache__/
