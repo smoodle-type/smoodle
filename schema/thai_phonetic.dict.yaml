@@ -1,0 +1,73 @@
+# Rime dictionary
+# encoding: utf-8
+#
+# smoodle Thai phonetic dictionary — v0.0.1 STUB
+#
+# This is a 10-word stub for Sub-task 3 verification: confirm Rime handles
+# Thai script correctly (NFC-normalized forms, combining tone marks,
+# above/below-vowels, candidate-window rendering).
+#
+# After verification passes, this expands to ~500 most-common Thai words.
+
+---
+name: thai_phonetic
+version: "0.0.1-stub"
+sort: by_weight
+use_preset_vocabulary: false
+columns:
+  - text
+  - code
+  - weight
+encoder:
+  exclude_patterns:
+    - '^[^\x00-\x7f]+$'
+...
+
+# greeting
+สวัสดี	sawadee	100
+สวัสดี	sawasdee	95
+สวัสดี	sawadii	90
+สวัสดี	sawatdee	85
+สวัสดี	sawatdii	80
+
+# male polite particle
+ครับ	krap	100
+ครับ	khrap	95
+ครับ	kub	90
+ครับ	khap	85
+ครับ	krub	80
+
+# female polite particle
+ค่ะ	ka	100
+ค่ะ	kha	95
+ค่ะ	khaa	90
+
+# negation
+ไม่	mai	100
+
+# affirmation
+ใช่	chai	100
+
+# thank you (two syllables)
+ขอบคุณ	khob khun	100
+ขอบคุณ	kob khun	95
+ขอบคุณ	khop khun	90
+ขอบคุณ	kop koon	85
+
+# eat
+กิน	gin	100
+กิน	kin	95
+
+# rice (homograph with knee เข่า later)
+ข้าว	kao	100
+ข้าว	khao	95
+ข้าว	khaaw	90
+
+# water
+น้ำ	nam	100
+น้ำ	naam	95
+
+# I (male)
+ผม	pom	100
+ผม	phom	95
+ผม	pohm	85
