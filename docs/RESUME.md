@@ -33,6 +33,13 @@ Branch: `main`. v0.0.2 milestone (algebra + 600-word dict + librime
 CLI test) committed. v0.1 fixture exists with 56 entries; engine test
 runs end-to-end in ~2s.
 
+**Dogfood is live.** Schema deployed to `~/Library/Rime/`, Squirrel
+restarted with fresh build/, user confirmed `sawadee → สวัสดี` works.
+No dogfood feedback collected yet — the next session should ask the
+user "how did the dogfood go?" before picking new infrastructure work.
+If feedback exists, triage into fix-now (dict edits, algebra rules)
+vs defer (frequency-tuning, v0.2 scope).
+
 ```
 d2812ec Wire librime CLI test: end-to-end engine pipeline coverage (56/56 pass)
 c454a6f Add v0.1 fixture (56 entries: 35 direct + 21 algebra-tagged)
