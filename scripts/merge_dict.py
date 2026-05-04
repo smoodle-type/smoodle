@@ -28,6 +28,7 @@ Merge rules:
 from __future__ import annotations
 
 import argparse
+import math
 import sys
 from collections import OrderedDict
 from pathlib import Path
@@ -49,10 +50,18 @@ FRONTMATTER = """\
 # v0.0.2 algebra rules in thai_phonetic.schema.yaml automatically accept
 # kh~k / ph~p / th~t / vowel-length / final-voicing variation, so dict
 # entries carry only 1-3 spelling variants per Thai word (Path A).
+#
+# v0.0.3 weights = tnc_freq * (variant_q / 100), raw counts. Rime's
+# dict_compiler logs them at build time and table_translator exp()s at
+# query time, so storing raw counts (not log-probabilities) gives the
+# right ranking. TNC = Chulalongkorn Thai National Corpus unigram freq
+# (CC0-1.0, via PyThaiNLP `tnc_freq.txt`). Per-variant LLM quality
+# (q in 70-100) becomes a proportional multiplier on the count. Words
+# not in TNC use freq = `--default-freq` (default 10).
 
 ---
 name: thai_phonetic
-version: "0.0.2"
+version: "0.0.3"
 sort: by_weight
 use_preset_vocabulary: false
 columns:
@@ -112,14 +121,55 @@ def merge(
     return grouped
 
 
-def render(grouped: "OrderedDict[str, dict[str, int]]") -> str:
-    """Render the dict body. Per-Thai variants sorted weight-desc, then alpha."""
+def load_tnc_freqs(path: Path) -> dict[str, int]:
+    """Parse `<thai>\\t<freq>` lines from PyThaiNLP's tnc_freq.txt."""
+    freqs: dict[str, int] = {}
+    with path.open(encoding="utf-8") as f:
+        for raw in f:
+            parts = raw.strip().split("\t")
+            if len(parts) >= 2:
+                try:
+                    freqs[parts[0]] = int(parts[1])
+                except ValueError:
+                    continue
+    return freqs
+
+
+def reweight_by_freq(
+    grouped: "OrderedDict[str, dict[str, int]]",
+    freqs: dict[str, int],
+    default_freq: int,
+) -> "OrderedDict[str, dict[str, int]]":
+    """Rescale each variant to freq * (variant_quality / 100), as a raw count.
+
+    Rime's `dict_compiler.cc` applies log() to the dict weight at compile time
+    (line 257: `e->weight = log(r->weight)`), and `table_translator.cc`
+    applies exp() at query time (line 90: `set_quality(std::exp(e->weight))`).
+    So we store RAW frequencies; pre-logging would double-log and flatten
+    rank differences. Per-variant LLM quality (q in 70-100) scales the
+    effective frequency: canonical (q=100) keeps the full TNC count;
+    secondary (q=85) gets 85% of it.
+    """
+    out: OrderedDict[str, dict[str, int]] = OrderedDict()
+    for thai, variants in grouped.items():
+        f = freqs.get(thai, default_freq)
+        rescaled = {r: max(1, round(f * q / 100)) for r, q in variants.items()}
+        out[thai] = rescaled
+    return out
+
+
+def render(grouped: "OrderedDict[str, dict]") -> str:
+    """Render the dict body. Per-Thai variants sorted weight-desc, then alpha.
+
+    Weights may be ints (raw or quality-only) or floats (log-frequencies
+    from --tnc-freq). `:g` formats both compactly.
+    """
     out: list[str] = [FRONTMATTER]
     for thai, variants in grouped.items():
         out.append(f"# {thai}")
         rows = sorted(variants.items(), key=lambda kv: (-kv[1], kv[0]))
         for roman, w in rows:
-            out.append(f"{thai}\t{roman}\t{w}")
+            out.append(f"{thai}\t{roman}\t{w:g}")
         out.append("")
     return "\n".join(out)
 
@@ -133,12 +183,29 @@ def main() -> int:
                         help="TSV from generate_dict.py to merge in")
     parser.add_argument("--output", type=Path,
                         help="Where to write merged dict (omit to dry-run to stdout)")
+    parser.add_argument("--tnc-freq", type=Path,
+                        help="Path to PyThaiNLP tnc_freq.txt. If supplied, every "
+                             "variant is rescaled to weight = tnc_freq * (q/100), "
+                             "preserving per-variant quality ordering.")
+    parser.add_argument("--default-freq", type=int, default=10,
+                        help="Frequency assigned to dict words not in TNC "
+                             "(default: 10). Compounds split by TNC's tokenizer "
+                             "fall here.")
     args = parser.parse_args()
 
     base_rows = parse_rime_dict(args.base) if args.base.exists() else []
     add_rows = parse_tsv_lines(args.add.read_text(encoding="utf-8").splitlines())
 
     merged = merge(base_rows, add_rows)
+
+    if args.tnc_freq:
+        freqs = load_tnc_freqs(args.tnc_freq)
+        merged = reweight_by_freq(merged, freqs, args.default_freq)
+        in_tnc = sum(1 for thai in merged if thai in freqs)
+        print(f"# reweighted {in_tnc}/{len(merged)} Thai words by TNC freq "
+              f"(default={args.default_freq} for the {len(merged) - in_tnc} not in TNC)",
+              file=sys.stderr)
+
     rendered = render(merged)
 
     total_thai = len(merged)

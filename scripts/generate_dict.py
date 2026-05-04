@@ -36,6 +36,8 @@ import anthropic
 import argparse
 import json
 import sys
+import threading
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 
 
@@ -202,6 +204,13 @@ def main() -> int:
         help="Disable adaptive thinking. Cheaper and faster; quality may dip on harder words.",
     )
     parser.add_argument("--debug", action="store_true", help="Print raw responses to stderr")
+    parser.add_argument(
+        "--workers",
+        type=int,
+        default=1,
+        help="Number of parallel API workers in --words mode (default: 1). "
+             "Try 4-6 against the relay; the SDK is thread-safe.",
+    )
     args = parser.parse_args()
 
     client = anthropic.Anthropic()
@@ -221,39 +230,64 @@ def main() -> int:
         file=sys.stderr,
     )
 
-    success = 0
-    skipped = 0
-    failed = 0
-    for i, word in enumerate(words, 1):
-        if args.output and already_in_output(args.output, word):
-            skipped += 1
-            print(f"# [{i:>4}/{len(words)}] skip {word}  (already in output)", file=sys.stderr)
-            continue
+    # Pre-compute the skip set ONCE (the previous serial version reread output
+    # for every word; that's O(N*output_size) IO and racy under threads).
+    already_done: set[str] = set()
+    if args.output and args.output.exists():
+        with args.output.open(encoding="utf-8") as f:
+            for line in f:
+                if "\t" in line:
+                    already_done.add(line.split("\t", 1)[0])
 
+    todo = [w for w in words if w not in already_done]
+    skipped = len(words) - len(todo)
+    if skipped:
+        print(f"# {skipped} words already in {args.output}, skipping", file=sys.stderr)
+
+    write_lock = threading.Lock()
+    counter = {"success": 0, "failed": 0, "done": 0}
+
+    def process(word: str) -> None:
         try:
             variants = _generate_with_retry(
                 client, word, model=args.model, use_thinking=use_thinking, debug=args.debug
             )
         except Exception as e:
-            failed += 1
-            print(f"# [{i:>4}/{len(words)}] FAIL {word}: {type(e).__name__}: {e}", file=sys.stderr)
-            continue
+            with write_lock:
+                counter["failed"] += 1
+                counter["done"] += 1
+                i = counter["done"]
+                print(f"# [{i:>4}/{len(todo)}] FAIL {word}: {type(e).__name__}: {e}",
+                      file=sys.stderr)
+            return
 
-        if args.output:
-            append_entries(args.output, word, variants)
-        else:
-            for v in variants:
-                print(f"{word}\t{v['romanization']}\t{v['weight']}")
+        with write_lock:
+            counter["success"] += 1
+            counter["done"] += 1
+            i = counter["done"]
+            if args.output:
+                append_entries(args.output, word, variants)
+            else:
+                for v in variants:
+                    print(f"{word}\t{v['romanization']}\t{v['weight']}")
                 sys.stdout.flush()
+            print(f"# [{i:>4}/{len(todo)}] {word} -> {len(variants)} variants",
+                  file=sys.stderr)
 
-        success += 1
-        print(f"# [{i:>4}/{len(words)}] {word} -> {len(variants)} variants", file=sys.stderr)
+    if args.workers <= 1:
+        for w in todo:
+            process(w)
+    else:
+        with ThreadPoolExecutor(max_workers=args.workers) as ex:
+            futures = [ex.submit(process, w) for w in todo]
+            for _ in as_completed(futures):
+                pass
 
     print(
-        f"# done. success={success} skipped={skipped} failed={failed}",
+        f"# done. success={counter['success']} skipped={skipped} failed={counter['failed']}",
         file=sys.stderr,
     )
-    return 1 if failed else 0
+    return 1 if counter["failed"] else 0
 
 
 def _generate_with_retry(
