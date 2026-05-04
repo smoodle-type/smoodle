@@ -1,0 +1,155 @@
+#!/usr/bin/env python3
+"""smoodle v0.0.1 dictionary correctness test.
+
+Reads `tests/v001_fixture.yaml` (a list of (romanization, expected_thai)
+assertions) and `schema/thai_phonetic.dict.yaml`, then verifies every
+fixture pair is present as a `<thai>\\t<romanization>` line in the dict.
+
+This catches:
+  - Romanization typos (`khrap` was meant but `khrip` got typed).
+  - Wrong tone marks on the Thai output (`สวัสดี` vs `สวัสดิ`, `ครับ` vs `ครับฺ`).
+  - Missing variants (an entry for `khrap` got dropped during a refactor).
+
+This does NOT exercise the full Rime pipeline — for that you need
+`rime_api_console`, which Squirrel does not bundle. To run the full
+pipeline test, compile librime locally:
+
+    git clone https://github.com/rime/librime
+    cd librime && make && make install
+    # rime_api_console is now on PATH
+    # then re-run with --use-rime-api-console
+
+Until then, this contents-check is the v0.0.1 acceptance test.
+
+Requirements:
+  Python 3.10+ (uses `match` statement).
+  No third-party deps — uses stdlib only. The dict YAML body is parsed
+  line-by-line because the Rime native dict format is two-document YAML
+  with a tab-separated body that PyYAML doesn't handle cleanly.
+
+Exit codes:
+  0 — all assertions pass
+  1 — at least one assertion failed
+  2 — fixture or dict file missing / malformed
+"""
+
+from __future__ import annotations
+
+import argparse
+import re
+import sys
+from pathlib import Path
+from typing import NamedTuple
+
+
+REPO_ROOT = Path(__file__).resolve().parent.parent
+DEFAULT_FIXTURE = REPO_ROOT / "tests" / "v001_fixture.yaml"
+DEFAULT_DICT = REPO_ROOT / "schema" / "thai_phonetic.dict.yaml"
+
+
+class Assertion(NamedTuple):
+    romanization: str
+    expected_thai: str
+
+
+def parse_fixture(fixture_path: Path) -> list[Assertion]:
+    """Parse the fixture YAML manually.
+
+    The format is a fixed shape (`assertions: [{romanization, expected_thai}, ...]`)
+    so a regex-based parser is simpler than pulling in PyYAML. This script
+    deliberately stays stdlib-only so it runs out-of-the-box on any
+    Python 3.10+ install.
+    """
+    if not fixture_path.exists():
+        sys.exit(f"ERROR: fixture not found: {fixture_path}")
+
+    pattern = re.compile(
+        r'^\s*-\s*\{\s*romanization:\s*"([^"]+)"\s*,'
+        r'\s*expected_thai:\s*"([^"]+)"\s*\}\s*$'
+    )
+    out: list[Assertion] = []
+    for raw in fixture_path.read_text(encoding="utf-8").splitlines():
+        m = pattern.match(raw)
+        if m:
+            out.append(Assertion(m.group(1), m.group(2)))
+    return out
+
+
+def parse_dict_entries(dict_path: Path) -> set[tuple[str, str]]:
+    """Read Rime native dict YAML; return the set of (thai, romanization) pairs.
+
+    Rime's dict format is:
+        ---
+        <YAML frontmatter>
+        ...
+        <thai>\\t<romanization>[\\t<weight>]
+        <thai>\\t<romanization>[\\t<weight>]
+        ...
+
+    We skip the frontmatter (everything up to and including the `...` line),
+    then parse the body line-by-line.
+    """
+    if not dict_path.exists():
+        sys.exit(f"ERROR: dict not found: {dict_path}")
+
+    pairs: set[tuple[str, str]] = set()
+    in_body = False
+    for raw in dict_path.read_text(encoding="utf-8").splitlines():
+        line = raw.rstrip()
+        if not in_body:
+            if line == "...":
+                in_body = True
+            continue
+        if not line or line.startswith("#"):
+            continue
+        parts = line.split("\t")
+        if len(parts) < 2:
+            continue
+        pairs.add((parts[0], parts[1]))
+    return pairs
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description=__doc__,
+                                     formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser.add_argument("--fixture", type=Path, default=DEFAULT_FIXTURE,
+                        help=f"Fixture YAML (default: {DEFAULT_FIXTURE.relative_to(REPO_ROOT)})")
+    parser.add_argument("--dict", dest="dict_path", type=Path, default=DEFAULT_DICT,
+                        help=f"Rime dict YAML to test (default: {DEFAULT_DICT.relative_to(REPO_ROOT)})")
+    parser.add_argument("--use-rime-api-console", action="store_true",
+                        help="Future: invoke rime_api_console for full pipeline testing. Not yet implemented.")
+    args = parser.parse_args()
+
+    if args.use_rime_api_console:
+        sys.exit("--use-rime-api-console is not yet implemented; "
+                 "compile librime first, then we'll wire it up.")
+
+    assertions = parse_fixture(args.fixture)
+    if not assertions:
+        sys.exit(f"ERROR: no assertions parsed from {args.fixture}")
+
+    dict_pairs = parse_dict_entries(args.dict_path)
+    if not dict_pairs:
+        sys.exit(f"ERROR: no entries parsed from {args.dict_path}")
+
+    failures: list[str] = []
+    for a in assertions:
+        if (a.expected_thai, a.romanization) not in dict_pairs:
+            failures.append(f"  MISSING  {a.romanization!r:<14} -> {a.expected_thai}")
+
+    print(f"smoodle dict test: {len(assertions)} assertions, "
+          f"{len(dict_pairs)} dict entries scanned")
+
+    if failures:
+        print(f"\n{len(failures)} failure(s):")
+        for line in failures:
+            print(line)
+        print(f"\nFAIL  {len(failures)}/{len(assertions)} assertions missing from dict.")
+        return 1
+
+    print(f"PASS  all {len(assertions)} assertions present in dict.")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

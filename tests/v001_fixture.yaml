@@ -1,0 +1,64 @@
+# smoodle v0.0.1 dictionary fixture
+#
+# 30 (romanization, expected_thai) assertions. The test driver in
+# tests/test_dict.py reads this file plus schema/thai_phonetic.dict.yaml
+# and verifies that every (romanization, expected_thai) pair below is
+# present in the dictionary. Catches typos and wrong-tone-mark errors
+# at v0.0.1, before the full librime pipeline test (which requires
+# rime_api_console — see tests/test_dict.py).
+#
+# Format:
+#   - {romanization: "<lowercase ASCII>", expected_thai: "<Thai with tone marks>"}
+
+assertions:
+  # greetings (5 variants)
+  - {romanization: "sawadee",    expected_thai: "สวัสดี"}
+  - {romanization: "sawasdee",   expected_thai: "สวัสดี"}
+  - {romanization: "sawadii",    expected_thai: "สวัสดี"}
+  - {romanization: "sawatdee",   expected_thai: "สวัสดี"}
+  - {romanization: "sawatdii",   expected_thai: "สวัสดี"}
+
+  # male polite particle (5 variants)
+  - {romanization: "krap",       expected_thai: "ครับ"}
+  - {romanization: "khrap",      expected_thai: "ครับ"}
+  - {romanization: "kub",        expected_thai: "ครับ"}
+  - {romanization: "khap",       expected_thai: "ครับ"}
+  - {romanization: "krub",       expected_thai: "ครับ"}
+
+  # female polite particle (3 variants)
+  - {romanization: "ka",         expected_thai: "ค่ะ"}
+  - {romanization: "kha",        expected_thai: "ค่ะ"}
+  - {romanization: "khaa",       expected_thai: "ค่ะ"}
+
+  # negation / affirmation
+  - {romanization: "mai",        expected_thai: "ไม่"}
+  - {romanization: "chai",       expected_thai: "ใช่"}
+
+  # thank you (multi-syllable, no internal space — see commit 4b54bc3)
+  - {romanization: "khobkhun",   expected_thai: "ขอบคุณ"}
+  - {romanization: "kobkhun",    expected_thai: "ขอบคุณ"}
+  - {romanization: "khopkhun",   expected_thai: "ขอบคุณ"}
+  - {romanization: "kobkoon",    expected_thai: "ขอบคุณ"}
+  - {romanization: "khopkoon",   expected_thai: "ขอบคุณ"}
+
+  # eat
+  - {romanization: "gin",        expected_thai: "กิน"}
+  - {romanization: "kin",        expected_thai: "กิน"}
+
+  # rice (homograph with 'kao' = knee in v1+)
+  - {romanization: "kao",        expected_thai: "ข้าว"}
+  - {romanization: "khao",       expected_thai: "ข้าว"}
+  - {romanization: "khaaw",      expected_thai: "ข้าว"}
+
+  # water
+  - {romanization: "nam",        expected_thai: "น้ำ"}
+  - {romanization: "naam",       expected_thai: "น้ำ"}
+
+  # I (male)
+  - {romanization: "pom",        expected_thai: "ผม"}
+  - {romanization: "phom",       expected_thai: "ผม"}
+  - {romanization: "pohm",       expected_thai: "ผม"}
+
+  # 30/30. Future expansion: when the full ~500-word dict ships,
+  # rotate this fixture to cover representative entries the project
+  # author actually uses, keeping at 30 (or grow to 50 for v0.1).
