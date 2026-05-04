@@ -29,18 +29,31 @@ draw, not shipping speed.
 
 ## State as of last session
 
-Branch: `main`. v0.0.2 milestone (algebra + 600-word dict + librime
-CLI test) committed. v0.1 fixture exists with 56 entries; engine test
-runs end-to-end in ~2s.
+Branch: `main`. **v0.0.3 (uncommitted, awaiting decision):** dict scaled
+to 2101 Thai words / 4050 entries via TNC frequency seeding; weights are
+TNC raw frequencies × per-variant LLM quality. Engine test passes 56/56.
+Several ranking issues fixed (yai→ใหญ่, pi→ปี, mu→มือ, khun→ขึ้น vs คุณ).
 
-**Dogfood is live.** Schema deployed to `~/Library/Rime/`, Squirrel
-restarted with fresh build/, user confirmed `sawadee → สวัสดี` works.
-No dogfood feedback collected yet — the next session should ask the
-user "how did the dogfood go?" before picking new infrastructure work.
-If feedback exists, triage into fix-now (dict edits, algebra rules)
-vs defer (frequency-tuning, v0.2 scope).
+**Required librime patch.** The dict scale-up exposed a librime bug:
+`DictEntryIterator::Peek()` returns `chunks[0]` without sorting on first
+call. Chunks are pushed in syllable-id order (alphabetical of syllable
+strings). When an algebra-derived spelling like `yaai`→`yai` shares
+position with a direct `yai` entry, the alphabetically-earlier syllable's
+chunk wins position #1 regardless of weight. The patch (in
+`vendor/librime/src/rime/dict/dictionary.cc` + `dictionary.h`) calls
+`Sort()` once before the first Peek, gated by a `sorted_initial_` flag.
+**Anyone re-cloning librime must reapply this patch** before rebuilding.
+Upstream PR worth filing.
 
+**Dogfood is live (pre-scale-up).** Schema deployed to `~/Library/Rime/`,
+Squirrel restarted with fresh build, user confirmed `sawadee → สวัสดี`
+works at v0.0.2. No dogfood feedback collected yet. After committing
+v0.0.3, redeploy and dogfood the larger dict.
+
+Recent commits:
 ```
+363d481 RESUME.md: note dogfood is live, awaiting feedback
+3977246 RESUME.md: refresh after v0.1 fixture + librime CLI wiring
 d2812ec Wire librime CLI test: end-to-end engine pipeline coverage (56/56 pass)
 c454a6f Add v0.1 fixture (56 entries: 35 direct + 21 algebra-tagged)
 6b68a99 v0.0.2: dict scaled to 601 Thai words / 1193 entries (Path A)
@@ -50,9 +63,24 @@ b405383 v0.0.2: speller/algebra for Thai phonemic equivalence (Path A)
 ee0b678 v0.0.1 stub: thai_phonetic schema + 10-word dict + install script
 ```
 
-The v0.0.1 sub-tasks 0-7 are all complete (manual Squirrel verification
-included). Sub-tasks 1-3 of v0.1 (algebra rules + 50-entry fixture +
-librime-driven acceptance test) are also complete.
+Uncommitted (v0.0.3 work):
+- `schema/thai_phonetic.schema.yaml` — version bumped, `initial_quality: 0`,
+  long description block referencing the librime patch
+- `schema/thai_phonetic.dict.yaml` — 2101 Thai words, 4050 entries, TNC-
+  weighted; CC0 attribution to Chulalongkorn TNC + PyThaiNLP in frontmatter
+- `scripts/generate_dict.py` — added `--workers N` (ThreadPoolExecutor,
+  SDK is thread-safe; pre-computes skip set once instead of re-reading
+  output per word). Used 5 workers; 1500 words ≈ 25 min.
+- `scripts/merge_dict.py` — `--tnc-freq` reweights every variant to
+  `tnc_freq × (LLM_q / 100)`, `--default-freq 10` for the 35 dict words
+  not in TNC's tokenization (compounds like ถุงเท้า, ผัดไทย). Note:
+  Rime's dict_compiler `log()`s the weight at compile and table_translator
+  `exp()`s at query, so we store RAW counts — pre-logging double-logs.
+- `scripts/words-tnc.txt` — top 1500 new words by TNC frequency (excluded
+  the 601 already in dict)
+- `scripts/generated-tnc.tsv` — LLM romanization output for those 1500
+- `scripts/tnc_freq.txt` — copy of PyThaiNLP's tnc_freq.txt (CC0)
+- `vendor/librime/src/rime/dict/dictionary.{cc,h}` — the Peek-sort patch
 
 ## Architecture (do not relitigate without strong reason)
 
@@ -69,13 +97,23 @@ librime-driven acceptance test) are also complete.
   phonemic equivalence (kh~k, ph~p, th~t, vowel length, p~b/t~d at end)
   so the dict carries 1-3 variants per Thai word instead of 4-5. Confirmed
   end-to-end via librime CLI.
-- **Algebra is single-pass.** Each `derive/X/Y/` rule applies to the
-  FIRST regex match per dict spelling. So `derive/kh/k/` against
-  `khopkhun` yields `kopkhun` (not `khopkun` or `kopkun`); to reach
-  `kopkun` Rime needs another dict entry whose single-pass derivation
-  gets there. Worked example: `khopkun` is NOT in the prism, but
-  `kopkun` reaches ขอบคุณ via `kobkun` (dict) + algebra. Document this
-  before adding new derive rules so you don't expect iterative behavior.
+- **Algebra rules replace ALL occurrences in one pass.** Earlier RESUME
+  notes claimed "single-pass = first match only" — that was wrong.
+  `boost::regex_replace` (calculus.cc) replaces every match. So
+  `derive/kh/k/` against `khopkhun` yields `kopkun` (both kh's gone),
+  not `kopkhun` or `khopkun`. Verified directly with rime_api_console.
+- **Rime weights are log-frequencies.** `dict_compiler.cc:257`
+  applies `log()` to the dict's raw weight at compile time;
+  `table_translator.cc:90` applies `exp()` at query time. Store RAW
+  counts in the dict YAML — pre-logging double-logs and flattens
+  rank differences to noise. Reference dicts use percentages (`100%`,
+  `50%`) which scale a preset_vocabulary's pre-logged weight.
+- **DictEntryIterator first-Peek bug** (see "Required librime patch"
+  in State above). Chunks are pushed in syllable-id order, sorted only
+  on subsequent calls. When algebra-derived and direct spellings share
+  an input, the alphabetically-earlier syllable wins #1 regardless of
+  weight unless patched. We patch the vendored librime; upstream PR
+  worth filing.
 
 ## File map
 
@@ -86,19 +124,22 @@ smoodle/
 ├── docs/
 │   └── RESUME.md                 # this file
 ├── schema/
-│   ├── thai_phonetic.schema.yaml # Rime schema + speller.algebra rules
-│   ├── thai_phonetic.dict.yaml   # 601 Thai words / 1193 entries
+│   ├── thai_phonetic.schema.yaml # Rime schema, v0.0.3 (initial_quality: 0)
+│   ├── thai_phonetic.dict.yaml   # 2101 Thai words / 4050 entries, TNC-weighted
 │   └── default.custom.yaml       # registers schema in Squirrel's switcher
 ├── scripts/
 │   ├── install.sh                # copies schema/ → ~/Library/Rime/
 │   ├── init_rime_testdir.sh      # bootstraps /tmp/smoodle-rime-test for CLI test
-│   ├── generate_dict.py          # Claude-API per-word variant generator (slim prompt)
+│   ├── generate_dict.py          # Claude-API variant generator (slim prompt, --workers N)
 │   ├── generate_words.py         # Claude-API one-off categorized word-list generator
-│   ├── merge_dict.py             # union-with-max-weight merger (TSV → dict YAML)
+│   ├── merge_dict.py             # merger with --tnc-freq reweighting (v0.0.3+)
 │   ├── words-example.txt         # 30-word seed (still here for reference)
-│   ├── words-500.txt             # 601-word categorized list (16 categories)
+│   ├── words-500.txt             # 601-word categorized list (v0.0.2)
+│   ├── words-tnc.txt             # top 1500 new words by TNC freq (v0.0.3)
+│   ├── tnc_freq.txt              # PyThaiNLP TNC unigram (CC0, ~106k entries)
 │   ├── generated-example.tsv     # raw LLM output for words-example.txt
-│   └── generated-500.tsv         # raw LLM output for words-500.txt
+│   ├── generated-500.tsv         # raw LLM output for words-500.txt
+│   └── generated-tnc.tsv         # raw LLM output for words-tnc.txt (1500 words)
 ├── tests/
 │   ├── v001_fixture.yaml         # original 30-entry v0.0.1 acceptance fixture
 │   ├── v01_fixture.yaml          # 56 entries (35 direct + 21 algebra-tagged)
@@ -132,7 +173,11 @@ run, so iteration is just edit-fixture → re-run.
 - **vendor/librime/ is ~2 GB** after build. Gitignored. Re-clone with
   `git clone --recurse-submodules https://github.com/rime/librime.git
   vendor/librime && cd vendor/librime && git checkout 1.16.0 &&
-  git submodule update --init --recursive` if missing.
+  git submodule update --init --recursive` if missing. **Then re-apply
+  the Peek-sort patch** (see "Required librime patch" above): one block
+  in `src/rime/dict/dictionary.cc` Peek + a `sorted_initial_` field in
+  `dictionary.h`. Without it, ranking is wrong for any input where an
+  algebra-derived spelling collides with a direct one.
 - **Brew deps for librime build:** cmake, boost, leveldb, marisa,
   yaml-cpp, opencc, googletest, pkg-config, ninja, glog. All installed.
 - **Don't archive Squirrel, agents, or environments.** Permanent.
@@ -140,43 +185,54 @@ run, so iteration is just edit-fixture → re-run.
 
 ## What's likely next (pick one)
 
-1. **Deploy + dogfood the 1193-entry dict.** Click Squirrel's Deploy,
-   type Thai for a few days, report OOV / weird candidates / weak
-   spots. The dict has been engine-tested but has not seen real human
-   typing yet.
-2. **Sample-mine the dict for more algebra-only test cases.** Run
-   the prober against more rule combinations, expand v01_fixture beyond
-   56 entries, find dict entries that fail the engine test (e.g. words
-   where the LLM-generated romanization disagrees with how a typer
-   would actually spell it).
+1. **Commit the v0.0.3 work + redeploy + dogfood.** The 2101-word
+   TNC-weighted dict passes 56/56 engine tests with the Peek-sort patch
+   applied. Bundle the librime patch into a separate commit. Run
+   `bash scripts/install.sh` and Deploy in Squirrel. Type Thai for a
+   few days. Watch for: OOV (still likely on names, slang, very-recent
+   loanwords), weird candidates (TNC freq has biases — formal-text-
+   heavy), and any rankings the user disagrees with despite the freq
+   data agreeing.
+2. **File upstream PR** for the librime DictEntryIterator::Peek bug.
+   Repro is minimal (3 dict entries + 1 derive rule) and we have
+   the patch.
 3. **v0.2 Sub-task 1 (the eureka layer):** vendor/librime is built;
    `make` against its headers + dylib should produce a hello-world
    plugin dropped into Squirrel's `Frameworks/rime-plugins/`. The
    reference dylibs are `librime-lua.dylib`, `librime-octagram.dylib`,
    `librime-predict.dylib` — read their source for plugin ABI patterns.
    Also check `rime-llm-translator` on AUR (Linux); may be portable.
-4. **Ship v0.0.2 milestone:** push to GitHub, post a release with
-   `smoodle-config-0.0.2.zip` (just the schema/ dir), gather first
-   external feedback.
-5. **Frequency-tune dict weights.** Currently every "canonical" variant
-   is weight 100, so candidate ranking ties on alphabetical order. Real
-   word-frequency data would let high-frequency words rank above
-   homographs. PyThaiNLP TNC is Apache 2.0-adjacent (license check
-   pending — see Open Question 1 in design doc).
+4. **Ship v0.0.3 milestone:** push to GitHub, post a release with
+   `smoodle-config-0.0.3.zip` (just the schema/ dir). Note: end users
+   would also need the librime patch unless we wait for upstream.
+   Workaround for v0.0.3 release without the patch: ship a config that
+   AVOIDS algebra rules that collide with direct entries — i.e. flip
+   to "Path B" (enumeration-fat dict) for the release config.
+5. **Add more dict entries.** 13775 TNC words are above freq-50; we
+   took the top 1500. Easy to scale further if dogfood shows OOV gaps.
 6. **Address candidate-ordering edge cases surfaced by engine test:**
-   - `yai` → ยาย (1) vs ใหญ่ (2) — both are common; user wants "big"
-     to outrank "grandma" or vice versa? Real-typing-frequency would
-     fix this.
-   - `pi` → พี่ (1) vs ปี (2)
-   - `mu` → หมู (1) vs มือ (2)
+   With the patch + TNC weights, the original RESUME-flagged pairs are
+   now frequency-correct:
+   - `yai` → ใหญ่ #1 ✓ (was inverted)
+   - `pi` → ปี #1 ✓ (was พี่)
+   - `mu` → มือ #1 ✓ (was หมู่)
+   - `kao` → เขา #1 (was ข้าว). NB: เขา has TNC freq 142k vs ข้าว 12k,
+     so this is freq-correct but may not match user intent — "kao"
+     for rice is more common in casual chat than เขา (he/she). Real
+     usage data would override.
 
-## Open questions still on deck (from design doc)
+## Open questions still on deck
 
-1. PyThaiNLP corpus license check before shipping a frequency-aware dict.
+1. ~~PyThaiNLP corpus license check~~ **DONE** — TNC unigram is CC0
+   per `pythainlp-corpus/db.json`. Attribution noted in dict frontmatter.
 2. Verify `librime-predict.dylib`'s actual async behavior.
 3. v0.2 plugin must handle stale-result drop AND cooperative cancellation
    via `ggml_abort_callback`.
 4. macOS Gatekeeper acceptance test on a clean machine before announcing.
+5. **NEW**: Ship strategy when end users don't have the librime patch.
+   Either upstream-merge first, or release a Path B config (no algebra)
+   for v0.0.3, or accept that ranking will be slightly wrong on a
+   handful of words for end users.
 
 ## Quick start commands
 
@@ -198,16 +254,23 @@ export ANTHROPIC_API_KEY="$ANTHROPIC_CUSTOM_AUTH_TOKEN"
 export ANTHROPIC_BASE_URL="$ANTHROPIC_CUSTOM_BASE_URL"
 python3 scripts/generate_dict.py --word "ขอบคุณ" --debug
 
-# Bulk generation against a word list (resumable)
+# Bulk generation against a word list (resumable, parallel)
 python3 scripts/generate_dict.py \
-  --words scripts/words-500.txt \
-  --output scripts/generated-500.tsv
+  --words scripts/words-tnc.txt \
+  --output scripts/generated-tnc.tsv \
+  --workers 5
 
-# Merge a TSV into the live dict
+# Merge a TSV into the dict with TNC frequency reweighting (v0.0.3+)
 python3 scripts/merge_dict.py \
   --base schema/thai_phonetic.dict.yaml \
-  --add scripts/generated-500.tsv \
+  --add scripts/generated-tnc.tsv \
+  --tnc-freq scripts/tnc_freq.txt \
+  --default-freq 10 \
   --output schema/thai_phonetic.dict.yaml
+
+# Re-pull TNC freq if scripts/tnc_freq.txt is missing (CC0)
+curl -sL https://raw.githubusercontent.com/PyThaiNLP/pythainlp/dev/pythainlp/corpus/tnc_freq.txt \
+  -o scripts/tnc_freq.txt
 ```
 
 ## Don't do
@@ -215,8 +278,17 @@ python3 scripts/merge_dict.py \
 - Don't add `output_format` to API calls — deprecated. Use `output_config.format`.
 - Don't add `temperature` / `top_p` / `budget_tokens` on Opus 4.7 — all 400.
 - Don't add tone marks to romanization variants. Tones live in Thai output only.
-- Don't expect Rime's algebra to apply iteratively — it's single-pass per
-  rule (first regex match only). Add explicit dict entries OR additional
-  derive rules with different anchoring if you need multi-position cover.
+- ~~Don't expect Rime's algebra to apply iteratively — it's single-pass per
+  rule (first regex match only).~~ **CORRECTED:** algebra rules apply
+  via `boost::regex_replace` which replaces ALL occurrences in a single
+  rule application. Earlier RESUME claim about "first match only" was
+  wrong. `derive/kh/k/` against `khopkhun` produces `kopkun` directly.
+- Don't pre-log the dict weights. Rime's `dict_compiler` already applies
+  `log()` at compile and `table_translator` applies `exp()` at query.
+  Storing raw frequencies is correct; storing log-frequencies double-logs.
+- Don't trust ranking from a fresh-cloned librime without applying the
+  Peek-sort patch (`vendor/librime/src/rime/dict/dictionary.{cc,h}`).
+  The first candidate will be wrong whenever an algebra-derived spelling
+  shares a syllable with a direct one and sorts alphabetically earlier.
 - Don't change the architecture from Rime/Squirrel without a Step 0
   scope challenge with the user. Flag concerns; user decides.
