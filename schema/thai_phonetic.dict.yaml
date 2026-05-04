@@ -48,11 +48,14 @@ encoder:
 # affirmation
 ใช่	chai	100
 
-# thank you (two syllables)
-ขอบคุณ	khob khun	100
-ขอบคุณ	kob khun	95
-ขอบคุณ	khop khun	90
-ขอบคุณ	kop koon	85
+# thank you (two syllables — typed continuously, no space, like Pinyin nihao)
+# Rime's table_translator treats space as a commit delimiter, so multi-word
+# Thai entries must use space-free romanizations.
+ขอบคุณ	khobkhun	100
+ขอบคุณ	kobkhun	95
+ขอบคุณ	khopkhun	90
+ขอบคุณ	kobkoon	85
+ขอบคุณ	khopkoon	80
 
 # eat
 กิน	gin	100
