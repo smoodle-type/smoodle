@@ -14,7 +14,10 @@
 build/
 *.dylib
 *.o
-vendor/
+# Vendor source trees are gitignored, but patches against them live here
+vendor/*
+!vendor/*.patch
+!vendor/README.md
 
 # LLM model files (v0.2+, downloaded on first launch)
 models/

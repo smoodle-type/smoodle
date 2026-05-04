@@ -1,0 +1,37 @@
+diff --git a/src/rime/dict/dictionary.cc b/src/rime/dict/dictionary.cc
+index 58f21a34..2ae38481 100644
+--- a/src/rime/dict/dictionary.cc
++++ b/src/rime/dict/dictionary.cc
+@@ -152,6 +152,17 @@ void DictEntryIterator::AddFilter(DictEntryFilter filter) {
+ 
+ an<DictEntry> DictEntryIterator::Peek() {
+   if (!entry_ && !exhausted()) {
++    // smoodle patch: chunks are pushed in syllable-id order (alphabetical
++    // of syllable strings), not weight order. The first Peek() must sort
++    // to put the highest-weight chunk's head element first; Sort() is
++    // otherwise only called from FindNextEntry, leaving the #1 candidate
++    // mis-ordered when algebra-derived spellings happen to come before
++    // direct spellings alphabetically (e.g. "yaai" < "yai" → algebra-
++    // derived ย้าย out-ranked direct ใหญ่ regardless of weight).
++    if (chunk_index_ == 0 && !sorted_initial_) {
++      Sort();
++      sorted_initial_ = true;
++    }
+     // get next entry from current chunk
+     const auto& chunk = query_result_->chunks[chunk_index_];
+     const auto& e = chunk.entries[chunk.cursor];
+diff --git a/src/rime/dict/dictionary.h b/src/rime/dict/dictionary.h
+index f1127e5a..acf52c03 100644
+--- a/src/rime/dict/dictionary.h
++++ b/src/rime/dict/dictionary.h
+@@ -49,6 +49,10 @@ class RIME_DLL DictEntryIterator : public DictEntryFilterBinder {
+   size_t chunk_index_ = 0;
+   an<DictEntry> entry_ = nullptr;
+   size_t entry_count_ = 0;
++  // smoodle patch: track whether chunks have been sorted at least once.
++  // The original librime only sorts in FindNextEntry, leaving the very
++  // first Peek() returning chunks[0] in syllable-id-insertion order.
++  bool sorted_initial_ = false;
+ };
+ 
+ using DictEntryCollector = map<size_t, DictEntryIterator>;
