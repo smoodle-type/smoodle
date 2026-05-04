@@ -1,0 +1,81 @@
+# smoodle v0.0.2 algebra-spike fixture
+#
+# Each entry below is a (romanization, expected_thai) pair where the
+# romanization is NOT in `schema/thai_phonetic.dict.yaml` but should
+# still produce the expected Thai via the speller/algebra rules added
+# in v0.0.2 (see `schema/thai_phonetic.schema.yaml` -> speller.algebra).
+#
+# How to verify (manual, until librime CLI testing is wired up):
+#   1. bash scripts/install.sh
+#   2. Click Squirrel's Deploy (menu bar -> Squirrel -> Deploy)
+#   3. Open Notes (or any text app), select the smoodle input source
+#   4. Type each romanization below. The expected Thai should appear
+#      as a candidate and commit cleanly on space.
+#   5. Note any failures inline as comments so we can revise the rules.
+#
+# A `grep` against the dict confirms these are NOT in the dict:
+#   for r in khrab krab khab sawade sawadi kobkon ...; do
+#     grep -q $'\t'"$r"$'\t' schema/thai_phonetic.dict.yaml \
+#       && echo "$r IS in dict (move to v001_fixture)" \
+#       || echo "$r OK algebra-only"
+#   done
+
+algebra_assertions:
+  # === Aspiration: kh -> k ===
+  # dict has 'khrap', algebra adds 'krap' (already in dict — pure-redundant case)
+  # dict has 'khopkhun', algebra should add 'kopkhun', 'khopkun', 'kopkun'
+  # (single-pass substitution semantics may give us only ONE per rule;
+  #  flag any that don't work so we can add explicit variants if needed)
+  - {romanization: "khopkun",   expected_thai: "ขอบคุณ"}     # mid-word kh dropped (2nd kh only)
+  - {romanization: "kopkun",    expected_thai: "ขอบคุณ"}     # both kh dropped (in dict already as kobkun)
+
+  # === Aspiration: ph -> p ===
+  # dict has 'phom', algebra adds 'pom' (in dict). New typings:
+  - {romanization: "pak",       expected_thai: "ผัก"}        # in dict already
+  # NOTE: most ph words have both forms in dict; weak test surface here.
+
+  # === Aspiration: th -> t ===
+  # No th/t pairs in current 30-word dict; will exercise after expansion.
+
+  # === Final voicing: p$ <-> b$ ===
+  # dict 'khrap', algebra adds 'khrab' — algebra-only:
+  - {romanization: "khrab",     expected_thai: "ครับ"}
+  - {romanization: "krab",      expected_thai: "ครับ"}
+  - {romanization: "khab",      expected_thai: "ครับ"}
+
+  # === Final voicing: t$ <-> d$ ===
+  # dict has 'sawatdee', no 'sawatdee'-with-d variant. Algebra adds it
+  # via t$ → d$ rule:
+  # NOTE: 'sawatdee' ends in 'ee', not 't', so t$ rule won't apply.
+  # No clean t$/d$ test in current vocab; will exercise after expansion.
+
+  # === Vowel length: ee -> e ===
+  # dict has 'sawadee', algebra adds 'sawade':
+  - {romanization: "sawade",    expected_thai: "สวัสดี"}
+  - {romanization: "natee",     expected_thai: "นาที"}      # in dict
+  - {romanization: "nate",      expected_thai: "นาที"}      # algebra-only
+
+  # === Vowel length: ii -> i ===
+  # dict has 'sawatdii', algebra adds 'sawatdi':
+  - {romanization: "sawatdi",   expected_thai: "สวัสดี"}
+  - {romanization: "sawadi",    expected_thai: "สวัสดี"}    # via sawadii→sawadi
+
+  # === Vowel length: aa -> a ===
+  # dict has 'maa' (มา), algebra adds 'ma' (also in dict).
+  # dict has 'naam', algebra adds 'nam' (also in dict).
+  # Hard to find purely-algebra cases in current 30-word dict because
+  # the dict already has both long and short forms enumerated.
+
+  # === Vowel length: oo -> o ===
+  # dict has 'kobkoon', algebra adds 'kobkon':
+  - {romanization: "kobkon",    expected_thai: "ขอบคุณ"}
+  - {romanization: "khopkon",   expected_thai: "ขอบคุณ"}
+  - {romanization: "look",      expected_thai: "ลูก"}        # in dict
+  - {romanization: "lok",       expected_thai: "ลูก"}        # algebra-only via look→lok
+
+  # === Vowel length: uu -> u ===
+  # dict has 'luuk', algebra adds 'luk' (also in dict).
+  # No pure cases.
+
+  # 12 algebra-only entries. Once user dogfoods, we'll know which rules
+  # actually fire as expected vs which need explicit dict entries.

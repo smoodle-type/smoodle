@@ -9,7 +9,7 @@
 schema:
   schema_id: thai_phonetic
   name: smoodle Thai phonetic
-  version: "0.0.1"
+  version: "0.0.2-algebra-spike"
   author:
     - lex
   description: |
@@ -17,6 +17,12 @@ schema:
     v0.0.1 ships ~500 most common Thai words with multiple romanization
     variants per word. Tone marks are stored in the dictionary; users
     type tone-free romanization.
+
+    v0.0.2 (algebra spike): adds speller/algebra rules for phonemic
+    equivalence classes (aspiration kh~k, ph~p, th~t; vowel length
+    aa~a, ii~i, etc.; final voicing p~b, t~d). Lets the dict carry
+    fewer hand-enumerated variants per word (Path A in design doc).
+    Purely additive: existing dict variants keep matching as before.
 
 switches:
   - name: ascii_mode
@@ -48,6 +54,39 @@ engine:
 speller:
   alphabet: 'abcdefghijklmnopqrstuvwxyz'
   delimiter: " '"
+  # Algebra rules expand the prism so user input can match dict spellings
+  # via common phonemic equivalences, without enumerating every variant
+  # in the dict. `derive/X/Y/` is additive: dict spelling preserved AND
+  # an alternative with Y substituted for X is accepted at input time.
+  # Reference: terra_pinyin.schema.yaml (Mandarin) and pinyin.yaml's
+  # spelling_correction block ship with Squirrel.
+  algebra:
+    # ===== Aspiration equivalence =====
+    # Thai distinguishes aspirated kh/ph/th from unaspirated k/p/t.
+    # English-speaking typers frequently drop the 'h'. Unanchored:
+    # smoodle uses continuous Latin for multi-syllable words (commit
+    # 4b54bc3), so kh/ph/th can appear anywhere in a word.
+    - derive/kh/k/
+    - derive/ph/p/
+    - derive/th/t/
+
+    # ===== Vowel-length collapsing =====
+    # Thai distinguishes long vowels (aa, ii, oo, uu, ee) from short
+    # (a, i, o, u, e). English typers usually write the short form.
+    - derive/aa/a/
+    - derive/ii/i/
+    - derive/oo/o/
+    - derive/uu/u/
+    - derive/ee/e/
+
+    # ===== Final-consonant voicing alternation =====
+    # Thai final stops are unreleased and ambiguous between voiced/
+    # unvoiced; romanizers split (e.g. khop vs khob for ขอบ).
+    # Both directions so dict can pick either canonical form.
+    - derive/p$/b/
+    - derive/b$/p/
+    - derive/t$/d/
+    - derive/d$/t/
 
 translator:
   dictionary: thai_phonetic
