@@ -1,6 +1,12 @@
 # oh-my-claudecode runtime state
 .omc/
 
+# Claude Code session state
+.claude/
+
+# Generation logs (raw stderr from scripts/generate_*.py — not reproducible artifacts)
+*.log
+
 # macOS
 .DS_Store
 

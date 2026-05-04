@@ -41,15 +41,22 @@ from pathlib import Path
 
 SYSTEM_PROMPT = """You generate plausible English-letter romanizations of Thai words for a phonetic IME (input method) called smoodle. Users type romanized Thai approximations and select Thai script candidates, like Pinyin for Mandarin.
 
-For each Thai word, output 3 to 5 distinct romanizations that a non-native English-speaker might plausibly type if they wanted that Thai word, ordered most-common-typing-pattern first.
+For each Thai word, output 1 to 3 distinct romanizations covering MEANINGFULLY DIFFERENT typings. The schema applies algebra rules at the speller layer that automatically accept these equivalences — DO NOT emit variants that differ only in:
+  - Aspiration: kh ~ k, ph ~ p, th ~ t (e.g. for ครับ, emit 'krap' OR 'khrap', not both)
+  - Vowel length: aa ~ a, ii ~ i, oo ~ o, uu ~ u, ee ~ e (e.g. for นาที, emit 'natee' or 'nati' but NOT both)
+  - Final-stop voicing: word-final p ~ b and t ~ d (e.g. for ขอบ in ขอบคุณ, 'khop' and 'khob' are auto-equivalent)
+
+Emit additional variants ONLY when they differ in:
+  - Vowel choice (e.g. ครับ → 'krap' AND 'krub', because a/u are genuinely different)
+  - Consonant choice that algebra can't derive (e.g. ใช่ → 'chai' AND 'chay' for the i/y final-glide ambiguity)
+  - Substantively different romanization conventions (e.g. ผม → 'phom' AND 'pohm' — extra 'h' vowel marker)
 
 Rules:
 - Use only lowercase ASCII a-z. No spaces, no apostrophes, no numbers, no diacritics.
 - Do NOT encode tones in the romanization. Tones live in the Thai output, not the input.
-- Reflect natural typing variation: aspirated vs. unaspirated consonants (kh/k, ph/p, th/t), vowel length (a/aa, i/ii), and Thai final-consonant simplification (b/p, t/d, s as final t in spoken Thai).
 - For multi-syllable Thai words, output continuous lowercase Latin without internal spaces or hyphens. Like Pinyin: 'nihao' not 'ni hao' or 'ni-hao'.
-- Skip romanizations that are nearly identical (within 1 character of another variant) unless they meaningfully differ in pronunciation pattern.
-- Weights: 100 for the canonical/most-common variant, decreasing in steps of 5-10 for less-common variants. Stay between 70 and 100.
+- Pick the canonical form (weight 100) as the typing a non-native English-speaker is MOST likely to use first. The optional 2nd/3rd variants are weight 85-95.
+- If only one truly-distinct typing exists for a word, emit just one entry — algebra fills in the rest.
 
 Output schema (JSON only, no markdown, no commentary):
 {
@@ -62,11 +69,22 @@ Output schema (JSON only, no markdown, no commentary):
 Example for ครับ (the male polite particle):
 {"variants": [
   {"romanization": "krap", "weight": 100},
-  {"romanization": "khrap", "weight": 95},
-  {"romanization": "kub", "weight": 90},
-  {"romanization": "khap", "weight": 85},
-  {"romanization": "krub", "weight": 80}
-]}"""
+  {"romanization": "krub", "weight": 90}
+]}
+(NOTE: 'khrap' is NOT emitted because algebra derives it from 'krap' via kh~k. 'khap' is NOT emitted because algebra derives it from 'krap' via dropping r — wait, r-dropping is NOT in algebra; emit 'khap' if you think it's a common typing variant. Use judgment per the "consonant choice that algebra can't derive" rule.)
+
+Example for ขอบคุณ (thank you):
+{"variants": [
+  {"romanization": "khopkhun", "weight": 100}
+]}
+(Single variant because algebra handles kh~k AND p~b AND vowel-length: 'khopkhun' alone yields kopkhun, khobkhun, kobkhun, khopkun, kopkun, kobkun, khopkoon, etc. all automatically.)
+
+Example for ใช่ (yes):
+{"variants": [
+  {"romanization": "chai", "weight": 100},
+  {"romanization": "chay", "weight": 85}
+]}
+(Two variants because i/y at word-end is a real typing-convention split — algebra has no rule for it.)"""
 
 
 VARIANTS_SCHEMA = {

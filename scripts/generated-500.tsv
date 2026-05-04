@@ -1,2419 +1,1118 @@
-# Rime dictionary
-# encoding: utf-8
-#
-# smoodle Thai phonetic dictionary
-#
-# Multi-syllable Thai words use continuous Latin (no internal spaces) per
-# commit 4b54bc3 — Rime's table_translator treats space as commit delimiter.
-# v0.0.2 algebra rules in thai_phonetic.schema.yaml automatically accept
-# kh~k / ph~p / th~t / vowel-length / final-voicing variation, so dict
-# entries carry only 1-3 spelling variants per Thai word (Path A).
-
----
-name: thai_phonetic
-version: "0.0.2"
-sort: by_weight
-use_preset_vocabulary: false
-columns:
-  - text
-  - code
-  - weight
-encoder:
-  exclude_patterns:
-    - '^[^\x00-\x7f]+$'
-...
-
-# สวัสดี
-สวัสดี	sawadee	100
 สวัสดี	sawatdee	100
-สวัสดี	sawasdee	95
-สวัสดี	sawadii	90
-สวัสดี	sawaddee	80
-สวัสดี	sawatdii	80
-
-# ครับ
-ครับ	krap	100
-ครับ	khrap	95
-ครับ	krub	90
-ครับ	kub	90
-ครับ	khap	85
-
-# ค่ะ
-ค่ะ	ka	100
-ค่ะ	kha	95
-ค่ะ	khaa	90
-ค่ะ	kah	85
-ค่ะ	khah	75
-
-# ไม่
-ไม่	mai	100
-ไม่	may	85
-ไม่	my	85
-ไม่	maii	75
-
-# ใช่
-ใช่	chai	100
-ใช่	chaii	85
-ใช่	chay	85
-
-# ขอบคุณ
-ขอบคุณ	khobkhun	100
+สวัสดี	sawasdee	90
 ขอบคุณ	khopkhun	100
-ขอบคุณ	kobkhun	95
-ขอบคุณ	kopkhun	90
-ขอบคุณ	kobkoon	85
-ขอบคุณ	khopkoon	80
-ขอบคุณ	kobkun	75
-
-# กิน
-กิน	gin	100
-กิน	kin	100
-กิน	khin	80
-
-# ข้าว
-ข้าว	kao	100
-ข้าว	khao	100
-ข้าว	khaaw	90
-ข้าว	khaao	80
-ข้าว	kaow	75
-
-# น้ำ
-น้ำ	nam	100
-น้ำ	naam	95
-น้ำ	narm	85
-น้ำ	num	80
-
-# ผม
-ผม	phom	100
-ผม	pom	100
-ผม	pohm	85
-ผม	phohm	80
-
-# ขอโทษ
 ขอโทษ	khothot	100
-ขอโทษ	khotot	100
-ขอโทษ	khorthot	95
-ขอโทษ	khotos	90
-ขอโทษ	kortot	85
-ขอโทษ	khawthot	75
-
-# อาจจะ
-อาจจะ	adja	100
-อาจจะ	atja	100
-อาจจะ	aatja	85
-อาจจะ	ajja	85
-อาจจะ	artja	85
-อาจจะ	adcha	80
-อาจจะ	aadja	75
-
-# ดื่ม
-ดื่ม	deum	100
-ดื่ม	duem	90
-ดื่ม	dum	85
-ดื่ม	derm	75
-
-# ไป
-ไป	pai	100
-ไป	bai	90
-ไป	bpai	85
-ไป	phai	80
-ไป	by	75
-
-# มา
-มา	ma	100
-มา	maa	90
-
-# นอน
-นอน	non	100
-นอน	norn	90
-นอน	naun	80
-นอน	nawn	75
-
-# ทำ
-ทำ	tam	100
-ทำ	tham	95
-ทำ	tum	90
-ทำ	thum	75
-
-# กาแฟ
-กาแฟ	kafae	100
-กาแฟ	kafe	100
-กาแฟ	gafae	90
-กาแฟ	kaffe	85
-กาแฟ	gaafae	75
-กาแฟ	kahfae	70
-
-# ผัก
-ผัก	pak	100
-ผัก	phak	100
-ผัก	pug	80
-ผัก	phug	75
-
-# เนื้อ
-เนื้อ	nuea	100
-เนื้อ	nua	90
-เนื้อ	neua	85
-เนื้อ	nue	75
-
-# แม่
-แม่	mae	100
-แม่	mair	85
-แม่	may	85
-แม่	me	80
-แม่	meh	80
-
-# พ่อ
-พ่อ	por	100
-พ่อ	paw	90
-พ่อ	phor	85
-พ่อ	po	85
-พ่อ	phaw	75
-
-# พี่
-พี่	pee	100
-พี่	pii	90
-พี่	phi	85
-พี่	pi	85
-พี่	phee	80
-
-# น้อง
-น้อง	nong	100
-น้อง	naung	85
-น้อง	nawng	80
-น้อง	nhong	75
-
-# ลูก
-ลูก	luk	100
-ลูก	look	95
-ลูก	luuk	85
-ลูก	louk	72
-
-# วัน
-วัน	wan	100
-วัน	wun	85
-วัน	waan	80
-
-# คืน
-คืน	kuen	100
-คืน	keun	90
-คืน	khuen	90
-คืน	kun	75
-
-# ชั่วโมง
-ชั่วโมง	chuamong	100
-ชั่วโมง	chuomong	85
-ชั่วโมง	chuwamong	85
-ชั่วโมง	chamong	75
-
-# นาที
-นาที	natee	100
-นาที	nathi	90
-นาที	nati	85
-นาที	naati	75
-
-# ฉัน
-ฉัน	chan	100
-ฉัน	chun	90
-ฉัน	shan	80
-ฉัน	chann	75
-
-# ไม่เป็นไร
+ขอโทษ	khorthot	85
+ขอโทษ	khotot	70
 ไม่เป็นไร	maipenrai	100
-
-# ยินดี
 ยินดี	yindee	100
-
-# คะ
+ครับ	krap	100
+ครับ	krub	90
+ค่ะ	ka	100
+ค่ะ	kha	90
 คะ	ka	100
 คะ	kha	85
-
-# จ้า
 จ้า	ja	100
 จ้า	jaa	85
-
-# จ๊ะ
 จ๊ะ	ja	100
 จ๊ะ	jah	85
-
-# นะ
 นะ	na	100
-
-# น่ะ
 น่ะ	na	100
-
-# สิ
 สิ	si	100
-
-# ล่ะ
 ล่ะ	la	100
 ล่ะ	laa	80
-
-# เลย
 เลย	loey	100
 เลย	loei	90
 เลย	ley	80
-
-# เถอะ
 เถอะ	thoe	100
 เถอะ	ter	90
 เถอะ	tuh	80
-
-# หรอ
 หรอ	ror	100
 หรอ	raw	85
 หรอ	rer	80
-
-# เหรอ
 เหรอ	ror	100
 เหรอ	rer	90
 เหรอ	roe	80
-
-# อ่ะ
 อ่ะ	a	100
 อ่ะ	ah	90
-
-# แหละ
 แหละ	lae	100
-
-# โว้ย
 โว้ย	woi	100
 โว้ย	woy	90
-
-# เว้ย
 เว้ย	woey	100
 เว้ย	wei	85
 เว้ย	woei	80
-
-# ดิฉัน
+ไม่	mai	100
+ไม่	may	85
+ใช่	chai	100
+ใช่	chay	85
+อาจจะ	atja	100
+อาจจะ	artja	85
+อาจจะ	ajja	85
+ผม	phom	100
+ผม	pohm	85
+ฉัน	chan	100
 ดิฉัน	dichan	100
-
-# หนู
 หนู	nu	100
 หนู	noo	90
-
-# เรา
 เรา	rao	100
 เรา	raw	85
-
-# คุณ
 คุณ	khun	100
 คุณ	koon	85
-
-# เธอ
 เธอ	ter	100
 เธอ	thoe	90
 เธอ	tur	80
-
-# แก
 แก	gae	100
 แก	kae	90
 แก	gay	80
-
-# นาย
 นาย	nai	100
 นาย	nay	90
-
-# มัน
 มัน	man	100
-
-# เขา
 เขา	kao	100
 เขา	khao	90
-
-# เค้า
 เค้า	kao	100
 เค้า	khao	85
-
-# ท่าน
 ท่าน	than	100
-
-# พวก
 พวก	phuak	100
 พวก	puak	90
-
-# กู
 กู	goo	100
 กู	gu	90
 กู	ku	85
-
-# มึง
 มึง	mueng	100
 มึง	meung	90
-
-# ตัวเอง
 ตัวเอง	tuaeng	100
 ตัวเอง	tuaaeng	85
-
-# ศูนย์
 ศูนย์	soon	100
 ศูนย์	sun	85
-
-# หนึ่ง
 หนึ่ง	nung	100
 หนึ่ง	neung	95
-
-# สอง
 สอง	song	100
-
-# สาม
 สาม	sam	100
-
-# สี่
 สี่	si	100
 สี่	see	90
-
-# ห้า
 ห้า	ha	100
-
-# หก
 หก	hok	100
-
-# เจ็ด
 เจ็ด	jet	100
-
-# แปด
 แปด	paet	100
 แปด	paed	90
 แปด	pad	85
-
-# เก้า
 เก้า	kao	100
 เก้า	gao	90
-
-# สิบ
 สิบ	sip	100
-
-# ยี่สิบ
 ยี่สิบ	yeesip	100
 ยี่สิบ	yisip	90
-
-# ร้อย
 ร้อย	roi	100
 ร้อย	roy	90
-
-# พัน
 พัน	pan	100
-
-# หมื่น
 หมื่น	meun	100
 หมื่น	muen	90
 หมื่น	mun	75
-
-# แสน
 แสน	saen	100
 แสน	sen	85
-
-# ล้าน
 ล้าน	lan	100
-
-# ครึ่ง
 ครึ่ง	khrueng	100
 ครึ่ง	krung	85
 ครึ่ง	khreung	80
-
-# คู่
 คู่	khu	100
 คู่	koo	90
-
-# โหล
 โหล	lo	100
 โหล	loh	85
-
-# ที่
 ที่	thi	100
 ที่	tee	95
 ที่	thee	90
-
-# ครั้ง
 ครั้ง	krang	100
-
-# คน
 คน	khon	100
-
-# ตัว
 ตัว	tua	100
 ตัว	tuwa	80
-
-# อัน
 อัน	an	100
-
-# ใบ
 ใบ	bai	100
-
-# ชิ้น
 ชิ้น	chin	100
-
-# อย่าง
 อย่าง	yang	100
-
-# แรก
 แรก	raek	100
 แรก	rack	80
-
-# สุดท้าย
 สุดท้าย	sutthai	100
 สุดท้าย	sudtai	85
-
-# เดือน
+วัน	wan	100
 เดือน	duean	100
 เดือน	deuan	90
 เดือน	duan	80
-
-# ปี
 ปี	pee	100
 ปี	pii	85
-
-# สัปดาห์
 สัปดาห์	sapda	100
 สัปดาห์	sapdah	85
-
-# อาทิตย์
 อาทิตย์	atit	100
 อาทิตย์	athit	90
-
-# วินาที
+ชั่วโมง	chuamong	100
+ชั่วโมง	chuomong	85
+นาที	natee	100
+นาที	nathi	85
 วินาที	winati	100
 วินาที	winatee	90
-
-# เช้า
 เช้า	chao	100
 เช้า	chaow	85
-
-# สาย
 สาย	sai	100
 สาย	say	90
-
-# บ่าย
 บ่าย	bai	100
 บ่าย	bye	80
-
-# เย็น
 เย็น	yen	100
-
-# ค่ำ
 ค่ำ	kham	100
-
-# กลางคืน
 กลางคืน	klangkuen	100
 กลางคืน	klangkhuen	85
-
-# กลางวัน
 กลางวัน	klangwan	100
 กลางวัน	klangvan	85
-
-# เมื่อวาน
 เมื่อวาน	meuawan	100
 เมื่อวาน	muawan	90
 เมื่อวาน	meuanwan	75
-
-# วันนี้
 วันนี้	wannee	100
 วันนี้	wanni	85
-
-# พรุ่งนี้
 พรุ่งนี้	prungnee	100
 พรุ่งนี้	phrungnee	85
-
-# มะรืน
 มะรืน	maruen	100
 มะรืน	marern	85
 มะรืน	maruun	80
-
-# ตอนนี้
 ตอนนี้	tonnee	100
 ตอนนี้	tonni	90
-
-# เดี๋ยวนี้
 เดี๋ยวนี้	diawnee	100
 เดี๋ยวนี้	deawnee	85
 เดี๋ยวนี้	diaonee	80
-
-# เดี๋ยว
 เดี๋ยว	diao	100
 เดี๋ยว	diew	90
 เดี๋ยว	deaw	80
-
-# แล้ว
 แล้ว	laew	100
 แล้ว	leaw	85
 แล้ว	laeo	75
-
-# ยัง
 ยัง	yang	100
-
-# เคย
 เคย	koey	100
 เคย	kuey	85
 เคย	keoy	80
-
-# จันทร์
 จันทร์	jan	100
 จันทร์	chan	90
-
-# อังคาร
 อังคาร	angkhan	100
 อังคาร	angkan	90
-
-# พุธ
 พุธ	put	100
 พุธ	poot	90
-
-# พฤหัส
 พฤหัส	paruhat	100
 พฤหัส	pruhat	90
 พฤหัส	pareuhat	80
-
-# ศุกร์
 ศุกร์	suk	100
-
-# เสาร์
 เสาร์	sao	100
 เสาร์	sau	85
-
-# มกราคม
 มกราคม	makarakhom	100
 มกราคม	mokarakhom	85
-
-# กุมภาพันธ์
 กุมภาพันธ์	kumphaphan	100
 กุมภาพันธ์	kumpapan	90
-
-# มีนาคม
 มีนาคม	meenakhom	100
 มีนาคม	minakom	85
-
-# เมษายน
 เมษายน	mesayon	100
 เมษายน	maysayon	90
-
-# พฤษภาคม
 พฤษภาคม	prudsapakhom	100
 พฤษภาคม	pruetsapakom	90
 พฤษภาคม	phruesaphakhom	80
-
-# มิถุนายน
 มิถุนายน	mithunayon	100
 มิถุนายน	mitunayon	90
-
-# กรกฎาคม
 กรกฎาคม	karakadakhom	100
 กรกฎาคม	karakdakhom	85
-
-# สิงหาคม
 สิงหาคม	singhakhom	100
-
-# กันยายน
 กันยายน	kanyayon	100
-
-# ตุลาคม
 ตุลาคม	tulakhom	100
 ตุลาคม	tulakom	90
-
-# พฤศจิกายน
 พฤศจิกายน	pruetsajikayon	100
 พฤศจิกายน	prussajikayon	85
 พฤศจิกายน	pritsajikayon	80
-
-# ธันวาคม
 ธันวาคม	thanwakhom	100
 ธันวาคม	tanwakom	90
 ธันวาคม	thanvakom	80
-
-# ปู่
+คืน	kuen	100
+คืน	keun	90
+พ่อ	por	100
+พ่อ	paw	90
+พ่อ	po	85
+แม่	mae	100
+แม่	mair	85
+แม่	me	80
 ปู่	pu	100
 ปู่	poo	90
-
-# ย่า
 ย่า	ya	100
-
-# ตา
 ตา	ta	100
-
-# ยาย
 ยาย	yai	100
 ยาย	yay	90
-
-# ลุง
 ลุง	lung	100
-
-# ป้า
 ป้า	pa	100
-
-# น้า
 น้า	na	100
-
-# อา
 อา	ah	100
 อา	a	90
-
-# หลาน
+พี่	pee	100
+พี่	pi	85
+น้อง	nong	100
+ลูก	luk	100
+ลูก	look	90
 หลาน	lan	100
-
-# ญาติ
 ญาติ	yat	100
 ญาติ	yati	85
-
-# ครอบครัว
 ครอบครัว	krobkrua	100
 ครอบครัว	khropkhrua	85
-
-# สามี
 สามี	samee	100
 สามี	sami	85
-
-# ภรรยา
 ภรรยา	panya	100
 ภรรยา	phanraya	90
 ภรรยา	panraya	85
-
-# แฟน
 แฟน	fan	100
 แฟน	faen	90
-
-# เพื่อน
 เพื่อน	phuean	100
 เพื่อน	puen	90
 เพื่อน	phuan	80
-
-# แก๊ง
 แก๊ง	gang	100
 แก๊ง	kang	85
-
-# คนรัก
 คนรัก	khonrak	100
 คนรัก	konrak	90
-
-# ชาย
 ชาย	chai	100
 ชาย	chay	90
-
-# หญิง
 หญิง	ying	100
-
-# เด็ก
 เด็ก	dek	100
-
-# ผู้ใหญ่
 ผู้ใหญ่	phuyai	100
 ผู้ใหญ่	puyai	90
-
-# คนแก่
 คนแก่	khonkae	100
 คนแก่	konkae	90
-
-# หัว
 หัว	hua	100
 หัว	hoa	80
-
-# หน้า
 หน้า	na	100
-
-# หู
 หู	hu	100
-
-# จมูก
 จมูก	jamook	100
 จมูก	jamuk	90
-
-# ปาก
 ปาก	pak	100
-
-# ฟัน
 ฟัน	fan	100
-
-# ลิ้น
 ลิ้น	lin	100
-
-# คอ
 คอ	kor	100
 คอ	kaw	85
 คอ	ko	80
-
-# มือ
 มือ	meu	100
-มือ	mue	85
 มือ	muu	85
-
-# แขน
+มือ	mue	85
 แขน	khaen	100
 แขน	kaen	90
 แขน	khan	80
-
-# ขา
 ขา	kha	100
-
-# เท้า
 เท้า	tao	100
 เท้า	thao	85
-
-# นิ้ว
 นิ้ว	niu	100
 นิ้ว	niw	90
 นิ้ว	new	80
-
-# ท้อง
 ท้อง	tong	100
-
-# หลัง
 หลัง	lang	100
-
-# ใจ
 ใจ	jai	100
 ใจ	jay	85
-
-# หัวใจ
 หัวใจ	huajai	100
 หัวใจ	hauchai	80
-
-# เลือด
 เลือด	luead	100
 เลือด	leuad	90
 เลือด	lueat	85
-
-# กระดูก
 กระดูก	kraduk	100
 กระดูก	kradook	90
-
-# ผิว
 ผิว	phiu	100
 ผิว	piw	90
 ผิว	phew	80
-
-# ป่วย
 ป่วย	puay	100
 ป่วย	puai	85
-
-# หาย
 หาย	hai	100
 หาย	hay	85
-
-# เจ็บ
 เจ็บ	jep	100
-
-# ปวด
 ปวด	puat	100
 ปวด	puad	90
 ปวด	buat	80
-
-# ไข้
 ไข้	khai	100
-
-# ยา
 ยา	ya	100
-
-# หมอ
 หมอ	mor	100
 หมอ	maw	85
 หมอ	mo	80
-
-# โรงพยาบาล
 โรงพยาบาล	rongphayaban	100
 โรงพยาบาล	rongpayabaan	90
-
-# อาบน้ำ
 อาบน้ำ	abnam	100
 อาบน้ำ	aabnam	85
-
-# แปรงฟัน
 แปรงฟัน	praengfan	100
 แปรงฟัน	prengfan	85
-
-# สบู่
 สบู่	sabu	100
-
-# ยาสีฟัน
 ยาสีฟัน	yaseefan	100
 ยาสีฟัน	yasifan	88
-
-# ก๋วยเตี๋ยว
+ข้าว	khao	100
 ก๋วยเตี๋ยว	kuaytiaw	100
 ก๋วยเตี๋ยว	guaytiew	90
 ก๋วยเตี๋ยว	kuayteow	85
-
-# เส้น
 เส้น	sen	100
-
-# หมู
 หมู	moo	100
 หมู	mu	90
-
-# ไก่
 ไก่	kai	100
 ไก่	kay	85
-
-# ปลา
+เนื้อ	nuea	100
+เนื้อ	nua	90
+เนื้อ	neua	85
 ปลา	pla	100
-
-# กุ้ง
 กุ้ง	kung	100
 กุ้ง	goong	90
-
-# ปู
 ปู	pu	100
 ปู	poo	90
-
-# ไข่
 ไข่	khai	100
 ไข่	kai	90
-
-# ผลไม้
+ผัก	phak	100
+ผัก	pak	90
 ผลไม้	polamai	100
 ผลไม้	phonlamai	90
 ผลไม้	ponlamai	88
-
-# ส้มตำ
 ส้มตำ	somtam	100
-
-# ต้มยำ
 ต้มยำ	tomyam	100
 ต้มยำ	tumyam	85
-
-# แกง
 แกง	gaeng	100
 แกง	kaeng	90
 แกง	geng	80
-
-# ผัด
 ผัด	phad	100
 ผัด	pad	95
-
-# ทอด
 ทอด	tod	100
-
-# ย่าง
 ย่าง	yang	100
-
-# นึ่ง
 นึ่ง	neung	100
 นึ่ง	nung	85
-
-# น้ำเปล่า
+น้ำ	nam	100
+น้ำ	narm	85
+น้ำ	num	80
 น้ำเปล่า	namplao	100
-น้ำเปล่า	namplaw	85
 น้ำเปล่า	nampow	85
-
-# น้ำแข็ง
+น้ำเปล่า	namplaw	85
 น้ำแข็ง	namkhaeng	100
 น้ำแข็ง	namkheng	85
-
-# นม
 นม	nom	100
-
-# ชา
+กาแฟ	kafe	100
+กาแฟ	kafae	90
 ชา	cha	100
-
-# เบียร์
 เบียร์	bia	100
 เบียร์	beer	90
 เบียร์	bier	80
-
-# เหล้า
 เหล้า	lao	100
-
-# น้ำผลไม้
 น้ำผลไม้	namphonlamai	100
 น้ำผลไม้	nampholamai	90
 น้ำผลไม้	namponlamai	80
-
-# ขนม
 ขนม	khanom	100
 ขนม	kanom	90
-
-# ขนมปัง
 ขนมปัง	khanompang	100
 ขนมปัง	kanompang	90
-
-# ข้าวเหนียว
 ข้าวเหนียว	khaoniao	100
 ข้าวเหนียว	khaowniew	90
 ข้าวเหนียว	khaoniaow	80
-
-# ข้าวผัด
 ข้าวผัด	khaophat	100
 ข้าวผัด	khawphat	85
-
-# ผัดไทย
 ผัดไทย	padthai	100
 ผัดไทย	phadthai	85
-
-# ผัดกะเพรา
 ผัดกะเพรา	padkaprao	100
 ผัดกะเพรา	phadkaphrao	90
 ผัดกะเพรา	patgaprao	80
-
-# มาม่า
 มาม่า	mama	100
-
-# ซุป
 ซุป	sup	100
-
-# สลัด
 สลัด	salad	100
 สลัด	salat	85
-
-# พริก
 พริก	prik	100
 พริก	phrik	85
-
-# น้ำปลา
 น้ำปลา	nampla	100
 น้ำปลา	namplaa	85
-
-# ซอส
 ซอส	sos	100
 ซอส	sauce	80
-
-# น้ำตาล
 น้ำตาล	namtan	100
 น้ำตาล	namtarn	90
-
-# เกลือ
 เกลือ	kluea	100
 เกลือ	klua	90
 เกลือ	gluea	80
-
-# ซีอิ๊ว
 ซีอิ๊ว	seeew	100
 ซีอิ๊ว	siiu	90
 ซีอิ๊ว	seeiw	85
-
-# มะนาว
 มะนาว	manao	100
-
-# กระเทียม
 กระเทียม	krathiam	100
 กระเทียม	gratiam	85
-
-# หอม
 หอม	hom	100
-
-# ขิง
 ขิง	khing	100
-
-# กล้วย
 กล้วย	kluay	100
 กล้วย	kluai	90
-
-# มะม่วง
 มะม่วง	mamuang	100
-
-# ส้ม
 ส้ม	som	100
-
-# แอปเปิ้ล
 แอปเปิ้ล	appern	100
 แอปเปิ้ล	aeppern	80
 แอปเปิ้ล	appen	70
-
-# สับปะรด
 สับปะรด	sapparot	100
 สับปะรด	subparod	85
-
-# มะละกอ
 มะละกอ	malako	100
-
-# แตงโม
 แตงโม	taengmo	100
 แตงโม	tangmo	90
-
-# ทุเรียน
 ทุเรียน	turian	100
 ทุเรียน	tulian	80
-
-# มะเขือเทศ
 มะเขือเทศ	makhueathet	100
 มะเขือเทศ	makheuathet	90
 มะเขือเทศ	makuathet	80
-
-# ของหวาน
 ของหวาน	khongwan	100
 ของหวาน	kongwaan	85
-
-# อาหาร
 อาหาร	ahan	100
 อาหาร	ahaan	85
-
-# เมนู
 เมนู	menu	100
-
-# อร่อย
 อร่อย	aroi	100
 อร่อย	aroy	90
-
-# หิว
 หิว	hiw	100
 หิว	hiu	90
-
-# อิ่ม
 อิ่ม	im	100
-
-# ตื่น
+กิน	kin	100
+ดื่ม	deum	100
+ดื่ม	duem	90
+ดื่ม	dum	80
+นอน	non	100
 ตื่น	tuen	100
 ตื่น	dteun	85
-
-# ลุก
 ลุก	luk	100
 ลุก	look	85
-
-# นั่ง
 นั่ง	nang	100
-
-# ยืน
 ยืน	yuen	100
 ยืน	yeun	90
-
-# เดิน
 เดิน	dern	100
 เดิน	doen	85
-
-# วิ่ง
 วิ่ง	wing	100
-
-# กลับ
+ไป	pai	100
+ไป	bpai	85
+มา	ma	100
 กลับ	klap	100
 กลับ	klub	85
-
-# ขึ้น
 ขึ้น	khun	100
 ขึ้น	kheun	95
 ขึ้น	khuen	85
-
-# ลง
 ลง	long	100
-
-# เข้า
 เข้า	khao	100
-
-# ออก
 ออก	ok	100
 ออก	ork	85
 ออก	awk	80
-
-# ถึง
 ถึง	thueng	100
 ถึง	teung	90
 ถึง	thung	80
-
-# มอง
 มอง	mong	100
-
-# ดู
 ดู	doo	100
 ดู	du	90
-
-# เห็น
 เห็น	hen	100
-
-# ฟัง
 ฟัง	fang	100
-
-# ได้ยิน
 ได้ยิน	daiyin	100
 ได้ยิน	dayyin	85
-
-# พูด
 พูด	phut	100
 พูด	poot	90
-
-# บอก
 บอก	bok	100
-
-# ถาม
 ถาม	tham	100
-
-# ตอบ
 ตอบ	top	100
 ตอบ	tob	85
-
-# คุย
 คุย	khui	100
 คุย	khuy	90
-
-# เล่า
 เล่า	lao	100
-
-# อ่าน
 อ่าน	an	100
-
-# เขียน
 เขียน	kian	100
 เขียน	kien	90
-
-# เรียน
 เรียน	rian	100
 เรียน	rean	90
 เรียน	riean	80
-
-# สอน
 สอน	sorn	100
 สอน	son	90
-
-# เล่น
+ทำ	tam	100
+ทำ	tum	90
 เล่น	len	100
-
-# ทำงาน
 ทำงาน	thamngan	100
 ทำงาน	tamngan	90
-
-# พัก
 พัก	pak	100
-
-# หยุด
 หยุด	yut	100
 หยุด	yood	90
-
-# รอ
 รอ	ror	100
 รอ	raw	85
 รอ	rao	80
-
-# หา
 หา	ha	100
-
-# เจอ
 เจอ	jer	100
 เจอ	jur	85
 เจอ	joe	80
-
-# พบ
 พบ	phop	100
 พบ	pob	85
-
-# รู้
 รู้	ru	100
 รู้	roo	90
-
-# จำ
 จำ	jam	100
 จำ	jum	85
-
-# ลืม
 ลืม	luem	100
 ลืม	leum	90
-
-# คิด
 คิด	kid	100
-
-# เชื่อ
 เชื่อ	chuea	100
 เชื่อ	chua	85
 เชื่อ	cheua	80
-
-# เข้าใจ
 เข้าใจ	khaojai	100
 เข้าใจ	kaojai	90
-
-# สงสัย
 สงสัย	songsai	100
 สงสัย	songsay	85
-
-# รัก
 รัก	rak	100
-
-# ชอบ
 ชอบ	chop	100
-
-# เกลียด
 เกลียด	kliat	100
 เกลียด	kliad	85
-
-# อยาก
 อยาก	yak	100
-
-# ต้องการ
 ต้องการ	tongkan	100
 ต้องการ	tongkarn	90
-
-# ให้
 ให้	hai	100
 ให้	hay	85
-
-# รับ
 รับ	rap	100
 รับ	rub	90
-
-# เอา
 เอา	ao	100
 เอา	aow	85
-
-# ซื้อ
 ซื้อ	sue	100
 ซื้อ	seu	90
 ซื้อ	su	80
-
-# ขาย
 ขาย	khai	100
 ขาย	khay	90
-
-# จ่าย
 จ่าย	jai	100
 จ่าย	jay	90
-
-# ใช้
 ใช้	chai	100
 ใช้	chay	85
-
-# ส่ง
 ส่ง	song	100
-
-# เปิด
 เปิด	perd	100
 เปิด	pert	90
 เปิด	poet	85
-
-# ปิด
 ปิด	pid	100
-
-# ใส่
 ใส่	sai	100
 ใส่	say	85
-
-# ถอด
 ถอด	thot	100
 ถอด	tod	90
-
-# แต่งตัว
 แต่งตัว	taengtua	100
 แต่งตัว	tengtua	85
-
-# ล้าง
 ล้าง	lang	100
-
-# ทำความสะอาด
 ทำความสะอาด	tamkwamsaard	100
 ทำความสะอาด	tamkwamsaat	90
 ทำความสะอาด	thamkhwamsaad	85
-
-# ขับ
 ขับ	kap	100
-
-# ขี่
 ขี่	khi	100
 ขี่	kee	90
-
-# นั่งรถ
 นั่งรถ	nangrot	100
-
-# บิน
 บิน	bin	100
-
-# เดินทาง
 เดินทาง	derntang	100
 เดินทาง	doentang	85
-
-# มีอยู่
 มีอยู่	meeyoo	100
 มีอยู่	miyu	85
-
-# อยู่
 อยู่	yu	100
 อยู่	yoo	90
-
-# เป็น
 เป็น	pen	100
-
-# คือ
 คือ	kue	100
 คือ	keu	90
 คือ	ku	80
-
-# มี
 มี	mee	100
 มี	mi	85
-
-# ไม่มี
 ไม่มี	maimee	100
 ไม่มี	maimi	90
-
-# ช่วย
 ช่วย	chuay	100
 ช่วย	chuai	85
-
-# ลอง
 ลอง	long	100
-
-# เริ่ม
 เริ่ม	rerm	100
 เริ่ม	roem	85
-
-# จบ
 จบ	jop	100
 จบ	job	90
-
-# เสร็จ
 เสร็จ	set	100
 เสร็จ	sret	80
-
-# ทำให้
 ทำให้	tamhai	100
 ทำให้	thamhai	90
-
-# เกิด
 เกิด	gerd	100
 เกิด	kerd	90
 เกิด	goet	80
-
-# ตาย
 ตาย	tai	100
 ตาย	tay	90
-
-# แต่งงาน
 แต่งงาน	tengngan	100
 แต่งงาน	taengngan	90
-
-# หัวเราะ
 หัวเราะ	huaroh	100
 หัวเราะ	huaror	85
 หัวเราะ	hwaroh	75
-
-# ร้องไห้
 ร้องไห้	ronghai	100
-
-# ยิ้ม
 ยิ้ม	yim	100
-
-# โกรธ
 โกรธ	krot	100
 โกรธ	groht	85
-
-# กลัว
 กลัว	klua	100
 กลัว	kloa	80
-
-# ขำ
 ขำ	kham	100
-
-# ฝัน
 ฝัน	fan	100
-
-# ถ่ายรูป
 ถ่ายรูป	thairoop	100
 ถ่ายรูป	tairup	85
-
-# ใหญ่
 ใหญ่	yai	100
 ใหญ่	yay	85
-
-# เล็ก
 เล็ก	lek	100
-
-# ยาว
 ยาว	yao	100
 ยาว	yaow	85
-
-# สั้น
 สั้น	san	100
-
-# สูง
 สูง	sung	100
-
-# เตี้ย
 เตี้ย	tia	100
 เตี้ย	tiya	85
-
-# อ้วน
 อ้วน	uan	100
 อ้วน	ouan	85
-
-# ผอม
 ผอม	phom	100
 ผอม	pom	90
 ผอม	phorm	80
-
-# หนัก
 หนัก	nak	100
-
-# เบา
 เบา	bao	100
 เบา	bow	80
-
-# หนา
 หนา	na	100
-
-# บาง
 บาง	bang	100
-
-# กว้าง
 กว้าง	kwang	100
-
-# แคบ
 แคบ	kaep	100
 แคบ	caep	80
-
-# ใกล้
 ใกล้	klai	100
 ใกล้	glai	90
 ใกล้	klay	85
-
-# ไกล
 ไกล	klai	100
 ไกล	klay	85
-
-# ดี
 ดี	dee	100
 ดี	di	90
-
-# แย่
 แย่	yae	100
-
-# สวย
 สวย	suay	100
 สวย	suai	90
-
-# น่ารัก
 น่ารัก	narak	100
-
-# หล่อ
 หล่อ	lor	100
 หล่อ	lo	90
-
-# ขี้เหร่
 ขี้เหร่	khire	100
 ขี้เหร่	keere	85
-
-# ใหม่
 ใหม่	mai	100
 ใหม่	may	85
-
-# เก่า
 เก่า	kao	100
 เก่า	gao	90
-
-# สะอาด
 สะอาด	saat	100
 สะอาด	saard	85
-
-# สกปรก
 สกปรก	sokkaprok	100
 สกปรก	sokaprok	90
-
-# ง่าย
 ง่าย	ngai	100
 ง่าย	ngay	85
-
-# ยาก
 ยาก	yak	100
-
-# เร็ว
 เร็ว	reo	100
 เร็ว	rew	95
 เร็ว	reaw	80
-
-# ช้า
 ช้า	cha	100
-
-# ร้อน
 ร้อน	ron	100
-
-# หนาว
 หนาว	naao	100
 หนาว	now	85
-
-# อุ่น
 อุ่น	un	100
 อุ่น	oon	85
-
-# แห้ง
 แห้ง	haeng	100
-
-# เปียก
 เปียก	piak	100
 เปียก	peak	85
-
-# หวาน
 หวาน	wan	100
-
-# เปรี้ยว
 เปรี้ยว	priao	100
 เปรี้ยว	priew	90
 เปรี้ยว	preow	80
-
-# เค็ม
 เค็ม	kem	100
-
-# เผ็ด
 เผ็ด	phet	100
 เผ็ด	ped	90
-
-# ขม
 ขม	khom	100
-
-# จืด
 จืด	juet	100
 จืด	jued	85
-
-# ดัง
 ดัง	dang	100
-
-# เงียบ
 เงียบ	ngiap	100
 เงียบ	ngiab	85
-
-# สนุก
 สนุก	sanuk	100
-
-# น่าเบื่อ
 น่าเบื่อ	nabua	100
 น่าเบื่อ	nabuea	90
 น่าเบื่อ	naberk	75
-
-# สำคัญ
 สำคัญ	samkhan	100
 สำคัญ	sumkhan	85
-
-# จริง
 จริง	jing	100
 จริง	jring	80
-
-# ปลอม
 ปลอม	plom	100
 ปลอม	ploam	85
-
-# แดง
 แดง	daeng	100
 แดง	dang	80
-
-# เหลือง
 เหลือง	luang	100
 เหลือง	leuang	90
 เหลือง	lueang	85
-
-# เขียว
 เขียว	khiao	100
 เขียว	kiew	90
 เขียว	khiaw	85
-
-# น้ำเงิน
 น้ำเงิน	namngern	100
 น้ำเงิน	namngoen	90
 น้ำเงิน	namnguen	80
-
-# ฟ้า
 ฟ้า	fa	100
-
-# ม่วง
 ม่วง	muang	100
-
-# ชมพู
 ชมพู	chompoo	100
 ชมพู	chompu	90
-
-# ดำ
 ดำ	dam	100
-
-# ขาว
 ขาว	khao	100
 ขาว	kao	85
-
-# เทา
 เทา	tao	100
-
-# ทอง
 ทอง	thong	100
-
-# บ้าน
 บ้าน	baan	100
-
-# ห้อง
 ห้อง	hong	100
-
-# ครัว
 ครัว	krua	100
 ครัว	kruar	80
-
-# ห้องน้ำ
 ห้องน้ำ	hongnam	100
-
-# ห้องนอน
 ห้องนอน	hongnon	100
-
-# โรงเรียน
 โรงเรียน	rongrian	100
 โรงเรียน	rongrien	90
 โรงเรียน	rongriean	80
-
-# มหาวิทยาลัย
 มหาวิทยาลัย	mahawittayalai	100
 มหาวิทยาลัย	mahawitayalai	90
-
-# ตลาด
 ตลาด	talat	100
 ตลาด	talad	90
-
-# ห้าง
 ห้าง	hang	100
-
-# ร้าน
 ร้าน	ran	100
-
-# ร้านอาหาร
 ร้านอาหาร	ranahan	100
 ร้านอาหาร	raanaahaan	85
-
-# วัด
 วัด	wat	100
-
-# สวน
 สวน	suan	100
 สวน	suean	80
-
-# สวนสาธารณะ
 สวนสาธารณะ	suansatharana	100
 สวนสาธารณะ	suansatarana	90
-
-# ชายหาด
 ชายหาด	chaihat	100
 ชายหาด	chayhad	85
-
-# ทะเล
 ทะเล	talay	100
 ทะเล	talee	85
-
-# ภูเขา
 ภูเขา	phukhao	100
 ภูเขา	pukao	90
-
-# แม่น้ำ
 แม่น้ำ	maenam	100
 แม่น้ำ	menam	85
-
-# ป่า
 ป่า	pa	100
-
-# เมือง
 เมือง	mueang	100
 เมือง	meuang	90
 เมือง	muang	80
-
-# ประเทศ
 ประเทศ	prathet	100
 ประเทศ	pratet	90
-
-# จังหวัด
 จังหวัด	changwat	100
 จังหวัด	jangwat	95
-
-# ถนน
 ถนน	thanon	100
-
-# ซอย
 ซอย	soi	100
 ซอย	soy	90
-
-# ที่นี่
 ที่นี่	teenee	100
 ที่นี่	thinee	85
-
-# ที่นั่น
 ที่นั่น	teenan	100
 ที่นั่น	thinan	85
-
-# ที่ไหน
 ที่ไหน	teenai	100
 ที่ไหน	thinai	90
-
-# บน
 บน	bon	100
-
-# ล่าง
 ล่าง	lang	100
-
-# ใน
 ใน	nai	100
 ใน	nay	85
-
-# นอก
 นอก	nok	100
-
-# ข้าง
 ข้าง	khang	100
-
-# ซ้าย
 ซ้าย	sai	100
 ซ้าย	say	85
-
-# ขวา
 ขวา	khwa	100
 ขวา	kwa	90
-
-# ตรง
 ตรง	trong	100
 ตรง	dtrong	85
-
-# เหนือ
 เหนือ	nuea	100
 เหนือ	neua	95
 เหนือ	nua	80
-
-# ใต้
 ใต้	tai	100
 ใต้	tay	85
-
-# ตะวันออก
 ตะวันออก	tawanok	100
 ตะวันออก	tawanook	90
-
-# ตะวันตก
 ตะวันตก	tawantok	100
-
-# กลาง
 กลาง	klang	100
-
-# รอบ
 รอบ	rop	100
-
-# ระหว่าง
 ระหว่าง	rawang	100
 ระหว่าง	rahwang	85
-
-# จาก
 จาก	jak	100
 จาก	chak	80
-
-# กับ
 กับ	kap	100
 กับ	gap	90
-
-# และ
 และ	lae	100
 และ	le	80
-
-# หรือ
 หรือ	rue	100
 หรือ	reu	90
 หรือ	ruea	80
-
-# แต่
 แต่	tae	100
 แต่	tare	80
-
-# เพราะ
 เพราะ	pro	100
 เพราะ	proh	90
 เพราะ	phro	80
-
-# รถ
 รถ	rot	100
-
-# รถยนต์
 รถยนต์	rotyon	100
-
-# มอเตอร์ไซค์
 มอเตอร์ไซค์	motersai	100
 มอเตอร์ไซค์	motorsai	90
 มอเตอร์ไซค์	motoesai	80
-
-# จักรยาน
 จักรยาน	jakkrayan	100
 จักรยาน	jakrayan	90
-
-# รถเมล์
 รถเมล์	rotmay	100
 รถเมล์	rotmae	85
 รถเมล์	rodmel	75
-
-# รถไฟ
 รถไฟ	rotfai	100
-
-# รถไฟฟ้า
 รถไฟฟ้า	rotfaifa	100
-
-# แท็กซี่
 แท็กซี่	taksi	100
 แท็กซี่	taxi	95
-
-# ตุ๊กตุ๊ก
 ตุ๊กตุ๊ก	tuktuk	100
-
-# เรือ
 เรือ	reua	100
 เรือ	ruea	90
 เรือ	rua	85
-
-# เครื่องบิน
 เครื่องบิน	kruangbin	100
 เครื่องบิน	kreuangbin	90
 เครื่องบิน	khruangbin	80
-
-# สนามบิน
 สนามบิน	sanambin	100
-
-# สถานี
 สถานี	sathani	100
 สถานี	satanee	90
-
-# ป้าย
 ป้าย	pai	100
 ป้าย	bpai	85
 ป้าย	pay	80
-
-# ตั๋ว
 ตั๋ว	tua	100
 ตั๋ว	tuoa	80
-
-# แผนที่
 แผนที่	phaenti	100
 แผนที่	paenthee	90
 แผนที่	phantee	80
-
-# ทาง
 ทาง	thang	100
 ทาง	tang	85
-
-# ทางด่วน
 ทางด่วน	thangduan	100
 ทางด่วน	tangduan	90
-
-# สะพาน
 สะพาน	saphan	100
 สะพาน	sapan	90
-
-# แยก
 แยก	yaek	100
 แยก	yak	85
-
-# ไฟแดง
 ไฟแดง	faidaeng	100
 ไฟแดง	faydaeng	85
-
-# น้ำมัน
 น้ำมัน	namman	100
-
-# จอด
 จอด	jod	100
 จอด	jot	85
-
-# ติด
 ติด	tid	100
-
-# รถติด
 รถติด	rottid	100
 รถติด	rodtid	85
-
-# กระเป๋าเดินทาง
 กระเป๋าเดินทาง	krapaodernthang	100
 กระเป๋าเดินทาง	krapaodoenthang	90
-
-# เที่ยว
 เที่ยว	tiao	100
 เที่ยว	tiew	90
 เที่ยว	thiao	80
-
-# ท่องเที่ยว
 ท่องเที่ยว	thongtiew	100
 ท่องเที่ยว	tongtiao	90
 ท่องเที่ยว	thongthiao	85
-
-# โต๊ะ
 โต๊ะ	to	100
 โต๊ะ	toh	90
-
-# เก้าอี้
 เก้าอี้	kaoee	100
 เก้าอี้	kawee	85
 เก้าอี้	kaoyee	80
-
-# เตียง
 เตียง	tiang	100
-
-# ตู้
 ตู้	too	100
 ตู้	tu	90
-
-# ตู้เย็น
 ตู้เย็น	tuyen	100
-
-# ทีวี
 ทีวี	teewee	100
 ทีวี	tivi	85
-
-# พัดลม
 พัดลม	patlom	100
-
-# แอร์
 แอร์	air	100
 แอร์	ae	80
-
-# ไฟ
 ไฟ	fai	100
 ไฟ	fay	85
-
-# หลอดไฟ
 หลอดไฟ	lotfai	100
 หลอดไฟ	lordfai	85
-
-# ประตู
 ประตู	pratu	100
-
-# หน้าต่าง
 หน้าต่าง	natang	100
-
-# กุญแจ
 กุญแจ	kunjae	100
 กุญแจ	goonjae	85
-
-# ผ้า
 ผ้า	pa	100
-
-# ผ้าห่ม
 ผ้าห่ม	pahom	100
 ผ้าห่ม	phahom	85
-
-# หมอน
 หมอน	mon	100
-
-# จาน
 จาน	jan	100
-
-# ชาม
 ชาม	cham	100
-
-# ช้อน
 ช้อน	chon	100
-
-# ส้อม
 ส้อม	som	100
-
-# ตะเกียบ
 ตะเกียบ	takiap	100
 ตะเกียบ	takeap	85
-
-# แก้ว
 แก้ว	kaew	100
 แก้ว	keaw	85
 แก้ว	kaw	75
-
-# ขวด
 ขวด	khuat	100
 ขวด	kuad	85
 ขวด	khwad	80
-
-# ถุง
 ถุง	tung	100
 ถุง	toong	85
-
-# กระเป๋า
 กระเป๋า	krapao	100
 กระเป๋า	grapao	85
-
-# กระเป๋าสตางค์
 กระเป๋าสตางค์	krapaosatang	100
 กระเป๋าสตางค์	grapaosatang	90
-
-# เสื้อ
 เสื้อ	suea	100
 เสื้อ	sua	90
 เสื้อ	seua	85
-
-# กางเกง
 กางเกง	kangkeng	100
-
-# กระโปรง
 กระโปรง	kraprong	100
 กระโปรง	krapong	80
-
-# ชุด
 ชุด	chut	100
 ชุด	choot	90
-
-# รองเท้า
 รองเท้า	rongtao	100
-
-# ถุงเท้า
 ถุงเท้า	thungtao	100
 ถุงเท้า	toongtao	85
-
-# หมวก
 หมวก	muak	100
-
-# แว่น
 แว่น	waen	100
 แว่น	wen	85
-
-# นาฬิกา
 นาฬิกา	nalika	100
-
-# แหวน
 แหวน	waen	100
 แหวน	wan	85
-
-# สร้อย
 สร้อย	soi	100
 สร้อย	sroi	85
 สร้อย	soy	80
-
-# ร่ม
 ร่ม	rom	100
-
-# แปรงสีฟัน
 แปรงสีฟัน	praengseefan	100
 แปรงสีฟัน	praengsifan	88
-
-# กระดาษ
 กระดาษ	kradat	100
 กระดาษ	kradard	85
-
-# ปากกา
 ปากกา	pakka	100
-
-# ดินสอ
 ดินสอ	dinso	100
 ดินสอ	dinsor	85
-
-# หนังสือ
 หนังสือ	nangsue	100
 หนังสือ	nangsu	90
 หนังสือ	nangseu	85
-
-# สมุด
 สมุด	samut	100
 สมุด	samood	90
-
-# งาน
 งาน	ngan	100
-
-# อาชีพ
 อาชีพ	acheep	100
 อาชีพ	achip	90
-
-# เงิน
 เงิน	ngern	100
 เงิน	ngoen	90
-
-# บาท
 บาท	baht	100
 บาท	bat	90
-
-# สตางค์
 สตางค์	satang	100
-
-# ราคา
 ราคา	rakha	100
 ราคา	raka	90
-
-# แพง
 แพง	paeng	100
 แพง	pheng	85
-
-# ถูก
 ถูก	thuk	100
-
-# ฟรี
 ฟรี	free	100
 ฟรี	fri	85
-
-# ลด
 ลด	lot	100
 ลด	lod	90
-
-# จ้าง
 จ้าง	jang	100
-
-# เงินเดือน
 เงินเดือน	ngerndeuan	100
 เงินเดือน	ngoendeuan	90
 เงินเดือน	ngenduean	85
-
-# ธนาคาร
 ธนาคาร	thanakhan	100
 ธนาคาร	tanakan	90
-
-# บัญชี
 บัญชี	banchee	100
 บัญชี	banchi	90
-
-# บัตร
 บัตร	bat	100
-
-# หนี้
 หนี้	nee	100
 หนี้	ni	85
-
-# ภาษี
 ภาษี	phasi	100
 ภาษี	pasee	90
-
-# บริษัท
 บริษัท	borisat	100
 บริษัท	borisad	85
-
-# ออฟฟิศ
 ออฟฟิศ	office	100
 ออฟฟิศ	offit	85
 ออฟฟิศ	offis	80
-
-# ประชุม
 ประชุม	prachum	100
 ประชุม	prachoom	90
-
-# หัวหน้า
 หัวหน้า	huana	100
 หัวหน้า	hoouana	80
-
-# ลูกน้อง
 ลูกน้อง	luknong	100
-
-# นักเรียน
 นักเรียน	nakrian	100
 นักเรียน	nakrien	90
-
-# นักศึกษา
 นักศึกษา	naksuksa	100
 นักศึกษา	nakseuksa	90
-
-# ครู
 ครู	kru	100
 ครู	khru	85
-
-# อาจารย์
 อาจารย์	ajan	100
 อาจารย์	ajarn	95
 อาจารย์	acharn	80
-
-# การบ้าน
 การบ้าน	kanban	100
-
-# สอบ
 สอบ	sop	100
-
-# คะแนน
 คะแนน	kanaen	100
 คะแนน	khanaen	90
-
-# วิชา
 วิชา	wicha	100
-
-# ห้องเรียน
 ห้องเรียน	hongrian	100
 ห้องเรียน	hongrien	90
-
-# ใบเสร็จ
 ใบเสร็จ	baiset	100
 ใบเสร็จ	bayset	85
-
-# ดีใจ
 ดีใจ	deejai	100
 ดีใจ	dijai	85
-
-# เสียใจ
 เสียใจ	siajai	100
-
-# มีความสุข
 มีความสุข	mikwamsuk	100
 มีความสุข	meekwamsuk	90
-
-# สุข
 สุข	suk	100
 สุข	sook	90
-
-# ทุกข์
 ทุกข์	tuk	100
 ทุกข์	took	90
-
-# เหงา
 เหงา	ngao	100
 เหงา	ngow	85
-
-# เศร้า
 เศร้า	sao	100
-
-# เบื่อ
 เบื่อ	buea	100
 เบื่อ	bua	90
 เบื่อ	beua	85
-
-# หงุดหงิด
 หงุดหงิด	ngutngit	100
 หงุดหงิด	ngudngid	85
-
-# โมโห
 โมโห	moho	100
-
-# ตกใจ
 ตกใจ	tokjai	100
 ตกใจ	tokchai	80
-
-# ประหลาดใจ
 ประหลาดใจ	pralatjai	100
 ประหลาดใจ	pralardjai	85
-
-# ภูมิใจ
 ภูมิใจ	poomjai	100
 ภูมิใจ	pumjai	85
-
-# อาย
 อาย	ai	100
 อาย	aai	85
-
-# เขิน
 เขิน	khern	100
 เขิน	kern	90
 เขิน	khoen	80
-
-# เครียด
 เครียด	kriad	100
 เครียด	kreead	85
-
-# กังวล
 กังวล	kangwon	100
 กังวล	kangwol	85
-
-# สบายใจ
 สบายใจ	sabaijai	100
 สบายใจ	sabayjai	90
-
-# หวัง
 หวัง	wang	100
-
-# เสียดาย
 เสียดาย	siadai	100
 เสียดาย	siadaai	85
-
-# รำคาญ
 รำคาญ	ramkhan	100
-
-# ผิดหวัง
 ผิดหวัง	pitwang	100
 ผิดหวัง	phitwang	90
-
-# โทรศัพท์
 โทรศัพท์	torasap	100
 โทรศัพท์	thorasap	85
-
-# มือถือ
 มือถือ	meuthue	100
 มือถือ	muethue	90
 มือถือ	mutu	80
-
-# โทร
 โทร	tor	100
 โทร	toh	85
-
-# แชท
 แชท	chat	100
-
-# ข้อความ
 ข้อความ	khokhwam	100
 ข้อความ	kokwam	85
-
-# ไลน์
 ไลน์	line	100
 ไลน์	lai	80
-
-# เฟส
 เฟส	fes	100
 เฟส	face	85
-
-# อินเทอร์เน็ต
 อินเทอร์เน็ต	internet	100
 อินเทอร์เน็ต	inthoenet	85
-
-# เน็ต
 เน็ต	net	100
-
-# ไวไฟ
 ไวไฟ	waifai	100
-
-# อีเมล
 อีเมล	email	100
 อีเมล	imel	85
-
-# รหัสผ่าน
 รหัสผ่าน	rahatphan	100
 รหัสผ่าน	rahadpan	85
-
-# รหัส
 รหัส	rahat	100
 รหัส	rahas	85
-
-# แอป
 แอป	app	100
 แอป	aep	85
-
-# เกม
 เกม	gem	100
 เกม	kem	85
-
-# คอมพิวเตอร์
 คอมพิวเตอร์	computer	100
 คอมพิวเตอร์	khompiwter	80
 คอมพิวเตอร์	kompiuter	80
-
-# โน้ตบุ๊ก
 โน้ตบุ๊ก	notbook	100
 โน้ตบุ๊ก	notebook	90
-
-# จอ
 จอ	jor	100
 จอ	jaw	85
 จอ	jo	80
-
-# กล้อง
 กล้อง	klong	100
 กล้อง	glong	85
-
-# รูป
 รูป	roop	100
 รูป	rup	90
-
-# วิดีโอ
 วิดีโอ	video	100
 วิดีโอ	wideeo	85
-
-# ไฟล์
 ไฟล์	fai	100
 ไฟล์	file	90
-
-# ลิงก์
 ลิงก์	link	100
-
-# เว็บ
 เว็บ	web	100
-
-# โพสต์
 โพสต์	post	100
 โพสต์	phost	85
-
-# ไลก์
 ไลก์	lai	100
 ไลก์	like	90
-
-# แชร์
 แชร์	chae	100
 แชร์	share	90
 แชร์	chair	80
-
-# คอมเมนต์
 คอมเมนต์	comment	100
 คอมเมนต์	khommen	85
 คอมเมนต์	kommen	80
-
-# ข่าว
 ข่าว	khao	100
 ข่าว	khaow	85
-
-# อะไร
 อะไร	arai	100
-
-# ทำไม
 ทำไม	tammai	100
 ทำไม	tummai	90
-
-# ใคร
 ใคร	krai	100
 ใคร	kray	85
-
-# เมื่อไร
 เมื่อไร	muearai	100
 เมื่อไร	muarai	90
 เมื่อไร	meuarai	85
-
-# เมื่อไหร่
 เมื่อไหร่	muearai	100
 เมื่อไหร่	meuarai	90
 เมื่อไหร่	muarai	85
-
-# อย่างไร
 อย่างไร	yangrai	100
 อย่างไร	yangngai	90
 อย่างไร	yanggai	80
