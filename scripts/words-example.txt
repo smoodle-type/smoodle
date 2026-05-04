@@ -1,0 +1,51 @@
+# Example seed list for scripts/generate_dict.py
+# 30 high-frequency Thai words covering greetings, common verbs, food, family,
+# and time. Use this to test the generator before scaling up.
+#
+# For 500-word production runs, source from PyThaiNLP word frequency:
+#   python -c "from pythainlp.corpus import thai_words; print('\n'.join(list(thai_words())[:500]))"
+# (verify the corpus license per smoodle Open Question 1 before shipping)
+
+# greetings + politeness
+สวัสดี
+ครับ
+ค่ะ
+ขอบคุณ
+ขอโทษ
+
+# yes/no/maybe
+ใช่
+ไม่
+อาจจะ
+
+# common verbs
+กิน
+ดื่ม
+ไป
+มา
+นอน
+ทำ
+
+# food
+ข้าว
+น้ำ
+กาแฟ
+ผัก
+เนื้อ
+
+# family
+แม่
+พ่อ
+พี่
+น้อง
+ลูก
+
+# time
+วัน
+คืน
+ชั่วโมง
+นาที
+
+# pronouns
+ผม
+ฉัน

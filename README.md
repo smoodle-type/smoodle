@@ -11,6 +11,14 @@ neologisms.
 
 Status: pre-v0.0.1. Design doc and engineering review live in `~/.gstack/projects/smoodle/`.
 
+## Repo layout
+
+- `schema/` — Rime YAML config: schema, dictionary, and `default.custom.yaml` patch.
+- `scripts/install.sh` — copies the YAMLs into `~/Library/Rime/`.
+- `scripts/generate_dict.py` — generates Thai romanization variants via the Claude API. Used to scale the v0.0.1 dict from 10 stub entries to ~500 words. Requires `pip install anthropic` and `ANTHROPIC_API_KEY`.
+- `scripts/words-example.txt` — 30-word seed list for testing the generator.
+- `tests/` — `(romanization, expected_thai)` fixtures driven by python-rime (v0.0.1 acceptance test).
+
 ## Roadmap
 
 - **v0.0.1** — Thai phonetic Rime schema (~500 words) + 30-entry test
