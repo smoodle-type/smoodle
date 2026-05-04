@@ -8,10 +8,18 @@
 # v0.0.2 algebra rules in thai_phonetic.schema.yaml automatically accept
 # kh~k / ph~p / th~t / vowel-length / final-voicing variation, so dict
 # entries carry only 1-3 spelling variants per Thai word (Path A).
+#
+# v0.0.3 weights = tnc_freq * (variant_q / 100), raw counts. Rime's
+# dict_compiler logs them at build time and table_translator exp()s at
+# query time, so storing raw counts (not log-probabilities) gives the
+# right ranking. TNC = Chulalongkorn Thai National Corpus unigram freq
+# (CC0-1.0, via PyThaiNLP `tnc_freq.txt`). Per-variant LLM quality
+# (q in 70-100) becomes a proportional multiplier on the count. Words
+# not in TNC use freq = `--default-freq` (default 10).
 
 ---
 name: thai_phonetic
-version: "0.0.2"
+version: "0.0.3"
 sort: by_weight
 use_preset_vocabulary: false
 columns:
@@ -24,2396 +32,8253 @@ encoder:
 ...
 
 # สวัสดี
-สวัสดี	sawadee	100
-สวัสดี	sawatdee	100
-สวัสดี	sawasdee	95
-สวัสดี	sawadii	90
-สวัสดี	sawaddee	80
-สวัสดี	sawatdii	80
+สวัสดี	sawadee	1156
+สวัสดี	sawatdee	1156
+สวัสดี	sawasdee	1098
+สวัสดี	sawadii	1040
+สวัสดี	sawaddee	925
+สวัสดี	sawatdii	925
 
 # ครับ
-ครับ	krap	100
-ครับ	khrap	95
-ครับ	krub	90
-ครับ	kub	90
-ครับ	khap	85
+ครับ	krap	23351
+ครับ	khrap	22183
+ครับ	krub	21016
+ครับ	kub	21016
+ครับ	khap	19848
 
 # ค่ะ
-ค่ะ	ka	100
-ค่ะ	kha	95
-ค่ะ	khaa	90
-ค่ะ	kah	85
-ค่ะ	khah	75
+ค่ะ	ka	16710
+ค่ะ	kha	15874
+ค่ะ	khaa	15039
+ค่ะ	kah	14204
+ค่ะ	khah	12532
 
 # ไม่
-ไม่	mai	100
-ไม่	may	85
-ไม่	my	85
-ไม่	maii	75
+ไม่	mai	451244
+ไม่	may	383557
+ไม่	my	383557
+ไม่	maii	338433
 
 # ใช่
-ใช่	chai	100
-ใช่	chaii	85
-ใช่	chay	85
+ใช่	chai	33721
+ใช่	chaii	28663
+ใช่	chay	28663
 
 # ขอบคุณ
-ขอบคุณ	khobkhun	100
-ขอบคุณ	khopkhun	100
-ขอบคุณ	kobkhun	95
-ขอบคุณ	kopkhun	90
-ขอบคุณ	kobkoon	85
-ขอบคุณ	khopkoon	80
-ขอบคุณ	kobkun	75
+ขอบคุณ	khobkhun	3327
+ขอบคุณ	khopkhun	3327
+ขอบคุณ	kobkhun	3161
+ขอบคุณ	kopkhun	2994
+ขอบคุณ	kobkoon	2828
+ขอบคุณ	khopkoon	2662
+ขอบคุณ	kobkun	2495
 
 # กิน
-กิน	gin	100
-กิน	kin	100
-กิน	khin	80
+กิน	gin	26786
+กิน	kin	26786
+กิน	khin	21429
 
 # ข้าว
-ข้าว	kao	100
-ข้าว	khao	100
-ข้าว	khaaw	90
-ข้าว	khaao	80
-ข้าว	kaow	75
+ข้าว	kao	11658
+ข้าว	khao	11658
+ข้าว	khaaw	10492
+ข้าว	khaao	9326
+ข้าว	kaow	8744
 
 # น้ำ
-น้ำ	nam	100
-น้ำ	naam	95
-น้ำ	narm	85
-น้ำ	num	80
+น้ำ	nam	34129
+น้ำ	naam	32423
+น้ำ	narm	29010
+น้ำ	num	27303
 
 # ผม
-ผม	phom	100
-ผม	pom	100
-ผม	pohm	85
-ผม	phohm	80
+ผม	phom	90499
+ผม	pom	90499
+ผม	pohm	76924
+ผม	phohm	72399
 
 # ขอโทษ
-ขอโทษ	khothot	100
-ขอโทษ	khotot	100
-ขอโทษ	khorthot	95
-ขอโทษ	khotos	90
-ขอโทษ	kortot	85
-ขอโทษ	khawthot	75
+ขอโทษ	khothot	2387
+ขอโทษ	khotot	2387
+ขอโทษ	khorthot	2268
+ขอโทษ	khotos	2148
+ขอโทษ	kortot	2029
+ขอโทษ	khawthot	1790
 
 # อาจจะ
-อาจจะ	adja	100
-อาจจะ	atja	100
-อาจจะ	aatja	85
-อาจจะ	ajja	85
-อาจจะ	artja	85
-อาจจะ	adcha	80
-อาจจะ	aadja	75
+อาจจะ	adja	10
+อาจจะ	atja	10
+อาจจะ	aadja	8
+อาจจะ	aatja	8
+อาจจะ	adcha	8
+อาจจะ	ajja	8
+อาจจะ	artja	8
 
 # ดื่ม
-ดื่ม	deum	100
-ดื่ม	duem	90
-ดื่ม	dum	85
-ดื่ม	derm	75
+ดื่ม	deum	3501
+ดื่ม	duem	3151
+ดื่ม	dum	2976
+ดื่ม	derm	2626
 
 # ไป
-ไป	pai	100
-ไป	bai	90
-ไป	bpai	85
-ไป	phai	80
-ไป	by	75
+ไป	pai	351980
+ไป	bai	316782
+ไป	bpai	299183
+ไป	phai	281584
+ไป	by	263985
 
 # มา
-มา	ma	100
-มา	maa	90
+มา	ma	315308
+มา	maa	283777
 
 # นอน
-นอน	non	100
-นอน	norn	90
-นอน	naun	80
-นอน	nawn	75
+นอน	non	13809
+นอน	norn	12428
+นอน	naun	11047
+นอน	nawn	10357
 
 # ทำ
-ทำ	tam	100
-ทำ	tham	95
-ทำ	tum	90
-ทำ	thum	75
+ทำ	tam	94736
+ทำ	tham	89999
+ทำ	tum	85262
+ทำ	thum	71052
 
 # กาแฟ
-กาแฟ	kafae	100
-กาแฟ	kafe	100
-กาแฟ	gafae	90
-กาแฟ	kaffe	85
-กาแฟ	gaafae	75
-กาแฟ	kahfae	70
+กาแฟ	kafae	1933
+กาแฟ	kafe	1933
+กาแฟ	gafae	1740
+กาแฟ	kaffe	1643
+กาแฟ	gaafae	1450
+กาแฟ	kahfae	1353
 
 # ผัก
-ผัก	pak	100
-ผัก	phak	100
-ผัก	pug	80
-ผัก	phug	75
+ผัก	pak	3796
+ผัก	phak	3796
+ผัก	pug	3037
+ผัก	phug	2847
 
 # เนื้อ
-เนื้อ	nuea	100
-เนื้อ	nua	90
-เนื้อ	neua	85
-เนื้อ	nue	75
+เนื้อ	nuea	6506
+เนื้อ	nua	5855
+เนื้อ	neua	5530
+เนื้อ	nue	4880
 
 # แม่
-แม่	mae	100
-แม่	mair	85
-แม่	may	85
-แม่	me	80
-แม่	meh	80
+แม่	mae	30062
+แม่	mair	25553
+แม่	may	25553
+แม่	me	24050
+แม่	meh	24050
 
 # พ่อ
-พ่อ	por	100
-พ่อ	paw	90
-พ่อ	phor	85
-พ่อ	po	85
-พ่อ	phaw	75
+พ่อ	por	21391
+พ่อ	paw	19252
+พ่อ	phor	18182
+พ่อ	po	18182
+พ่อ	phaw	16043
 
 # พี่
-พี่	pee	100
-พี่	pii	90
-พี่	phi	85
-พี่	pi	85
-พี่	phee	80
+พี่	pee	28934
+พี่	pii	26041
+พี่	phi	24594
+พี่	pi	24594
+พี่	phee	23147
 
 # น้อง
-น้อง	nong	100
-น้อง	naung	85
-น้อง	nawng	80
-น้อง	nhong	75
+น้อง	nong	12783
+น้อง	naung	10866
+น้อง	nawng	10226
+น้อง	nhong	9587
 
 # ลูก
-ลูก	luk	100
-ลูก	look	95
-ลูก	luuk	85
-ลูก	louk	72
+ลูก	luk	30980
+ลูก	look	29431
+ลูก	luuk	26333
+ลูก	louk	22306
 
 # วัน
-วัน	wan	100
-วัน	wun	85
-วัน	waan	80
+วัน	wan	54715
+วัน	wun	46508
+วัน	waan	43772
 
 # คืน
-คืน	kuen	100
-คืน	keun	90
-คืน	khuen	90
-คืน	kun	75
+คืน	kuen	13081
+คืน	keun	11773
+คืน	khuen	11773
+คืน	kun	9811
 
 # ชั่วโมง
-ชั่วโมง	chuamong	100
-ชั่วโมง	chuomong	85
-ชั่วโมง	chuwamong	85
-ชั่วโมง	chamong	75
+ชั่วโมง	chuamong	5632
+ชั่วโมง	chuomong	4787
+ชั่วโมง	chuwamong	4787
+ชั่วโมง	chamong	4224
 
 # นาที
-นาที	natee	100
-นาที	nathi	90
-นาที	nati	85
-นาที	naati	75
+นาที	natee	5010
+นาที	nathi	4509
+นาที	nati	4258
+นาที	naati	3758
 
 # ฉัน
-ฉัน	chan	100
-ฉัน	chun	90
-ฉัน	shan	80
-ฉัน	chann	75
+ฉัน	chan	81824
+ฉัน	chun	73642
+ฉัน	shan	65459
+ฉัน	chann	61368
 
 # ไม่เป็นไร
-ไม่เป็นไร	maipenrai	100
+ไม่เป็นไร	maipenrai	10
 
 # ยินดี
-ยินดี	yindee	100
+ยินดี	yindee	2851
 
 # คะ
-คะ	ka	100
-คะ	kha	85
+คะ	ka	15511
+คะ	kha	13184
 
 # จ้า
-จ้า	ja	100
-จ้า	jaa	85
+จ้า	ja	751
+จ้า	jaa	638
 
 # จ๊ะ
-จ๊ะ	ja	100
-จ๊ะ	jah	85
+จ๊ะ	ja	1539
+จ๊ะ	jah	1308
 
 # นะ
-นะ	na	100
+นะ	na	44537
 
 # น่ะ
-น่ะ	na	100
+น่ะ	na	11407
 
 # สิ
-สิ	si	100
+สิ	si	10962
 
 # ล่ะ
-ล่ะ	la	100
-ล่ะ	laa	80
+ล่ะ	la	16889
+ล่ะ	laa	13511
 
 # เลย
-เลย	loey	100
-เลย	loei	90
-เลย	ley	80
+เลย	loey	65857
+เลย	loei	59271
+เลย	ley	52686
 
 # เถอะ
-เถอะ	thoe	100
-เถอะ	ter	90
-เถอะ	tuh	80
+เถอะ	thoe	4903
+เถอะ	ter	4413
+เถอะ	tuh	3922
 
 # หรอ
-หรอ	ror	100
-หรอ	raw	85
-หรอ	rer	80
+หรอ	ror	254
+หรอ	raw	216
+หรอ	rer	203
 
 # เหรอ
-เหรอ	ror	100
-เหรอ	rer	90
-เหรอ	roe	80
+เหรอ	ror	8222
+เหรอ	rer	7400
+เหรอ	roe	6578
 
 # อ่ะ
-อ่ะ	a	100
-อ่ะ	ah	90
+อ่ะ	a	1260
+อ่ะ	ah	1134
 
 # แหละ
-แหละ	lae	100
+แหละ	lae	4020
 
 # โว้ย
-โว้ย	woi	100
-โว้ย	woy	90
+โว้ย	woi	761
+โว้ย	woy	685
 
 # เว้ย
-เว้ย	woey	100
-เว้ย	wei	85
-เว้ย	woei	80
+เว้ย	woey	353
+เว้ย	wei	300
+เว้ย	woei	282
 
 # ดิฉัน
-ดิฉัน	dichan	100
+ดิฉัน	dichan	8835
 
 # หนู
-หนู	nu	100
-หนู	noo	90
+หนู	nu	11516
+หนู	noo	10364
 
 # เรา
-เรา	rao	100
-เรา	raw	85
+เรา	rao	102429
+เรา	raw	87065
 
 # คุณ
-คุณ	khun	100
-คุณ	koon	85
+คุณ	khun	67639
+คุณ	koon	57493
 
 # เธอ
-เธอ	ter	100
-เธอ	thoe	90
-เธอ	tur	80
+เธอ	ter	68911
+เธอ	thoe	62020
+เธอ	tur	55129
 
 # แก
-แก	gae	100
-แก	kae	90
-แก	gay	80
+แก	gae	12844
+แก	kae	11560
+แก	gay	10275
 
 # นาย
-นาย	nai	100
-นาย	nay	90
+นาย	nai	44544
+นาย	nay	40090
 
 # มัน
-มัน	man	100
+มัน	man	66023
 
 # เขา
-เขา	kao	100
-เขา	khao	90
+เขา	kao	141791
+เขา	khao	127612
 
 # เค้า
-เค้า	kao	100
-เค้า	khao	85
+เค้า	kao	3408
+เค้า	khao	2897
 
 # ท่าน
-ท่าน	than	100
+ท่าน	than	32851
 
 # พวก
-พวก	phuak	100
-พวก	puak	90
+พวก	phuak	24251
+พวก	puak	21826
 
 # กู
-กู	goo	100
-กู	gu	90
-กู	ku	85
+กู	goo	3524
+กู	gu	3172
+กู	ku	2995
 
 # มึง
-มึง	mueng	100
-มึง	meung	90
+มึง	mueng	2008
+มึง	meung	1807
 
 # ตัวเอง
-ตัวเอง	tuaeng	100
-ตัวเอง	tuaaeng	85
+ตัวเอง	tuaeng	25730
+ตัวเอง	tuaaeng	21870
 
 # ศูนย์
-ศูนย์	soon	100
-ศูนย์	sun	85
+ศูนย์	soon	5856
+ศูนย์	sun	4978
 
 # หนึ่ง
-หนึ่ง	nung	100
-หนึ่ง	neung	95
+หนึ่ง	nung	90196
+หนึ่ง	neung	85686
 
 # สอง
-สอง	song	100
+สอง	song	46774
 
 # สาม
-สาม	sam	100
+สาม	sam	17959
 
 # สี่
-สี่	si	100
-สี่	see	90
+สี่	si	8667
+สี่	see	7800
 
 # ห้า
-ห้า	ha	100
+ห้า	ha	7995
 
 # หก
-หก	hok	100
+หก	hok	3794
 
 # เจ็ด
-เจ็ด	jet	100
+เจ็ด	jet	2442
 
 # แปด
-แปด	paet	100
-แปด	paed	90
-แปด	pad	85
+แปด	paet	2481
+แปด	paed	2233
+แปด	pad	2109
 
 # เก้า
-เก้า	kao	100
-เก้า	gao	90
+เก้า	kao	1649
+เก้า	gao	1484
 
 # สิบ
-สิบ	sip	100
+สิบ	sip	10800
 
 # ยี่สิบ
-ยี่สิบ	yeesip	100
-ยี่สิบ	yisip	90
+ยี่สิบ	yeesip	1811
+ยี่สิบ	yisip	1630
 
 # ร้อย
-ร้อย	roi	100
-ร้อย	roy	90
+ร้อย	roi	7733
+ร้อย	roy	6960
 
 # พัน
-พัน	pan	100
+พัน	pan	6197
 
 # หมื่น
-หมื่น	meun	100
-หมื่น	muen	90
-หมื่น	mun	75
+หมื่น	meun	3572
+หมื่น	muen	3215
+หมื่น	mun	2679
 
 # แสน
-แสน	saen	100
-แสน	sen	85
+แสน	saen	6722
+แสน	sen	5714
 
 # ล้าน
-ล้าน	lan	100
+ล้าน	lan	12606
 
 # ครึ่ง
-ครึ่ง	khrueng	100
-ครึ่ง	krung	85
-ครึ่ง	khreung	80
+ครึ่ง	khrueng	5576
+ครึ่ง	krung	4740
+ครึ่ง	khreung	4461
 
 # คู่
-คู่	khu	100
-คู่	koo	90
+คู่	khu	11877
+คู่	koo	10689
 
 # โหล
-โหล	lo	100
-โหล	loh	85
+โหล	lo	478
+โหล	loh	406
 
 # ที่
-ที่	thi	100
-ที่	tee	95
-ที่	thee	90
+ที่	thi	818364
+ที่	tee	777446
+ที่	thee	736528
 
 # ครั้ง
-ครั้ง	krang	100
+ครั้ง	krang	48705
 
 # คน
-คน	khon	100
+คน	khon	221718
 
 # ตัว
-ตัว	tua	100
-ตัว	tuwa	80
+ตัว	tua	69977
+ตัว	tuwa	55982
 
 # อัน
-อัน	an	100
+อัน	an	30824
 
 # ใบ
-ใบ	bai	100
+ใบ	bai	13826
 
 # ชิ้น
-ชิ้น	chin	100
+ชิ้น	chin	5762
 
 # อย่าง
-อย่าง	yang	100
+อย่าง	yang	156145
 
 # แรก
-แรก	raek	100
-แรก	rack	80
+แรก	raek	26139
+แรก	rack	20911
 
 # สุดท้าย
-สุดท้าย	sutthai	100
-สุดท้าย	sudtai	85
+สุดท้าย	sutthai	8829
+สุดท้าย	sudtai	7505
 
 # เดือน
-เดือน	duean	100
-เดือน	deuan	90
-เดือน	duan	80
+เดือน	duean	19571
+เดือน	deuan	17614
+เดือน	duan	15657
 
 # ปี
-ปี	pee	100
-ปี	pii	85
+ปี	pee	69923
+ปี	pii	59435
 
 # สัปดาห์
-สัปดาห์	sapda	100
-สัปดาห์	sapdah	85
+สัปดาห์	sapda	3249
+สัปดาห์	sapdah	2762
 
 # อาทิตย์
-อาทิตย์	atit	100
-อาทิตย์	athit	90
+อาทิตย์	atit	4479
+อาทิตย์	athit	4031
 
 # วินาที
-วินาที	winati	100
-วินาที	winatee	90
+วินาที	winati	1882
+วินาที	winatee	1694
 
 # เช้า
-เช้า	chao	100
-เช้า	chaow	85
+เช้า	chao	5917
+เช้า	chaow	5029
 
 # สาย
-สาย	sai	100
-สาย	say	90
+สาย	sai	10304
+สาย	say	9274
 
 # บ่าย
-บ่าย	bai	100
-บ่าย	bye	80
+บ่าย	bai	2161
+บ่าย	bye	1729
 
 # เย็น
-เย็น	yen	100
+เย็น	yen	8151
 
 # ค่ำ
-ค่ำ	kham	100
+ค่ำ	kham	2071
 
 # กลางคืน
-กลางคืน	klangkuen	100
-กลางคืน	klangkhuen	85
+กลางคืน	klangkuen	1933
+กลางคืน	klangkhuen	1643
 
 # กลางวัน
-กลางวัน	klangwan	100
-กลางวัน	klangvan	85
+กลางวัน	klangwan	2026
+กลางวัน	klangvan	1722
 
 # เมื่อวาน
-เมื่อวาน	meuawan	100
-เมื่อวาน	muawan	90
-เมื่อวาน	meuanwan	75
+เมื่อวาน	meuawan	10
+เมื่อวาน	muawan	9
+เมื่อวาน	meuanwan	8
 
 # วันนี้
-วันนี้	wannee	100
-วันนี้	wanni	85
+วันนี้	wannee	10190
+วันนี้	wanni	8662
 
 # พรุ่งนี้
-พรุ่งนี้	prungnee	100
-พรุ่งนี้	phrungnee	85
+พรุ่งนี้	prungnee	2066
+พรุ่งนี้	phrungnee	1756
 
 # มะรืน
-มะรืน	maruen	100
-มะรืน	marern	85
-มะรืน	maruun	80
+มะรืน	maruen	94
+มะรืน	marern	80
+มะรืน	maruun	75
 
 # ตอนนี้
-ตอนนี้	tonnee	100
-ตอนนี้	tonni	90
+ตอนนี้	tonnee	9591
+ตอนนี้	tonni	8632
 
 # เดี๋ยวนี้
-เดี๋ยวนี้	diawnee	100
-เดี๋ยวนี้	deawnee	85
-เดี๋ยวนี้	diaonee	80
+เดี๋ยวนี้	diawnee	2379
+เดี๋ยวนี้	deawnee	2022
+เดี๋ยวนี้	diaonee	1903
 
 # เดี๋ยว
-เดี๋ยว	diao	100
-เดี๋ยว	diew	90
-เดี๋ยว	deaw	80
+เดี๋ยว	diao	5770
+เดี๋ยว	diew	5193
+เดี๋ยว	deaw	4616
 
 # แล้ว
-แล้ว	laew	100
-แล้ว	leaw	85
-แล้ว	laeo	75
+แล้ว	laew	192645
+แล้ว	leaw	163748
+แล้ว	laeo	144484
 
 # ยัง
-ยัง	yang	100
+ยัง	yang	102249
 
 # เคย
-เคย	koey	100
-เคย	kuey	85
-เคย	keoy	80
+เคย	koey	37709
+เคย	kuey	32053
+เคย	keoy	30167
 
 # จันทร์
-จันทร์	jan	100
-จันทร์	chan	90
+จันทร์	jan	2694
+จันทร์	chan	2425
 
 # อังคาร
-อังคาร	angkhan	100
-อังคาร	angkan	90
+อังคาร	angkhan	1139
+อังคาร	angkan	1025
 
 # พุธ
-พุธ	put	100
-พุธ	poot	90
+พุธ	put	631
+พุธ	poot	568
 
 # พฤหัส
-พฤหัส	paruhat	100
-พฤหัส	pruhat	90
-พฤหัส	pareuhat	80
+พฤหัส	paruhat	10
+พฤหัส	pruhat	9
+พฤหัส	pareuhat	8
 
 # ศุกร์
-ศุกร์	suk	100
+ศุกร์	suk	846
 
 # เสาร์
-เสาร์	sao	100
-เสาร์	sau	85
+เสาร์	sao	1318
+เสาร์	sau	1120
 
 # มกราคม
-มกราคม	makarakhom	100
-มกราคม	mokarakhom	85
+มกราคม	makarakhom	1824
+มกราคม	mokarakhom	1550
 
 # กุมภาพันธ์
-กุมภาพันธ์	kumphaphan	100
-กุมภาพันธ์	kumpapan	90
+กุมภาพันธ์	kumphaphan	1774
+กุมภาพันธ์	kumpapan	1597
 
 # มีนาคม
-มีนาคม	meenakhom	100
-มีนาคม	minakom	85
+มีนาคม	meenakhom	1809
+มีนาคม	minakom	1538
 
 # เมษายน
-เมษายน	mesayon	100
-เมษายน	maysayon	90
+เมษายน	mesayon	1700
+เมษายน	maysayon	1530
 
 # พฤษภาคม
-พฤษภาคม	prudsapakhom	100
-พฤษภาคม	pruetsapakom	90
-พฤษภาคม	phruesaphakhom	80
+พฤษภาคม	prudsapakhom	2009
+พฤษภาคม	pruetsapakom	1808
+พฤษภาคม	phruesaphakhom	1607
 
 # มิถุนายน
-มิถุนายน	mithunayon	100
-มิถุนายน	mitunayon	90
+มิถุนายน	mithunayon	1500
+มิถุนายน	mitunayon	1350
 
 # กรกฎาคม
-กรกฎาคม	karakadakhom	100
-กรกฎาคม	karakdakhom	85
+กรกฎาคม	karakadakhom	1710
+กรกฎาคม	karakdakhom	1454
 
 # สิงหาคม
-สิงหาคม	singhakhom	100
+สิงหาคม	singhakhom	1419
 
 # กันยายน
-กันยายน	kanyayon	100
+กันยายน	kanyayon	1659
 
 # ตุลาคม
-ตุลาคม	tulakhom	100
-ตุลาคม	tulakom	90
+ตุลาคม	tulakhom	2459
+ตุลาคม	tulakom	2213
 
 # พฤศจิกายน
-พฤศจิกายน	pruetsajikayon	100
-พฤศจิกายน	prussajikayon	85
-พฤศจิกายน	pritsajikayon	80
+พฤศจิกายน	pruetsajikayon	1561
+พฤศจิกายน	prussajikayon	1327
+พฤศจิกายน	pritsajikayon	1249
 
 # ธันวาคม
-ธันวาคม	thanwakhom	100
-ธันวาคม	tanwakom	90
-ธันวาคม	thanvakom	80
+ธันวาคม	thanwakhom	2073
+ธันวาคม	tanwakom	1866
+ธันวาคม	thanvakom	1658
 
 # ปู่
-ปู่	pu	100
-ปู่	poo	90
+ปู่	pu	2475
+ปู่	poo	2228
 
 # ย่า
-ย่า	ya	100
+ย่า	ya	2484
 
 # ตา
-ตา	ta	100
+ตา	ta	22530
 
 # ยาย
-ยาย	yai	100
-ยาย	yay	90
+ยาย	yai	6337
+ยาย	yay	5703
 
 # ลุง
-ลุง	lung	100
+ลุง	lung	3404
 
 # ป้า
-ป้า	pa	100
+ป้า	pa	5669
 
 # น้า
-น้า	na	100
+น้า	na	3238
 
 # อา
-อา	ah	100
-อา	a	90
+อา	ah	9925
+อา	a	8932
 
 # หลาน
-หลาน	lan	100
+หลาน	lan	3344
 
 # ญาติ
-ญาติ	yat	100
-ญาติ	yati	85
+ญาติ	yat	5071
+ญาติ	yati	4310
 
 # ครอบครัว
-ครอบครัว	krobkrua	100
-ครอบครัว	khropkhrua	85
+ครอบครัว	krobkrua	12531
+ครอบครัว	khropkhrua	10651
 
 # สามี
-สามี	samee	100
-สามี	sami	85
+สามี	samee	5621
+สามี	sami	4778
 
 # ภรรยา
-ภรรยา	panya	100
-ภรรยา	phanraya	90
-ภรรยา	panraya	85
+ภรรยา	panya	4449
+ภรรยา	phanraya	4004
+ภรรยา	panraya	3782
 
 # แฟน
-แฟน	fan	100
-แฟน	faen	90
+แฟน	fan	5503
+แฟน	faen	4953
 
 # เพื่อน
-เพื่อน	phuean	100
-เพื่อน	puen	90
-เพื่อน	phuan	80
+เพื่อน	phuean	23727
+เพื่อน	puen	21354
+เพื่อน	phuan	18982
 
 # แก๊ง
-แก๊ง	gang	100
-แก๊ง	kang	85
+แก๊ง	gang	638
+แก๊ง	kang	542
 
 # คนรัก
-คนรัก	khonrak	100
-คนรัก	konrak	90
+คนรัก	khonrak	1554
+คนรัก	konrak	1399
 
 # ชาย
-ชาย	chai	100
-ชาย	chay	90
+ชาย	chai	13932
+ชาย	chay	12539
 
 # หญิง
-หญิง	ying	100
+หญิง	ying	18486
 
 # เด็ก
-เด็ก	dek	100
+เด็ก	dek	40233
 
 # ผู้ใหญ่
-ผู้ใหญ่	phuyai	100
-ผู้ใหญ่	puyai	90
+ผู้ใหญ่	phuyai	5435
+ผู้ใหญ่	puyai	4892
 
 # คนแก่
-คนแก่	khonkae	100
-คนแก่	konkae	90
+คนแก่	khonkae	10
+คนแก่	konkae	9
 
 # หัว
-หัว	hua	100
-หัว	hoa	80
+หัว	hua	12059
+หัว	hoa	9647
 
 # หน้า
-หน้า	na	100
+หน้า	na	44132
 
 # หู
-หู	hu	100
+หู	hu	4676
 
 # จมูก
-จมูก	jamook	100
-จมูก	jamuk	90
+จมูก	jamook	2219
+จมูก	jamuk	1997
 
 # ปาก
-ปาก	pak	100
+ปาก	pak	10678
 
 # ฟัน
-ฟัน	fan	100
+ฟัน	fan	2987
 
 # ลิ้น
-ลิ้น	lin	100
+ลิ้น	lin	1702
 
 # คอ
-คอ	kor	100
-คอ	kaw	85
-คอ	ko	80
+คอ	kor	4385
+คอ	kaw	3727
+คอ	ko	3508
 
 # มือ
-มือ	meu	100
-มือ	mue	85
-มือ	muu	85
+มือ	meu	18625
+มือ	mue	15831
+มือ	muu	15831
 
 # แขน
-แขน	khaen	100
-แขน	kaen	90
-แขน	khan	80
+แขน	khaen	4652
+แขน	kaen	4187
+แขน	khan	3722
 
 # ขา
-ขา	kha	100
+ขา	kha	6467
 
 # เท้า
-เท้า	tao	100
-เท้า	thao	85
+เท้า	tao	4746
+เท้า	thao	4034
 
 # นิ้ว
-นิ้ว	niu	100
-นิ้ว	niw	90
-นิ้ว	new	80
+นิ้ว	niu	3899
+นิ้ว	niw	3509
+นิ้ว	new	3119
 
 # ท้อง
-ท้อง	tong	100
+ท้อง	tong	3847
 
 # หลัง
-หลัง	lang	100
+หลัง	lang	24472
 
 # ใจ
-ใจ	jai	100
-ใจ	jay	85
+ใจ	jai	28660
+ใจ	jay	24361
 
 # หัวใจ
-หัวใจ	huajai	100
-หัวใจ	hauchai	80
+หัวใจ	huajai	9034
+หัวใจ	hauchai	7227
 
 # เลือด
-เลือด	luead	100
-เลือด	leuad	90
-เลือด	lueat	85
+เลือด	luead	6788
+เลือด	leuad	6109
+เลือด	lueat	5770
 
 # กระดูก
-กระดูก	kraduk	100
-กระดูก	kradook	90
+กระดูก	kraduk	1905
+กระดูก	kradook	1714
 
 # ผิว
-ผิว	phiu	100
-ผิว	piw	90
-ผิว	phew	80
+ผิว	phiu	6298
+ผิว	piw	5668
+ผิว	phew	5038
 
 # ป่วย
-ป่วย	puay	100
-ป่วย	puai	85
+ป่วย	puay	2479
+ป่วย	puai	2107
 
 # หาย
-หาย	hai	100
-หาย	hay	85
+หาย	hai	10445
+หาย	hay	8878
 
 # เจ็บ
-เจ็บ	jep	100
+เจ็บ	jep	4163
 
 # ปวด
-ปวด	puat	100
-ปวด	puad	90
-ปวด	buat	80
+ปวด	puat	2926
+ปวด	puad	2633
+ปวด	buat	2341
 
 # ไข้
-ไข้	khai	100
+ไข้	khai	1486
 
 # ยา
-ยา	ya	100
+ยา	ya	18095
 
 # หมอ
-หมอ	mor	100
-หมอ	maw	85
-หมอ	mo	80
+หมอ	mor	12777
+หมอ	maw	10860
+หมอ	mo	10222
 
 # โรงพยาบาล
-โรงพยาบาล	rongphayaban	100
-โรงพยาบาล	rongpayabaan	90
+โรงพยาบาล	rongphayaban	4887
+โรงพยาบาล	rongpayabaan	4398
 
 # อาบน้ำ
-อาบน้ำ	abnam	100
-อาบน้ำ	aabnam	85
+อาบน้ำ	abnam	1898
+อาบน้ำ	aabnam	1613
 
 # แปรงฟัน
-แปรงฟัน	praengfan	100
-แปรงฟัน	prengfan	85
+แปรงฟัน	praengfan	10
+แปรงฟัน	prengfan	8
 
 # สบู่
-สบู่	sabu	100
+สบู่	sabu	927
 
 # ยาสีฟัน
-ยาสีฟัน	yaseefan	100
-ยาสีฟัน	yasifan	88
+ยาสีฟัน	yaseefan	143
+ยาสีฟัน	yasifan	126
 
 # ก๋วยเตี๋ยว
-ก๋วยเตี๋ยว	kuaytiaw	100
-ก๋วยเตี๋ยว	guaytiew	90
-ก๋วยเตี๋ยว	kuayteow	85
+ก๋วยเตี๋ยว	kuaytiaw	776
+ก๋วยเตี๋ยว	guaytiew	698
+ก๋วยเตี๋ยว	kuayteow	660
 
 # เส้น
-เส้น	sen	100
+เส้น	sen	8387
 
 # หมู
-หมู	moo	100
-หมู	mu	90
+หมู	moo	2632
+หมู	mu	2369
 
 # ไก่
-ไก่	kai	100
-ไก่	kay	85
+ไก่	kai	3170
+ไก่	kay	2694
 
 # ปลา
-ปลา	pla	100
+ปลา	pla	9407
 
 # กุ้ง
-กุ้ง	kung	100
-กุ้ง	goong	90
+กุ้ง	kung	2952
+กุ้ง	goong	2657
 
 # ปู
-ปู	pu	100
-ปู	poo	90
+ปู	pu	2706
+ปู	poo	2435
 
 # ไข่
-ไข่	khai	100
-ไข่	kai	90
+ไข่	khai	2636
+ไข่	kai	2372
 
 # ผลไม้
-ผลไม้	polamai	100
-ผลไม้	phonlamai	90
-ผลไม้	ponlamai	88
+ผลไม้	polamai	2341
+ผลไม้	phonlamai	2107
+ผลไม้	ponlamai	2060
 
 # ส้มตำ
-ส้มตำ	somtam	100
+ส้มตำ	somtam	274
 
 # ต้มยำ
-ต้มยำ	tomyam	100
-ต้มยำ	tumyam	85
+ต้มยำ	tomyam	235
+ต้มยำ	tumyam	200
 
 # แกง
-แกง	gaeng	100
-แกง	kaeng	90
-แกง	geng	80
+แกง	gaeng	1047
+แกง	kaeng	942
+แกง	geng	838
 
 # ผัด
-ผัด	phad	100
-ผัด	pad	95
+ผัด	phad	1321
+ผัด	pad	1255
 
 # ทอด
-ทอด	tod	100
+ทอด	tod	2469
 
 # ย่าง
-ย่าง	yang	100
+ย่าง	yang	1950
 
 # นึ่ง
-นึ่ง	neung	100
-นึ่ง	nung	85
+นึ่ง	neung	437
+นึ่ง	nung	371
 
 # น้ำเปล่า
-น้ำเปล่า	namplao	100
-น้ำเปล่า	namplaw	85
-น้ำเปล่า	nampow	85
+น้ำเปล่า	namplao	10
+น้ำเปล่า	namplaw	8
+น้ำเปล่า	nampow	8
 
 # น้ำแข็ง
-น้ำแข็ง	namkhaeng	100
-น้ำแข็ง	namkheng	85
+น้ำแข็ง	namkhaeng	1054
+น้ำแข็ง	namkheng	896
 
 # นม
-นม	nom	100
+นม	nom	2091
 
 # ชา
-ชา	cha	100
+ชา	cha	6771
 
 # เบียร์
-เบียร์	bia	100
-เบียร์	beer	90
-เบียร์	bier	80
+เบียร์	bia	792
+เบียร์	beer	713
+เบียร์	bier	634
 
 # เหล้า
-เหล้า	lao	100
+เหล้า	lao	2297
 
 # น้ำผลไม้
-น้ำผลไม้	namphonlamai	100
-น้ำผลไม้	nampholamai	90
-น้ำผลไม้	namponlamai	80
+น้ำผลไม้	namphonlamai	10
+น้ำผลไม้	nampholamai	9
+น้ำผลไม้	namponlamai	8
 
 # ขนม
-ขนม	khanom	100
-ขนม	kanom	90
+ขนม	khanom	3014
+ขนม	kanom	2713
 
 # ขนมปัง
-ขนมปัง	khanompang	100
-ขนมปัง	kanompang	90
+ขนมปัง	khanompang	824
+ขนมปัง	kanompang	742
 
 # ข้าวเหนียว
-ข้าวเหนียว	khaoniao	100
-ข้าวเหนียว	khaowniew	90
-ข้าวเหนียว	khaoniaow	80
+ข้าวเหนียว	khaoniao	468
+ข้าวเหนียว	khaowniew	421
+ข้าวเหนียว	khaoniaow	374
 
 # ข้าวผัด
-ข้าวผัด	khaophat	100
-ข้าวผัด	khawphat	85
+ข้าวผัด	khaophat	174
+ข้าวผัด	khawphat	148
 
 # ผัดไทย
-ผัดไทย	padthai	100
-ผัดไทย	phadthai	85
+ผัดไทย	padthai	10
+ผัดไทย	phadthai	8
 
 # ผัดกะเพรา
-ผัดกะเพรา	padkaprao	100
-ผัดกะเพรา	phadkaphrao	90
-ผัดกะเพรา	patgaprao	80
+ผัดกะเพรา	padkaprao	10
+ผัดกะเพรา	phadkaphrao	9
+ผัดกะเพรา	patgaprao	8
 
 # มาม่า
-มาม่า	mama	100
+มาม่า	mama	10
 
 # ซุป
-ซุป	sup	100
+ซุป	sup	783
 
 # สลัด
-สลัด	salad	100
-สลัด	salat	85
+สลัด	salad	680
+สลัด	salat	578
 
 # พริก
-พริก	prik	100
-พริก	phrik	85
+พริก	prik	1192
+พริก	phrik	1013
 
 # น้ำปลา
-น้ำปลา	nampla	100
-น้ำปลา	namplaa	85
+น้ำปลา	nampla	514
+น้ำปลา	namplaa	437
 
 # ซอส
-ซอส	sos	100
-ซอส	sauce	80
+ซอส	sos	285
+ซอส	sauce	228
 
 # น้ำตาล
-น้ำตาล	namtan	100
-น้ำตาล	namtarn	90
+น้ำตาล	namtan	2958
+น้ำตาล	namtarn	2662
 
 # เกลือ
-เกลือ	kluea	100
-เกลือ	klua	90
-เกลือ	gluea	80
+เกลือ	kluea	1176
+เกลือ	klua	1058
+เกลือ	gluea	941
 
 # ซีอิ๊ว
-ซีอิ๊ว	seeew	100
-ซีอิ๊ว	siiu	90
-ซีอิ๊ว	seeiw	85
+ซีอิ๊ว	seeew	10
+ซีอิ๊ว	siiu	9
+ซีอิ๊ว	seeiw	8
 
 # มะนาว
-มะนาว	manao	100
+มะนาว	manao	550
 
 # กระเทียม
-กระเทียม	krathiam	100
-กระเทียม	gratiam	85
+กระเทียม	krathiam	576
+กระเทียม	gratiam	490
 
 # หอม
-หอม	hom	100
+หอม	hom	4109
 
 # ขิง
-ขิง	khing	100
+ขิง	khing	363
 
 # กล้วย
-กล้วย	kluay	100
-กล้วย	kluai	90
+กล้วย	kluay	917
+กล้วย	kluai	825
 
 # มะม่วง
-มะม่วง	mamuang	100
+มะม่วง	mamuang	468
 
 # ส้ม
-ส้ม	som	100
+ส้ม	som	1792
 
 # แอปเปิ้ล
-แอปเปิ้ล	appern	100
-แอปเปิ้ล	aeppern	80
-แอปเปิ้ล	appen	70
+แอปเปิ้ล	appern	224
+แอปเปิ้ล	aeppern	179
+แอปเปิ้ล	appen	157
 
 # สับปะรด
-สับปะรด	sapparot	100
-สับปะรด	subparod	85
+สับปะรด	sapparot	292
+สับปะรด	subparod	248
 
 # มะละกอ
-มะละกอ	malako	100
+มะละกอ	malako	171
 
 # แตงโม
-แตงโม	taengmo	100
-แตงโม	tangmo	90
+แตงโม	taengmo	10
+แตงโม	tangmo	9
 
 # ทุเรียน
-ทุเรียน	turian	100
-ทุเรียน	tulian	80
+ทุเรียน	turian	212
+ทุเรียน	tulian	170
 
 # มะเขือเทศ
-มะเขือเทศ	makhueathet	100
-มะเขือเทศ	makheuathet	90
-มะเขือเทศ	makuathet	80
+มะเขือเทศ	makhueathet	325
+มะเขือเทศ	makheuathet	292
+มะเขือเทศ	makuathet	260
 
 # ของหวาน
-ของหวาน	khongwan	100
-ของหวาน	kongwaan	85
+ของหวาน	khongwan	301
+ของหวาน	kongwaan	256
 
 # อาหาร
-อาหาร	ahan	100
-อาหาร	ahaan	85
+อาหาร	ahan	25526
+อาหาร	ahaan	21697
 
 # เมนู
-เมนู	menu	100
+เมนู	menu	714
 
 # อร่อย
-อร่อย	aroi	100
-อร่อย	aroy	90
+อร่อย	aroi	2744
+อร่อย	aroy	2470
 
 # หิว
-หิว	hiw	100
-หิว	hiu	90
+หิว	hiw	1718
+หิว	hiu	1546
 
 # อิ่ม
-อิ่ม	im	100
+อิ่ม	im	1590
 
 # ตื่น
-ตื่น	tuen	100
-ตื่น	dteun	85
+ตื่น	tuen	4255
+ตื่น	dteun	3617
 
 # ลุก
-ลุก	luk	100
-ลุก	look	85
+ลุก	luk	5819
+ลุก	look	4946
 
 # นั่ง
-นั่ง	nang	100
+นั่ง	nang	19663
 
 # ยืน
-ยืน	yuen	100
-ยืน	yeun	90
+ยืน	yuen	11209
+ยืน	yeun	10088
 
 # เดิน
-เดิน	dern	100
-เดิน	doen	85
+เดิน	dern	29370
+เดิน	doen	24964
 
 # วิ่ง
-วิ่ง	wing	100
+วิ่ง	wing	8622
 
 # กลับ
-กลับ	klap	100
-กลับ	klub	85
+กลับ	klap	43632
+กลับ	klub	37087
 
 # ขึ้น
-ขึ้น	khun	100
-ขึ้น	kheun	95
-ขึ้น	khuen	85
+ขึ้น	khun	143277
+ขึ้น	kheun	136113
+ขึ้น	khuen	121785
 
 # ลง
-ลง	long	100
+ลง	long	61584
 
 # เข้า
-เข้า	khao	100
+เข้า	khao	87791
 
 # ออก
-ออก	ok	100
-ออก	ork	85
-ออก	awk	80
+ออก	ok	82369
+ออก	ork	70014
+ออก	awk	65895
 
 # ถึง
-ถึง	thueng	100
-ถึง	teung	90
-ถึง	thung	80
+ถึง	thueng	88464
+ถึง	teung	79618
+ถึง	thung	70771
 
 # มอง
-มอง	mong	100
+มอง	mong	34326
 
 # ดู
-ดู	doo	100
-ดู	du	90
+ดู	doo	50710
+ดู	du	45639
 
 # เห็น
-เห็น	hen	100
+เห็น	hen	78336
 
 # ฟัง
-ฟัง	fang	100
+ฟัง	fang	19020
 
 # ได้ยิน
-ได้ยิน	daiyin	100
-ได้ยิน	dayyin	85
+ได้ยิน	daiyin	8582
+ได้ยิน	dayyin	7295
 
 # พูด
-พูด	phut	100
-พูด	poot	90
+พูด	phut	38322
+พูด	poot	34490
 
 # บอก
-บอก	bok	100
+บอก	bok	43675
 
 # ถาม
-ถาม	tham	100
+ถาม	tham	23386
 
 # ตอบ
-ตอบ	top	100
-ตอบ	tob	85
+ตอบ	top	14773
+ตอบ	tob	12557
 
 # คุย
-คุย	khui	100
-คุย	khuy	90
+คุย	khui	8969
+คุย	khuy	8072
 
 # เล่า
-เล่า	lao	100
+เล่า	lao	14223
 
 # อ่าน
-อ่าน	an	100
+อ่าน	an	17163
 
 # เขียน
-เขียน	kian	100
-เขียน	kien	90
+เขียน	kian	17143
+เขียน	kien	15429
 
 # เรียน
-เรียน	rian	100
-เรียน	rean	90
-เรียน	riean	80
+เรียน	rian	20963
+เรียน	rean	18867
+เรียน	riean	16770
 
 # สอน
-สอน	sorn	100
-สอน	son	90
+สอน	sorn	10941
+สอน	son	9847
 
 # เล่น
-เล่น	len	100
+เล่น	len	17632
 
 # ทำงาน
-ทำงาน	thamngan	100
-ทำงาน	tamngan	90
+ทำงาน	thamngan	31461
+ทำงาน	tamngan	28315
 
 # พัก
-พัก	pak	100
+พัก	pak	8886
 
 # หยุด
-หยุด	yut	100
-หยุด	yood	90
+หยุด	yut	9059
+หยุด	yood	8153
 
 # รอ
-รอ	ror	100
-รอ	raw	85
-รอ	rao	80
+รอ	ror	11067
+รอ	raw	9407
+รอ	rao	8854
 
 # หา
-หา	ha	100
+หา	ha	36043
 
 # เจอ
-เจอ	jer	100
-เจอ	jur	85
-เจอ	joe	80
+เจอ	jer	10119
+เจอ	jur	8601
+เจอ	joe	8095
 
 # พบ
-พบ	phop	100
-พบ	pob	85
+พบ	phop	30055
+พบ	pob	25547
 
 # รู้
-รู้	ru	100
-รู้	roo	90
+รู้	ru	48379
+รู้	roo	43541
 
 # จำ
-จำ	jam	100
-จำ	jum	85
+จำ	jam	8801
+จำ	jum	7481
 
 # ลืม
-ลืม	luem	100
-ลืม	leum	90
+ลืม	luem	6084
+ลืม	leum	5476
 
 # คิด
-คิด	kid	100
+คิด	kid	40240
 
 # เชื่อ
-เชื่อ	chuea	100
-เชื่อ	chua	85
-เชื่อ	cheua	80
+เชื่อ	chuea	12671
+เชื่อ	chua	10770
+เชื่อ	cheua	10137
 
 # เข้าใจ
-เข้าใจ	khaojai	100
-เข้าใจ	kaojai	90
+เข้าใจ	khaojai	21188
+เข้าใจ	kaojai	19069
 
 # สงสัย
-สงสัย	songsai	100
-สงสัย	songsay	85
+สงสัย	songsai	6314
+สงสัย	songsay	5367
 
 # รัก
-รัก	rak	100
+รัก	rak	22854
 
 # ชอบ
-ชอบ	chop	100
+ชอบ	chop	21121
 
 # เกลียด
-เกลียด	kliat	100
-เกลียด	kliad	85
+เกลียด	kliat	1922
+เกลียด	kliad	1634
 
 # อยาก
-อยาก	yak	100
+อยาก	yak	35088
 
 # ต้องการ
-ต้องการ	tongkan	100
-ต้องการ	tongkarn	90
+ต้องการ	tongkan	18721
+ต้องการ	tongkarn	16849
 
 # ให้
-ให้	hai	100
-ให้	hay	85
+ให้	hai	360539
+ให้	hay	306458
 
 # รับ
-รับ	rap	100
-รับ	rub	90
+รับ	rap	38329
+รับ	rub	34496
 
 # เอา
-เอา	ao	100
-เอา	aow	85
+เอา	ao	47499
+เอา	aow	40374
 
 # ซื้อ
-ซื้อ	sue	100
-ซื้อ	seu	90
-ซื้อ	su	80
+ซื้อ	sue	17629
+ซื้อ	seu	15866
+ซื้อ	su	14103
 
 # ขาย
-ขาย	khai	100
-ขาย	khay	90
+ขาย	khai	17421
+ขาย	khay	15679
 
 # จ่าย
-จ่าย	jai	100
-จ่าย	jay	90
+จ่าย	jai	8344
+จ่าย	jay	7510
 
 # ใช้
-ใช้	chai	100
-ใช้	chay	85
+ใช้	chai	110741
+ใช้	chay	94130
 
 # ส่ง
-ส่ง	song	100
+ส่ง	song	26207
 
 # เปิด
-เปิด	perd	100
-เปิด	pert	90
-เปิด	poet	85
+เปิด	perd	21350
+เปิด	pert	19215
+เปิด	poet	18148
 
 # ปิด
-ปิด	pid	100
+ปิด	pid	8835
 
 # ใส่
-ใส่	sai	100
-ใส่	say	85
+ใส่	sai	16092
+ใส่	say	13678
 
 # ถอด
-ถอด	thot	100
-ถอด	tod	90
+ถอด	thot	1808
+ถอด	tod	1627
 
 # แต่งตัว
-แต่งตัว	taengtua	100
-แต่งตัว	tengtua	85
+แต่งตัว	taengtua	2822
+แต่งตัว	tengtua	2399
 
 # ล้าง
-ล้าง	lang	100
+ล้าง	lang	3960
 
 # ทำความสะอาด
-ทำความสะอาด	tamkwamsaard	100
-ทำความสะอาด	tamkwamsaat	90
-ทำความสะอาด	thamkhwamsaad	85
+ทำความสะอาด	tamkwamsaard	10
+ทำความสะอาด	tamkwamsaat	9
+ทำความสะอาด	thamkhwamsaad	8
 
 # ขับ
-ขับ	kap	100
+ขับ	kap	2527
 
 # ขี่
-ขี่	khi	100
-ขี่	kee	90
+ขี่	khi	1606
+ขี่	kee	1445
 
 # นั่งรถ
-นั่งรถ	nangrot	100
+นั่งรถ	nangrot	10
 
 # บิน
-บิน	bin	100
+บิน	bin	4252
 
 # เดินทาง
-เดินทาง	derntang	100
-เดินทาง	doentang	85
+เดินทาง	derntang	12408
+เดินทาง	doentang	10547
 
 # มีอยู่
-มีอยู่	meeyoo	100
-มีอยู่	miyu	85
+มีอยู่	meeyoo	10
+มีอยู่	miyu	8
 
 # อยู่
-อยู่	yu	100
-อยู่	yoo	90
+อยู่	yu	184712
+อยู่	yoo	166241
 
 # เป็น
-เป็น	pen	100
+เป็น	pen	540030
 
 # คือ
-คือ	kue	100
-คือ	keu	90
-คือ	ku	80
+คือ	kue	79009
+คือ	keu	71108
+คือ	ku	63207
 
 # มี
-มี	mee	100
-มี	mi	85
+มี	mee	506209
+มี	mi	430278
 
 # ไม่มี
-ไม่มี	maimee	100
-ไม่มี	maimi	90
+ไม่มี	maimee	10
+ไม่มี	maimi	9
 
 # ช่วย
-ช่วย	chuay	100
-ช่วย	chuai	85
+ช่วย	chuay	32370
+ช่วย	chuai	27514
 
 # ลอง
-ลอง	long	100
+ลอง	long	6606
 
 # เริ่ม
-เริ่ม	rerm	100
-เริ่ม	roem	85
+เริ่ม	rerm	23889
+เริ่ม	roem	20306
 
 # จบ
-จบ	jop	100
-จบ	job	90
+จบ	jop	10163
+จบ	job	9147
 
 # เสร็จ
-เสร็จ	set	100
-เสร็จ	sret	80
+เสร็จ	set	7793
+เสร็จ	sret	6234
 
 # ทำให้
-ทำให้	tamhai	100
-ทำให้	thamhai	90
+ทำให้	tamhai	73165
+ทำให้	thamhai	65848
 
 # เกิด
-เกิด	gerd	100
-เกิด	kerd	90
-เกิด	goet	80
+เกิด	gerd	79436
+เกิด	kerd	71492
+เกิด	goet	63549
 
 # ตาย
-ตาย	tai	100
-ตาย	tay	90
+ตาย	tai	18700
+ตาย	tay	16830
 
 # แต่งงาน
-แต่งงาน	tengngan	100
-แต่งงาน	taengngan	90
+แต่งงาน	tengngan	5289
+แต่งงาน	taengngan	4760
 
 # หัวเราะ
-หัวเราะ	huaroh	100
-หัวเราะ	huaror	85
-หัวเราะ	hwaroh	75
+หัวเราะ	huaroh	8021
+หัวเราะ	huaror	6818
+หัวเราะ	hwaroh	6016
 
 # ร้องไห้
-ร้องไห้	ronghai	100
+ร้องไห้	ronghai	2774
 
 # ยิ้ม
-ยิ้ม	yim	100
+ยิ้ม	yim	10545
 
 # โกรธ
-โกรธ	krot	100
-โกรธ	groht	85
+โกรธ	krot	4270
+โกรธ	groht	3630
 
 # กลัว
-กลัว	klua	100
-กลัว	kloa	80
+กลัว	klua	8716
+กลัว	kloa	6973
 
 # ขำ
-ขำ	kham	100
+ขำ	kham	1406
 
 # ฝัน
-ฝัน	fan	100
+ฝัน	fan	5268
 
 # ถ่ายรูป
-ถ่ายรูป	thairoop	100
-ถ่ายรูป	tairup	85
+ถ่ายรูป	thairoop	1418
+ถ่ายรูป	tairup	1205
 
 # ใหญ่
-ใหญ่	yai	100
-ใหญ่	yay	85
+ใหญ่	yai	31026
+ใหญ่	yay	26372
 
 # เล็ก
-เล็ก	lek	100
+เล็ก	lek	18991
 
 # ยาว
-ยาว	yao	100
-ยาว	yaow	85
+ยาว	yao	12571
+ยาว	yaow	10685
 
 # สั้น
-สั้น	san	100
+สั้น	san	6260
 
 # สูง
-สูง	sung	100
+สูง	sung	27939
 
 # เตี้ย
-เตี้ย	tia	100
-เตี้ย	tiya	85
+เตี้ย	tia	631
+เตี้ย	tiya	536
 
 # อ้วน
-อ้วน	uan	100
-อ้วน	ouan	85
+อ้วน	uan	1699
+อ้วน	ouan	1444
 
 # ผอม
-ผอม	phom	100
-ผอม	pom	90
-ผอม	phorm	80
+ผอม	phom	807
+ผอม	pom	726
+ผอม	phorm	646
 
 # หนัก
-หนัก	nak	100
+หนัก	nak	6859
 
 # เบา
-เบา	bao	100
-เบา	bow	80
+เบา	bao	6279
+เบา	bow	5023
 
 # หนา
-หนา	na	100
+หนา	na	2358
 
 # บาง
-บาง	bang	100
+บาง	bang	42278
 
 # กว้าง
-กว้าง	kwang	100
+กว้าง	kwang	6283
 
 # แคบ
-แคบ	kaep	100
-แคบ	caep	80
+แคบ	kaep	1558
+แคบ	caep	1246
 
 # ใกล้
-ใกล้	klai	100
-ใกล้	glai	90
-ใกล้	klay	85
+ใกล้	klai	10822
+ใกล้	glai	9740
+ใกล้	klay	9199
 
 # ไกล
-ไกล	klai	100
-ไกล	klay	85
+ไกล	klai	7146
+ไกล	klay	6074
 
 # ดี
-ดี	dee	100
-ดี	di	90
+ดี	dee	85098
+ดี	di	76588
 
 # แย่
-แย่	yae	100
+แย่	yae	2558
 
 # สวย
-สวย	suay	100
-สวย	suai	90
+สวย	suay	9882
+สวย	suai	8894
 
 # น่ารัก
-น่ารัก	narak	100
+น่ารัก	narak	3114
 
 # หล่อ
-หล่อ	lor	100
-หล่อ	lo	90
+หล่อ	lor	2345
+หล่อ	lo	2110
 
 # ขี้เหร่
-ขี้เหร่	khire	100
-ขี้เหร่	keere	85
+ขี้เหร่	khire	131
+ขี้เหร่	keere	111
 
 # ใหม่
-ใหม่	mai	100
-ใหม่	may	85
+ใหม่	mai	37980
+ใหม่	may	32283
 
 # เก่า
-เก่า	kao	100
-เก่า	gao	90
+เก่า	kao	7756
+เก่า	gao	6980
 
 # สะอาด
-สะอาด	saat	100
-สะอาด	saard	85
+สะอาด	saat	3894
+สะอาด	saard	3310
 
 # สกปรก
-สกปรก	sokkaprok	100
-สกปรก	sokaprok	90
+สกปรก	sokkaprok	1128
+สกปรก	sokaprok	1015
 
 # ง่าย
-ง่าย	ngai	100
-ง่าย	ngay	85
+ง่าย	ngai	13459
+ง่าย	ngay	11440
 
 # ยาก
-ยาก	yak	100
+ยาก	yak	10366
 
 # เร็ว
-เร็ว	reo	100
-เร็ว	rew	95
-เร็ว	reaw	80
+เร็ว	reo	8114
+เร็ว	rew	7708
+เร็ว	reaw	6491
 
 # ช้า
-ช้า	cha	100
+ช้า	cha	5847
 
 # ร้อน
-ร้อน	ron	100
+ร้อน	ron	9310
 
 # หนาว
-หนาว	naao	100
-หนาว	now	85
+หนาว	naao	3440
+หนาว	now	2924
 
 # อุ่น
-อุ่น	un	100
-อุ่น	oon	85
+อุ่น	un	1162
+อุ่น	oon	988
 
 # แห้ง
-แห้ง	haeng	100
+แห้ง	haeng	2703
 
 # เปียก
-เปียก	piak	100
-เปียก	peak	85
+เปียก	piak	960
+เปียก	peak	816
 
 # หวาน
-หวาน	wan	100
+หวาน	wan	4490
 
 # เปรี้ยว
-เปรี้ยว	priao	100
-เปรี้ยว	priew	90
-เปรี้ยว	preow	80
+เปรี้ยว	priao	724
+เปรี้ยว	priew	652
+เปรี้ยว	preow	579
 
 # เค็ม
-เค็ม	kem	100
+เค็ม	kem	570
 
 # เผ็ด
-เผ็ด	phet	100
-เผ็ด	ped	90
+เผ็ด	phet	488
+เผ็ด	ped	439
 
 # ขม
-ขม	khom	100
+ขม	khom	418
 
 # จืด
-จืด	juet	100
-จืด	jued	85
+จืด	juet	311
+จืด	jued	264
 
 # ดัง
-ดัง	dang	100
+ดัง	dang	21568
 
 # เงียบ
-เงียบ	ngiap	100
-เงียบ	ngiab	85
+เงียบ	ngiap	5302
+เงียบ	ngiab	4507
 
 # สนุก
-สนุก	sanuk	100
+สนุก	sanuk	4320
 
 # น่าเบื่อ
-น่าเบื่อ	nabua	100
-น่าเบื่อ	nabuea	90
-น่าเบื่อ	naberk	75
+น่าเบื่อ	nabua	10
+น่าเบื่อ	nabuea	9
+น่าเบื่อ	naberk	8
 
 # สำคัญ
-สำคัญ	samkhan	100
-สำคัญ	sumkhan	85
+สำคัญ	samkhan	21361
+สำคัญ	sumkhan	18157
 
 # จริง
-จริง	jing	100
-จริง	jring	80
+จริง	jing	31865
+จริง	jring	25492
 
 # ปลอม
-ปลอม	plom	100
-ปลอม	ploam	85
+ปลอม	plom	1483
+ปลอม	ploam	1261
 
 # แดง
-แดง	daeng	100
-แดง	dang	80
+แดง	daeng	9491
+แดง	dang	7593
 
 # เหลือง
-เหลือง	luang	100
-เหลือง	leuang	90
-เหลือง	lueang	85
+เหลือง	luang	2699
+เหลือง	leuang	2429
+เหลือง	lueang	2294
 
 # เขียว
-เขียว	khiao	100
-เขียว	kiew	90
-เขียว	khiaw	85
+เขียว	khiao	3871
+เขียว	kiew	3484
+เขียว	khiaw	3290
 
 # น้ำเงิน
-น้ำเงิน	namngern	100
-น้ำเงิน	namngoen	90
-น้ำเงิน	namnguen	80
+น้ำเงิน	namngern	1169
+น้ำเงิน	namngoen	1052
+น้ำเงิน	namnguen	935
 
 # ฟ้า
-ฟ้า	fa	100
+ฟ้า	fa	6325
 
 # ม่วง
-ม่วง	muang	100
+ม่วง	muang	1211
 
 # ชมพู
-ชมพู	chompoo	100
-ชมพู	chompu	90
+ชมพู	chompoo	1628
+ชมพู	chompu	1465
 
 # ดำ
-ดำ	dam	100
+ดำ	dam	8712
 
 # ขาว
-ขาว	khao	100
-ขาว	kao	85
+ขาว	khao	9423
+ขาว	kao	8010
 
 # เทา
-เทา	tao	100
+เทา	tao	1057
 
 # ทอง
-ทอง	thong	100
+ทอง	thong	8507
 
 # บ้าน
-บ้าน	baan	100
+บ้าน	baan	38126
 
 # ห้อง
-ห้อง	hong	100
+ห้อง	hong	22187
 
 # ครัว
-ครัว	krua	100
-ครัว	kruar	80
+ครัว	krua	2174
+ครัว	kruar	1739
 
 # ห้องน้ำ
-ห้องน้ำ	hongnam	100
+ห้องน้ำ	hongnam	1985
 
 # ห้องนอน
-ห้องนอน	hongnon	100
+ห้องนอน	hongnon	10
 
 # โรงเรียน
-โรงเรียน	rongrian	100
-โรงเรียน	rongrien	90
-โรงเรียน	rongriean	80
+โรงเรียน	rongrian	12356
+โรงเรียน	rongrien	11120
+โรงเรียน	rongriean	9885
 
 # มหาวิทยาลัย
-มหาวิทยาลัย	mahawittayalai	100
-มหาวิทยาลัย	mahawitayalai	90
+มหาวิทยาลัย	mahawittayalai	8903
+มหาวิทยาลัย	mahawitayalai	8013
 
 # ตลาด
-ตลาด	talat	100
-ตลาด	talad	90
+ตลาด	talat	11845
+ตลาด	talad	10660
 
 # ห้าง
-ห้าง	hang	100
+ห้าง	hang	1229
 
 # ร้าน
-ร้าน	ran	100
+ร้าน	ran	13560
 
 # ร้านอาหาร
-ร้านอาหาร	ranahan	100
-ร้านอาหาร	raanaahaan	85
+ร้านอาหาร	ranahan	10
+ร้านอาหาร	raanaahaan	8
 
 # วัด
-วัด	wat	100
+วัด	wat	12102
 
 # สวน
-สวน	suan	100
-สวน	suean	80
+สวน	suan	6348
+สวน	suean	5078
 
 # สวนสาธารณะ
-สวนสาธารณะ	suansatharana	100
-สวนสาธารณะ	suansatarana	90
+สวนสาธารณะ	suansatharana	10
+สวนสาธารณะ	suansatarana	9
 
 # ชายหาด
-ชายหาด	chaihat	100
-ชายหาด	chayhad	85
+ชายหาด	chaihat	648
+ชายหาด	chayhad	551
 
 # ทะเล
-ทะเล	talay	100
-ทะเล	talee	85
+ทะเล	talay	8012
+ทะเล	talee	6810
 
 # ภูเขา
-ภูเขา	phukhao	100
-ภูเขา	pukao	90
+ภูเขา	phukhao	1650
+ภูเขา	pukao	1485
 
 # แม่น้ำ
-แม่น้ำ	maenam	100
-แม่น้ำ	menam	85
+แม่น้ำ	maenam	3802
+แม่น้ำ	menam	3232
 
 # ป่า
-ป่า	pa	100
+ป่า	pa	8327
 
 # เมือง
-เมือง	mueang	100
-เมือง	meuang	90
-เมือง	muang	80
+เมือง	mueang	29481
+เมือง	meuang	26533
+เมือง	muang	23585
 
 # ประเทศ
-ประเทศ	prathet	100
-ประเทศ	pratet	90
+ประเทศ	prathet	58909
+ประเทศ	pratet	53018
 
 # จังหวัด
-จังหวัด	changwat	100
-จังหวัด	jangwat	95
+จังหวัด	changwat	13845
+จังหวัด	jangwat	13153
 
 # ถนน
-ถนน	thanon	100
+ถนน	thanon	8632
 
 # ซอย
-ซอย	soi	100
-ซอย	soy	90
+ซอย	soi	2370
+ซอย	soy	2133
 
 # ที่นี่
-ที่นี่	teenee	100
-ที่นี่	thinee	85
+ที่นี่	teenee	10
+ที่นี่	thinee	8
 
 # ที่นั่น
-ที่นั่น	teenan	100
-ที่นั่น	thinan	85
+ที่นั่น	teenan	10
+ที่นั่น	thinan	8
 
 # ที่ไหน
-ที่ไหน	teenai	100
-ที่ไหน	thinai	90
+ที่ไหน	teenai	4689
+ที่ไหน	thinai	4220
 
 # บน
-บน	bon	100
+บน	bon	30031
 
 # ล่าง
-ล่าง	lang	100
+ล่าง	lang	3849
 
 # ใน
-ใน	nai	100
-ใน	nay	85
+ใน	nai	537563
+ใน	nay	456929
 
 # นอก
-นอก	nok	100
+นอก	nok	10444
 
 # ข้าง
-ข้าง	khang	100
+ข้าง	khang	13173
 
 # ซ้าย
-ซ้าย	sai	100
-ซ้าย	say	85
+ซ้าย	sai	3431
+ซ้าย	say	2916
 
 # ขวา
-ขวา	khwa	100
-ขวา	kwa	90
+ขวา	khwa	2660
+ขวา	kwa	2394
 
 # ตรง
-ตรง	trong	100
-ตรง	dtrong	85
+ตรง	trong	20990
+ตรง	dtrong	17842
 
 # เหนือ
-เหนือ	nuea	100
-เหนือ	neua	95
-เหนือ	nua	80
+เหนือ	nuea	8681
+เหนือ	neua	8247
+เหนือ	nua	6945
 
 # ใต้
-ใต้	tai	100
-ใต้	tay	85
+ใต้	tai	8676
+ใต้	tay	7375
 
 # ตะวันออก
-ตะวันออก	tawanok	100
-ตะวันออก	tawanook	90
+ตะวันออก	tawanok	3371
+ตะวันออก	tawanook	3034
 
 # ตะวันตก
-ตะวันตก	tawantok	100
+ตะวันตก	tawantok	5642
 
 # กลาง
-กลาง	klang	100
+กลาง	klang	11997
 
 # รอบ
-รอบ	rop	100
+รอบ	rop	13878
 
 # ระหว่าง
-ระหว่าง	rawang	100
-ระหว่าง	rahwang	85
+ระหว่าง	rawang	34266
+ระหว่าง	rahwang	29126
 
 # จาก
-จาก	jak	100
-จาก	chak	80
+จาก	jak	174522
+จาก	chak	139618
 
 # กับ
-กับ	kap	100
-กับ	gap	90
+กับ	kap	196873
+กับ	gap	177186
 
 # และ
-และ	lae	100
-และ	le	80
+และ	lae	467702
+และ	le	374162
 
 # หรือ
-หรือ	rue	100
-หรือ	reu	90
-หรือ	ruea	80
+หรือ	rue	184518
+หรือ	reu	166066
+หรือ	ruea	147614
 
 # แต่
-แต่	tae	100
-แต่	tare	80
+แต่	tae	169729
+แต่	tare	135783
 
 # เพราะ
-เพราะ	pro	100
-เพราะ	proh	90
-เพราะ	phro	80
+เพราะ	pro	85251
+เพราะ	proh	76726
+เพราะ	phro	68201
 
 # รถ
-รถ	rot	100
+รถ	rot	19269
 
 # รถยนต์
-รถยนต์	rotyon	100
+รถยนต์	rotyon	3618
 
 # มอเตอร์ไซค์
-มอเตอร์ไซค์	motersai	100
-มอเตอร์ไซค์	motorsai	90
-มอเตอร์ไซค์	motoesai	80
+มอเตอร์ไซค์	motersai	571
+มอเตอร์ไซค์	motorsai	514
+มอเตอร์ไซค์	motoesai	457
 
 # จักรยาน
-จักรยาน	jakkrayan	100
-จักรยาน	jakrayan	90
+จักรยาน	jakkrayan	1406
+จักรยาน	jakrayan	1265
 
 # รถเมล์
-รถเมล์	rotmay	100
-รถเมล์	rotmae	85
-รถเมล์	rodmel	75
+รถเมล์	rotmay	835
+รถเมล์	rotmae	710
+รถเมล์	rodmel	626
 
 # รถไฟ
-รถไฟ	rotfai	100
+รถไฟ	rotfai	2397
 
 # รถไฟฟ้า
-รถไฟฟ้า	rotfaifa	100
+รถไฟฟ้า	rotfaifa	618
 
 # แท็กซี่
-แท็กซี่	taksi	100
-แท็กซี่	taxi	95
+แท็กซี่	taksi	910
+แท็กซี่	taxi	864
 
 # ตุ๊กตุ๊ก
-ตุ๊กตุ๊ก	tuktuk	100
+ตุ๊กตุ๊ก	tuktuk	10
 
 # เรือ
-เรือ	reua	100
-เรือ	ruea	90
-เรือ	rua	85
+เรือ	reua	9190
+เรือ	ruea	8271
+เรือ	rua	7812
 
 # เครื่องบิน
-เครื่องบิน	kruangbin	100
-เครื่องบิน	kreuangbin	90
-เครื่องบิน	khruangbin	80
+เครื่องบิน	kruangbin	2142
+เครื่องบิน	kreuangbin	1928
+เครื่องบิน	khruangbin	1714
 
 # สนามบิน
-สนามบิน	sanambin	100
+สนามบิน	sanambin	1377
 
 # สถานี
-สถานี	sathani	100
-สถานี	satanee	90
+สถานี	sathani	3786
+สถานี	satanee	3407
 
 # ป้าย
-ป้าย	pai	100
-ป้าย	bpai	85
-ป้าย	pay	80
+ป้าย	pai	2105
+ป้าย	bpai	1789
+ป้าย	pay	1684
 
 # ตั๋ว
-ตั๋ว	tua	100
-ตั๋ว	tuoa	80
+ตั๋ว	tua	909
+ตั๋ว	tuoa	727
 
 # แผนที่
-แผนที่	phaenti	100
-แผนที่	paenthee	90
-แผนที่	phantee	80
+แผนที่	phaenti	3260
+แผนที่	paenthee	2934
+แผนที่	phantee	2608
 
 # ทาง
-ทาง	thang	100
-ทาง	tang	85
+ทาง	thang	104557
+ทาง	tang	88873
 
 # ทางด่วน
-ทางด่วน	thangduan	100
-ทางด่วน	tangduan	90
+ทางด่วน	thangduan	193
+ทางด่วน	tangduan	174
 
 # สะพาน
-สะพาน	saphan	100
-สะพาน	sapan	90
+สะพาน	saphan	1887
+สะพาน	sapan	1698
 
 # แยก
-แยก	yaek	100
-แยก	yak	85
+แยก	yaek	9039
+แยก	yak	7683
 
 # ไฟแดง
-ไฟแดง	faidaeng	100
-ไฟแดง	faydaeng	85
+ไฟแดง	faidaeng	144
+ไฟแดง	faydaeng	122
 
 # น้ำมัน
-น้ำมัน	namman	100
+น้ำมัน	namman	6600
 
 # จอด
-จอด	jod	100
-จอด	jot	85
+จอด	jod	2990
+จอด	jot	2542
 
 # ติด
-ติด	tid	100
+ติด	tid	16121
 
 # รถติด
-รถติด	rottid	100
-รถติด	rodtid	85
+รถติด	rottid	10
+รถติด	rodtid	8
 
 # กระเป๋าเดินทาง
-กระเป๋าเดินทาง	krapaodernthang	100
-กระเป๋าเดินทาง	krapaodoenthang	90
+กระเป๋าเดินทาง	krapaodernthang	10
+กระเป๋าเดินทาง	krapaodoenthang	9
 
 # เที่ยว
-เที่ยว	tiao	100
-เที่ยว	tiew	90
-เที่ยว	thiao	80
+เที่ยว	tiao	5935
+เที่ยว	tiew	5342
+เที่ยว	thiao	4748
 
 # ท่องเที่ยว
-ท่องเที่ยว	thongtiew	100
-ท่องเที่ยว	tongtiao	90
-ท่องเที่ยว	thongthiao	85
+ท่องเที่ยว	thongtiew	4204
+ท่องเที่ยว	tongtiao	3784
+ท่องเที่ยว	thongthiao	3573
 
 # โต๊ะ
-โต๊ะ	to	100
-โต๊ะ	toh	90
+โต๊ะ	to	5885
+โต๊ะ	toh	5296
 
 # เก้าอี้
-เก้าอี้	kaoee	100
-เก้าอี้	kawee	85
-เก้าอี้	kaoyee	80
+เก้าอี้	kaoee	2489
+เก้าอี้	kawee	2116
+เก้าอี้	kaoyee	1991
 
 # เตียง
-เตียง	tiang	100
+เตียง	tiang	2859
 
 # ตู้
-ตู้	too	100
-ตู้	tu	90
+ตู้	too	2849
+ตู้	tu	2564
 
 # ตู้เย็น
-ตู้เย็น	tuyen	100
+ตู้เย็น	tuyen	640
 
 # ทีวี
-ทีวี	teewee	100
-ทีวี	tivi	85
+ทีวี	teewee	1454
+ทีวี	tivi	1236
 
 # พัดลม
-พัดลม	patlom	100
+พัดลม	patlom	248
 
 # แอร์
-แอร์	air	100
-แอร์	ae	80
+แอร์	air	1122
+แอร์	ae	898
 
 # ไฟ
-ไฟ	fai	100
-ไฟ	fay	85
+ไฟ	fai	7048
+ไฟ	fay	5991
 
 # หลอดไฟ
-หลอดไฟ	lotfai	100
-หลอดไฟ	lordfai	85
+หลอดไฟ	lotfai	197
+หลอดไฟ	lordfai	167
 
 # ประตู
-ประตู	pratu	100
+ประตู	pratu	9239
 
 # หน้าต่าง
-หน้าต่าง	natang	100
+หน้าต่าง	natang	1967
 
 # กุญแจ
-กุญแจ	kunjae	100
-กุญแจ	goonjae	85
+กุญแจ	kunjae	1447
+กุญแจ	goonjae	1230
 
 # ผ้า
-ผ้า	pa	100
+ผ้า	pa	7413
 
 # ผ้าห่ม
-ผ้าห่ม	pahom	100
-ผ้าห่ม	phahom	85
+ผ้าห่ม	pahom	10
+ผ้าห่ม	phahom	8
 
 # หมอน
-หมอน	mon	100
+หมอน	mon	776
 
 # จาน
-จาน	jan	100
+จาน	jan	2745
 
 # ชาม
-ชาม	cham	100
+ชาม	cham	1127
 
 # ช้อน
-ช้อน	chon	100
+ช้อน	chon	1743
 
 # ส้อม
-ส้อม	som	100
+ส้อม	som	654
 
 # ตะเกียบ
-ตะเกียบ	takiap	100
-ตะเกียบ	takeap	85
+ตะเกียบ	takiap	334
+ตะเกียบ	takeap	284
 
 # แก้ว
-แก้ว	kaew	100
-แก้ว	keaw	85
-แก้ว	kaw	75
+แก้ว	kaew	7701
+แก้ว	keaw	6546
+แก้ว	kaw	5776
 
 # ขวด
-ขวด	khuat	100
-ขวด	kuad	85
-ขวด	khwad	80
+ขวด	khuat	1954
+ขวด	kuad	1661
+ขวด	khwad	1563
 
 # ถุง
-ถุง	tung	100
-ถุง	toong	85
+ถุง	tung	3071
+ถุง	toong	2610
 
 # กระเป๋า
-กระเป๋า	krapao	100
-กระเป๋า	grapao	85
+กระเป๋า	krapao	4414
+กระเป๋า	grapao	3752
 
 # กระเป๋าสตางค์
-กระเป๋าสตางค์	krapaosatang	100
-กระเป๋าสตางค์	grapaosatang	90
+กระเป๋าสตางค์	krapaosatang	10
+กระเป๋าสตางค์	grapaosatang	9
 
 # เสื้อ
-เสื้อ	suea	100
-เสื้อ	sua	90
-เสื้อ	seua	85
+เสื้อ	suea	6603
+เสื้อ	sua	5943
+เสื้อ	seua	5613
 
 # กางเกง
-กางเกง	kangkeng	100
+กางเกง	kangkeng	2405
 
 # กระโปรง
-กระโปรง	kraprong	100
-กระโปรง	krapong	80
+กระโปรง	kraprong	887
+กระโปรง	krapong	710
 
 # ชุด
-ชุด	chut	100
-ชุด	choot	90
+ชุด	chut	11552
+ชุด	choot	10397
 
 # รองเท้า
-รองเท้า	rongtao	100
+รองเท้า	rongtao	2535
 
 # ถุงเท้า
-ถุงเท้า	thungtao	100
-ถุงเท้า	toongtao	85
+ถุงเท้า	thungtao	10
+ถุงเท้า	toongtao	8
 
 # หมวก
-หมวก	muak	100
+หมวก	muak	921
 
 # แว่น
-แว่น	waen	100
-แว่น	wen	85
+แว่น	waen	960
+แว่น	wen	816
 
 # นาฬิกา
-นาฬิกา	nalika	100
+นาฬิกา	nalika	2600
 
 # แหวน
-แหวน	waen	100
-แหวน	wan	85
+แหวน	waen	1175
+แหวน	wan	999
 
 # สร้อย
-สร้อย	soi	100
-สร้อย	sroi	85
-สร้อย	soy	80
+สร้อย	soi	1023
+สร้อย	sroi	870
+สร้อย	soy	818
 
 # ร่ม
-ร่ม	rom	100
+ร่ม	rom	1141
 
 # แปรงสีฟัน
-แปรงสีฟัน	praengseefan	100
-แปรงสีฟัน	praengsifan	88
+แปรงสีฟัน	praengseefan	64
+แปรงสีฟัน	praengsifan	56
 
 # กระดาษ
-กระดาษ	kradat	100
-กระดาษ	kradard	85
+กระดาษ	kradat	3373
+กระดาษ	kradard	2867
 
 # ปากกา
-ปากกา	pakka	100
+ปากกา	pakka	610
 
 # ดินสอ
-ดินสอ	dinso	100
-ดินสอ	dinsor	85
+ดินสอ	dinso	411
+ดินสอ	dinsor	349
 
 # หนังสือ
-หนังสือ	nangsue	100
-หนังสือ	nangsu	90
-หนังสือ	nangseu	85
+หนังสือ	nangsue	21735
+หนังสือ	nangsu	19562
+หนังสือ	nangseu	18475
 
 # สมุด
-สมุด	samut	100
-สมุด	samood	90
+สมุด	samut	1254
+สมุด	samood	1129
 
 # งาน
-งาน	ngan	100
+งาน	ngan	45447
 
 # อาชีพ
-อาชีพ	acheep	100
-อาชีพ	achip	90
+อาชีพ	acheep	7464
+อาชีพ	achip	6718
 
 # เงิน
-เงิน	ngern	100
-เงิน	ngoen	90
+เงิน	ngern	32438
+เงิน	ngoen	29194
 
 # บาท
-บาท	baht	100
-บาท	bat	90
+บาท	baht	18156
+บาท	bat	16340
 
 # สตางค์
-สตางค์	satang	100
+สตางค์	satang	985
 
 # ราคา
-ราคา	rakha	100
-ราคา	raka	90
+ราคา	rakha	16242
+ราคา	raka	14618
 
 # แพง
-แพง	paeng	100
-แพง	pheng	85
+แพง	paeng	3103
+แพง	pheng	2638
 
 # ถูก
-ถูก	thuk	100
+ถูก	thuk	55654
 
 # ฟรี
-ฟรี	free	100
-ฟรี	fri	85
+ฟรี	free	1313
+ฟรี	fri	1116
 
 # ลด
-ลด	lot	100
-ลด	lod	90
+ลด	lot	17726
+ลด	lod	15953
 
 # จ้าง
-จ้าง	jang	100
+จ้าง	jang	4119
 
 # เงินเดือน
-เงินเดือน	ngerndeuan	100
-เงินเดือน	ngoendeuan	90
-เงินเดือน	ngenduean	85
+เงินเดือน	ngerndeuan	2872
+เงินเดือน	ngoendeuan	2585
+เงินเดือน	ngenduean	2441
 
 # ธนาคาร
-ธนาคาร	thanakhan	100
-ธนาคาร	tanakan	90
+ธนาคาร	thanakhan	4643
+ธนาคาร	tanakan	4179
 
 # บัญชี
-บัญชี	banchee	100
-บัญชี	banchi	90
+บัญชี	banchee	6082
+บัญชี	banchi	5474
 
 # บัตร
-บัตร	bat	100
+บัตร	bat	3147
 
 # หนี้
-หนี้	nee	100
-หนี้	ni	85
+หนี้	nee	5894
+หนี้	ni	5010
 
 # ภาษี
-ภาษี	phasi	100
-ภาษี	pasee	90
+ภาษี	phasi	7177
+ภาษี	pasee	6459
 
 # บริษัท
-บริษัท	borisat	100
-บริษัท	borisad	85
+บริษัท	borisat	13868
+บริษัท	borisad	11788
 
 # ออฟฟิศ
-ออฟฟิศ	office	100
-ออฟฟิศ	offit	85
-ออฟฟิศ	offis	80
+ออฟฟิศ	office	400
+ออฟฟิศ	offit	340
+ออฟฟิศ	offis	320
 
 # ประชุม
-ประชุม	prachum	100
-ประชุม	prachoom	90
+ประชุม	prachum	16224
+ประชุม	prachoom	14602
 
 # หัวหน้า
-หัวหน้า	huana	100
-หัวหน้า	hoouana	80
+หัวหน้า	huana	4641
+หัวหน้า	hoouana	3713
 
 # ลูกน้อง
-ลูกน้อง	luknong	100
+ลูกน้อง	luknong	10
 
 # นักเรียน
-นักเรียน	nakrian	100
-นักเรียน	nakrien	90
+นักเรียน	nakrian	7152
+นักเรียน	nakrien	6437
 
 # นักศึกษา
-นักศึกษา	naksuksa	100
-นักศึกษา	nakseuksa	90
+นักศึกษา	naksuksa	4851
+นักศึกษา	nakseuksa	4366
 
 # ครู
-ครู	kru	100
-ครู	khru	85
+ครู	kru	13706
+ครู	khru	11650
 
 # อาจารย์
-อาจารย์	ajan	100
-อาจารย์	ajarn	95
-อาจารย์	acharn	80
+อาจารย์	ajan	9023
+อาจารย์	ajarn	8572
+อาจารย์	acharn	7218
 
 # การบ้าน
-การบ้าน	kanban	100
+การบ้าน	kanban	276
 
 # สอบ
-สอบ	sop	100
+สอบ	sop	5015
 
 # คะแนน
-คะแนน	kanaen	100
-คะแนน	khanaen	90
+คะแนน	kanaen	4172
+คะแนน	khanaen	3755
 
 # วิชา
-วิชา	wicha	100
+วิชา	wicha	6863
 
 # ห้องเรียน
-ห้องเรียน	hongrian	100
-ห้องเรียน	hongrien	90
+ห้องเรียน	hongrian	791
+ห้องเรียน	hongrien	712
 
 # ใบเสร็จ
-ใบเสร็จ	baiset	100
-ใบเสร็จ	bayset	85
+ใบเสร็จ	baiset	255
+ใบเสร็จ	bayset	217
 
 # ดีใจ
-ดีใจ	deejai	100
-ดีใจ	dijai	85
+ดีใจ	deejai	2563
+ดีใจ	dijai	2179
 
 # เสียใจ
-เสียใจ	siajai	100
+เสียใจ	siajai	2078
 
 # มีความสุข
-มีความสุข	mikwamsuk	100
-มีความสุข	meekwamsuk	90
+มีความสุข	mikwamsuk	10
+มีความสุข	meekwamsuk	9
 
 # สุข
-สุข	suk	100
-สุข	sook	90
+สุข	suk	13753
+สุข	sook	12378
 
 # ทุกข์
-ทุกข์	tuk	100
-ทุกข์	took	90
+ทุกข์	tuk	6203
+ทุกข์	took	5583
 
 # เหงา
-เหงา	ngao	100
-เหงา	ngow	85
+เหงา	ngao	1189
+เหงา	ngow	1011
 
 # เศร้า
-เศร้า	sao	100
+เศร้า	sao	2933
 
 # เบื่อ
-เบื่อ	buea	100
-เบื่อ	bua	90
-เบื่อ	beua	85
+เบื่อ	buea	2395
+เบื่อ	bua	2156
+เบื่อ	beua	2036
 
 # หงุดหงิด
-หงุดหงิด	ngutngit	100
-หงุดหงิด	ngudngid	85
+หงุดหงิด	ngutngit	1343
+หงุดหงิด	ngudngid	1142
 
 # โมโห
-โมโห	moho	100
+โมโห	moho	1012
 
 # ตกใจ
-ตกใจ	tokjai	100
-ตกใจ	tokchai	80
+ตกใจ	tokjai	2986
+ตกใจ	tokchai	2389
 
 # ประหลาดใจ
-ประหลาดใจ	pralatjai	100
-ประหลาดใจ	pralardjai	85
+ประหลาดใจ	pralatjai	713
+ประหลาดใจ	pralardjai	606
 
 # ภูมิใจ
-ภูมิใจ	poomjai	100
-ภูมิใจ	pumjai	85
+ภูมิใจ	poomjai	1435
+ภูมิใจ	pumjai	1220
 
 # อาย
-อาย	ai	100
-อาย	aai	85
+อาย	ai	1975
+อาย	aai	1679
 
 # เขิน
-เขิน	khern	100
-เขิน	kern	90
-เขิน	khoen	80
+เขิน	khern	1185
+เขิน	kern	1066
+เขิน	khoen	948
 
 # เครียด
-เครียด	kriad	100
-เครียด	kreead	85
+เครียด	kriad	1792
+เครียด	kreead	1523
 
 # กังวล
-กังวล	kangwon	100
-กังวล	kangwol	85
+กังวล	kangwon	2535
+กังวล	kangwol	2155
 
 # สบายใจ
-สบายใจ	sabaijai	100
-สบายใจ	sabayjai	90
+สบายใจ	sabaijai	2105
+สบายใจ	sabayjai	1894
 
 # หวัง
-หวัง	wang	100
+หวัง	wang	5838
 
 # เสียดาย
-เสียดาย	siadai	100
-เสียดาย	siadaai	85
+เสียดาย	siadai	1289
+เสียดาย	siadaai	1096
 
 # รำคาญ
-รำคาญ	ramkhan	100
+รำคาญ	ramkhan	1126
 
 # ผิดหวัง
-ผิดหวัง	pitwang	100
-ผิดหวัง	phitwang	90
+ผิดหวัง	pitwang	1424
+ผิดหวัง	phitwang	1282
 
 # โทรศัพท์
-โทรศัพท์	torasap	100
-โทรศัพท์	thorasap	85
+โทรศัพท์	torasap	5228
+โทรศัพท์	thorasap	4444
 
 # มือถือ
-มือถือ	meuthue	100
-มือถือ	muethue	90
-มือถือ	mutu	80
+มือถือ	meuthue	10
+มือถือ	muethue	9
+มือถือ	mutu	8
 
 # โทร
-โทร	tor	100
-โทร	toh	85
+โทร	tor	2571
+โทร	toh	2185
 
 # แชท
-แชท	chat	100
+แชท	chat	42
 
 # ข้อความ
-ข้อความ	khokhwam	100
-ข้อความ	kokwam	85
+ข้อความ	khokhwam	4941
+ข้อความ	kokwam	4200
 
 # ไลน์
-ไลน์	line	100
-ไลน์	lai	80
+ไลน์	line	194
+ไลน์	lai	155
 
 # เฟส
-เฟส	fes	100
-เฟส	face	85
+เฟส	fes	277
+เฟส	face	235
 
 # อินเทอร์เน็ต
-อินเทอร์เน็ต	internet	100
-อินเทอร์เน็ต	inthoenet	85
+อินเทอร์เน็ต	internet	545
+อินเทอร์เน็ต	inthoenet	463
 
 # เน็ต
-เน็ต	net	100
+เน็ต	net	1216
 
 # ไวไฟ
-ไวไฟ	waifai	100
+ไวไฟ	waifai	78
 
 # อีเมล
-อีเมล	email	100
-อีเมล	imel	85
+อีเมล	email	10
+อีเมล	imel	8
 
 # รหัสผ่าน
-รหัสผ่าน	rahatphan	100
-รหัสผ่าน	rahadpan	85
+รหัสผ่าน	rahatphan	10
+รหัสผ่าน	rahadpan	8
 
 # รหัส
-รหัส	rahat	100
-รหัส	rahas	85
+รหัส	rahat	1091
+รหัส	rahas	927
 
 # แอป
-แอป	app	100
-แอป	aep	85
+แอป	app	15
+แอป	aep	13
 
 # เกม
-เกม	gem	100
-เกม	kem	85
+เกม	gem	2896
+เกม	kem	2462
 
 # คอมพิวเตอร์
-คอมพิวเตอร์	computer	100
-คอมพิวเตอร์	khompiwter	80
-คอมพิวเตอร์	kompiuter	80
+คอมพิวเตอร์	computer	2852
+คอมพิวเตอร์	khompiwter	2282
+คอมพิวเตอร์	kompiuter	2282
 
 # โน้ตบุ๊ก
-โน้ตบุ๊ก	notbook	100
-โน้ตบุ๊ก	notebook	90
+โน้ตบุ๊ก	notbook	29
+โน้ตบุ๊ก	notebook	26
 
 # จอ
-จอ	jor	100
-จอ	jaw	85
-จอ	jo	80
+จอ	jor	1456
+จอ	jaw	1238
+จอ	jo	1165
 
 # กล้อง
-กล้อง	klong	100
-กล้อง	glong	85
+กล้อง	klong	1938
+กล้อง	glong	1647
 
 # รูป
-รูป	roop	100
-รูป	rup	90
+รูป	roop	18206
+รูป	rup	16385
 
 # วิดีโอ
-วิดีโอ	video	100
-วิดีโอ	wideeo	85
+วิดีโอ	video	497
+วิดีโอ	wideeo	422
 
 # ไฟล์
-ไฟล์	fai	100
-ไฟล์	file	90
+ไฟล์	fai	470
+ไฟล์	file	423
 
 # ลิงก์
-ลิงก์	link	100
+ลิงก์	link	143
 
 # เว็บ
-เว็บ	web	100
+เว็บ	web	1581
 
 # โพสต์
-โพสต์	post	100
-โพสต์	phost	85
+โพสต์	post	295
+โพสต์	phost	251
 
 # ไลก์
-ไลก์	lai	100
-ไลก์	like	90
+ไลก์	lai	2
+ไลก์	like	2
 
 # แชร์
-แชร์	chae	100
-แชร์	share	90
-แชร์	chair	80
+แชร์	chae	331
+แชร์	share	298
+แชร์	chair	265
 
 # คอมเมนต์
-คอมเมนต์	comment	100
-คอมเมนต์	khommen	85
-คอมเมนต์	kommen	80
+คอมเมนต์	comment	10
+คอมเมนต์	khommen	8
+คอมเมนต์	kommen	8
 
 # ข่าว
-ข่าว	khao	100
-ข่าว	khaow	85
+ข่าว	khao	9855
+ข่าว	khaow	8377
 
 # อะไร
-อะไร	arai	100
+อะไร	arai	62000
 
 # ทำไม
-ทำไม	tammai	100
-ทำไม	tummai	90
+ทำไม	tammai	15187
+ทำไม	tummai	13668
 
 # ใคร
-ใคร	krai	100
-ใคร	kray	85
+ใคร	krai	36549
+ใคร	kray	31067
 
 # เมื่อไร
-เมื่อไร	muearai	100
-เมื่อไร	muarai	90
-เมื่อไร	meuarai	85
+เมื่อไร	muearai	980
+เมื่อไร	muarai	882
+เมื่อไร	meuarai	833
 
 # เมื่อไหร่
-เมื่อไหร่	muearai	100
-เมื่อไหร่	meuarai	90
-เมื่อไหร่	muarai	85
+เมื่อไหร่	muearai	2095
+เมื่อไหร่	meuarai	1886
+เมื่อไหร่	muarai	1781
 
 # อย่างไร
-อย่างไร	yangrai	100
-อย่างไร	yangngai	90
-อย่างไร	yanggai	80
+อย่างไร	yangrai	17163
+อย่างไร	yangngai	15447
+อย่างไร	yanggai	13730
+
+# จะ
+จะ	ja	501374
+
+# ของ
+ของ	khong	506314
+
+# ว่า
+ว่า	wa	358393
+
+# ก็
+ก็	ko	299255
+ก็	gor	254367
+ก็	kor	239404
+
+# ได้
+ได้	dai	396750
+ได้	day	337238
+
+# กัน
+กัน	kan	173642
+กัน	gan	147596
+
+# การ
+การ	kan	592036
+การ	karn	532832
+การ	gan	473629
+
+# ความ
+ความ	khwam	230926
+ความ	kwam	207833
+
+# ต้อง
+ต้อง	tong	152506
+
+# นี้
+นี้	nee	173270
+นี้	ni	155943
+
+# ด้วย
+ด้วย	duay	144359
+ด้วย	duy	122705
+
+# ผู้
+ผู้	phu	121530
+ผู้	poo	109377
+
+# ซึ่ง
+ซึ่ง	sueng	120255
+ซึ่ง	seung	108230
+ซึ่ง	sung	90191
+
+# มาก
+มาก	mak	111366
+
+# ตาม
+ตาม	tam	114643
+
+# นั้น
+นั้น	nan	134924
+
+# โดย
+โดย	doy	110905
+โดย	doi	99814
+
+# เพื่อ
+เพื่อ	phuea	93642
+เพื่อ	pua	84278
+เพื่อ	peua	79596
+
+# เรื่อง
+เรื่อง	reuang	103410
+เรื่อง	ruang	93069
+เรื่อง	rueang	87898
+
+# อีก
+อีก	eek	90482
+อีก	ik	76910
+
+# จึง
+จึง	jung	75094
+จึง	jeung	67585
+
+# เมื่อ
+เมื่อ	muea	90185
+เมื่อ	mua	81166
+เมื่อ	meua	76657
+
+# กว่า
+กว่า	kwa	71636
+
+# ไว้
+ไว้	wai	70213
+ไว้	way	59681
+
+# ไทย
+ไทย	thai	70666
+ไทย	thay	60066
+
+# ถ้า
+ถ้า	ta	63755
+
+# เวลา
+เวลา	wela	61608
+เวลา	welaa	52367
+
+# ต่อ
+ต่อ	tor	66480
+ต่อ	to	59832
+
+# ต่าง
+ต่าง	tang	59691
+
+# ส่วน
+ส่วน	suan	59277
+
+# ทั้ง
+ทั้ง	tang	66393
+
+# แบบ
+แบบ	baep	55674
+แบบ	baeb	50107
+แบบ	bab	47323
+
+# ทุก
+ทุก	took	54867
+ทุก	tuk	49380
+
+# ก่อน
+ก่อน	kon	52599
+ก่อน	korn	47339
+
+# อาจ
+อาจ	at	57922
+อาจ	ard	49234
+
+# เช่น
+เช่น	chen	50911
+
+# แห่ง
+แห่ง	haeng	43331
+
+# สามารถ
+สามารถ	samat	44557
+สามารถ	samart	40101
+
+# นำ
+นำ	nam	46168
+นำ	num	36934
+
+# อื่น
+อื่น	uen	50886
+อื่น	eun	45797
+
+# จน
+จน	jon	41260
+
+# ด้าน
+ด้าน	dan	41108
+
+# ชีวิต
+ชีวิต	chiwit	40210
+ชีวิต	cheewit	36189
+
+# สิ่ง
+สิ่ง	sing	39830
+
+# ได้รับ
+ได้รับ	dairap	42018
+ได้รับ	dayrap	35715
+
+# พระ
+พระ	pra	39627
+พระ	phra	35664
+
+# นี่
+นี่	nee	37578
+นี่	ni	33820
+
+# หลาย
+หลาย	lai	38325
+หลาย	lay	34492
+
+# เหมือน
+เหมือน	meuan	39596
+เหมือน	muean	35636
+เหมือน	mean	31677
+
+# ปัญหา
+ปัญหา	panha	37404
+
+# สังคม
+สังคม	sangkhom	37140
+
+# กลุ่ม
+กลุ่ม	klum	37535
+กลุ่ม	kloom	31905
+
+# คำ
+คำ	kham	35694
+คำ	kam	30340
+
+# ใด
+ใด	dai	35060
+ใด	day	29801
+
+# คง
+คง	khong	34378
+
+# เสียง
+เสียง	siang	34721
+เสียง	seang	29513
+
+# สำหรับ
+สำหรับ	samrap	34250
+สำหรับ	sumrap	29112
+
+# แสดง
+แสดง	sadaeng	33661
+แสดง	sadang	28612
+
+# สร้าง
+สร้าง	sang	32877
+สร้าง	srang	27945
+
+# กำลัง
+กำลัง	kamlang	32943
+
+# ผล
+ผล	phon	34026
+ผล	pol	28922
+
+# โลก
+โลก	lok	32385
+
+# กำหนด
+กำหนด	kamnot	31902
+กำหนด	gamnot	27117
+
+# ระบบ
+ระบบ	rabop	31180
+ระบบ	rabob	26503
+
+# เอง
+เอง	eng	30943
+
+# ขอ
+ขอ	kho	31715
+
+# ที่สุด
+ที่สุด	teesut	30312
+ที่สุด	thisud	25765
+
+# เสีย
+เสีย	sia	30006
+เสีย	sear	24005
+
+# แก่
+แก่	kae	29859
+แก่	gae	26873
+แก่	kair	22394
+
+# ควร
+ควร	khuan	29643
+ควร	kuan	26679
+ควร	khuon	23714
+
+# พอ
+พอ	por	30664
+พอ	paw	27598
+พอ	po	26064
+
+# น้อย
+น้อย	noi	29415
+น้อย	noy	26474
+
+# สี
+สี	see	29279
+สี	si	26351
+
+# น่า
+น่า	na	29140
+
+# ร่วม
+ร่วม	ruam	28905
+
+# พัฒนา
+พัฒนา	pattana	28839
+พัฒนา	phatthana	24513
+
+# หาก
+หาก	hak	28582
+
+# เดียว
+เดียว	diao	26169
+เดียว	diew	23552
+เดียว	deow	20935
+
+# กรณี
+กรณี	karanee	25991
+กรณี	koranee	22092
+กรณี	karani	20793
+
+# มาตรา
+มาตรา	matra	28423
+
+# กฎหมาย
+กฎหมาย	kotmai	25724
+กฎหมาย	kodmai	21865
+
+# ระดับ
+ระดับ	radap	25966
+
+# เกี่ยวกับ
+เกี่ยวกับ	kiawkap	25218
+เกี่ยวกับ	keawkap	22192
+เกี่ยวกับ	kiaokap	20174
+
+# ดังกล่าว
+ดังกล่าว	dangklao	25009
+ดังกล่าว	dangklaow	21258
+
+# นัก
+นัก	nak	24924
+
+# จัด
+จัด	jat	24889
+จัด	chat	21156
+
+# กล่าว
+กล่าว	klao	25566
+กล่าว	glao	21731
+
+# ช่วง
+ช่วง	chuang	24816
+
+# เพียง
+เพียง	piang	24673
+เพียง	phiang	20972
+
+# ฝ่าย
+ฝ่าย	fai	24780
+ฝ่าย	fay	21063
+
+# ลักษณะ
+ลักษณะ	laksana	24666
+ลักษณะ	luksana	20966
+
+# จำนวน
+จำนวน	chamnuan	24359
+จำนวน	jamnuan	23141
+
+# ตน
+ตน	ton	24219
+
+# ข้อ
+ข้อ	kho	24350
+
+# รวม
+รวม	ruam	23925
+รวม	ruem	19140
+
+# สาว
+สาว	sao	23795
+สาว	saow	20226
+
+# บ้าง
+บ้าง	bang	23267
+
+# บุคคล
+บุคคล	bukkhon	23533
+บุคคล	bukkon	21180
+บุคคล	bookkon	18826
+
+# พิจารณา
+พิจารณา	pijarana	23191
+พิจารณา	pijaranaa	19712
+
+# อำนาจ
+อำนาจ	amnat	23177
+
+# ภาพ
+ภาพ	phap	22607
+
+# ผ่าน
+ผ่าน	phan	22201
+
+# ข้อมูล
+ข้อมูล	khomun	21726
+ข้อมูล	kormoon	18467
+
+# ค่า
+ค่า	ka	22325
+
+# ยิ่ง
+ยิ่ง	ying	21588
+
+# เพิ่ม
+เพิ่ม	perm	21550
+เพิ่ม	poem	18318
+เพิ่ม	peum	17240
+
+# ตั้งแต่
+ตั้งแต่	tangtae	21505
+ตั้งแต่	tungtae	18279
+
+# ทรง
+ทรง	song	21521
+ทรง	srong	16141
+
+# เศรษฐกิจ
+เศรษฐกิจ	sedthakit	21347
+เศรษฐกิจ	setthakit	20280
+เศรษฐกิจ	sethakit	18145
+
+# วันที่
+วันที่	wanthi	22821
+วันที่	wanti	20539
+
+# ต่อไป
+ต่อไป	torpai	21364
+ต่อไป	topai	19228
+ต่อไป	tawpai	17091
+
+# กระทำ
+กระทำ	kratham	21296
+กระทำ	gratam	18102
+
+# ไหน
+ไหน	nai	21329
+ไหน	nay	18130
+
+# ตั้ง
+ตั้ง	tang	21261
+
+# ภาษา
+ภาษา	phasa	21080
+ภาษา	pasa	18972
+
+# รัฐ
+รัฐ	rat	20512
+รัฐ	ratta	16410
+
+# ก็ได้
+ก็ได้	kodai	20128
+ก็ได้	gordai	17109
+ก็ได้	kordai	16102
+
+# ตอน
+ตอน	ton	20882
+ตอน	torn	17750
+
+# รู้สึก
+รู้สึก	ruseuk	20126
+รู้สึก	roosuek	17107
+
+# การศึกษา
+การศึกษา	kansueksa	20331
+การศึกษา	karnsueksa	18298
+การศึกษา	kansuksa	16265
+
+# ขนาด
+ขนาด	khanad	20067
+ขนาด	kanat	17057
+
+# เท่านั้น
+เท่านั้น	taonan	19901
+เท่านั้น	thaonan	16916
+
+# ชื่อ
+ชื่อ	chue	19574
+ชื่อ	cheu	17617
+ชื่อ	chu	15659
+
+# ชาติ
+ชาติ	chat	19470
+ชาติ	chart	17523
+
+# รัฐบาล
+รัฐบาล	rattaban	19379
+รัฐบาล	ratthaban	17441
+
+# ผิด
+ผิด	pit	19425
+ผิด	phid	16511
+
+# นาน
+นาน	nan	19330
+
+# หลัก
+หลัก	lak	19347
+
+# ละ
+ละ	la	18725
+
+# ภายใน
+ภายใน	painai	18864
+ภายใน	phainai	16034
+
+# แต่ละ
+แต่ละ	taela	18765
+แต่ละ	taelae	15950
+
+# จีน
+จีน	jeen	19026
+
+# เรียก
+เรียก	riak	18333
+เรียก	reak	15583
+
+# ประชาชน
+ประชาชน	prachachon	18121
+
+# ผลิต
+ผลิต	phalit	17685
+ผลิต	palit	15916
+
+# หมด
+หมด	mot	17548
+
+# มนุษย์
+มนุษย์	manut	18063
+มนุษย์	manoot	16257
+มนุษย์	manussaya	13547
+
+# การเมือง
+การเมือง	karnmuang	17462
+การเมือง	kanmuang	15716
+การเมือง	karnmueang	14843
+
+# พร้อม
+พร้อม	prom	17244
+พร้อม	phrom	14657
+
+# มัก
+มัก	mak	17232
+
+# ชาว
+ชาว	chao	17261
+ชาว	chaow	14672
+
+# เสนอ
+เสนอ	sanoe	17295
+เสนอ	saner	14701
+เสนอ	sanur	13836
+
+# ปฏิบัติ
+ปฏิบัติ	patibat	17284
+ปฏิบัติ	pati	13827
+
+# รักษา
+รักษา	raksa	17219
+
+# เลือก
+เลือก	leuak	17199
+เลือก	luak	15479
+เลือก	lueak	14619
+
+# ก็คือ
+ก็คือ	gokhue	16925
+ก็คือ	gorkue	14386
+ก็คือ	kokhue	13540
+
+# ระยะ
+ระยะ	raya	16818
+
+# ตลอด
+ตลอด	talod	16585
+ตลอด	talot	14926
+
+# สู่
+สู่	su	16404
+สู่	soo	14764
+
+# ความคิด
+ความคิด	kwamkit	16339
+ความคิด	khwamkhid	14705
+
+# หรือไม่
+หรือไม่	ruemai	16311
+หรือไม่	reumai	14680
+หรือไม่	luemai	12233
+
+# หน้าที่
+หน้าที่	natee	16274
+หน้าที่	nathi	13833
+
+# ผู้หญิง
+ผู้หญิง	phuying	16122
+ผู้หญิง	puying	14510
+ผู้หญิง	phooying	13704
+
+# เก็บ
+เก็บ	kep	16071
+
+# เดียวกัน
+เดียวกัน	diaokan	15958
+เดียวกัน	diawkan	14362
+เดียวกัน	diowkan	12766
+
+# ศึกษา
+ศึกษา	suksa	16072
+ศึกษา	seuksa	14465
+
+# ชั้น
+ชั้น	chan	15993
+
+# ประโยชน์
+ประโยชน์	prayot	15787
+ประโยชน์	prayoht	13419
+
+# สิทธิ
+สิทธิ	sit	15809
+สิทธิ	sitti	14228
+สิทธิ	sithi	13438
+
+# แค่
+แค่	kae	15717
+แค่	khae	14145
+
+# เปลี่ยน
+เปลี่ยน	plian	15673
+เปลี่ยน	plien	14106
+เปลี่ยน	pliean	12538
+
+# ปัจจุบัน
+ปัจจุบัน	patjuban	15594
+ปัจจุบัน	patchuban	14035
+
+# เจ้า
+เจ้า	jao	15577
+เจ้า	chao	13240
+
+# พื้นที่
+พื้นที่	puenti	15513
+พื้นที่	peunti	13962
+พื้นที่	phuenthee	12410
+
+# คณะกรรมการ
+คณะกรรมการ	kanakammakan	15783
+คณะกรรมการ	kanagammakan	13416
+
+# ตำแหน่ง
+ตำแหน่ง	tamnaeng	15224
+ตำแหน่ง	tumnaeng	12940
+
+# วิธี
+วิธี	witi	15311
+วิธี	withee	13780
+
+# ประจำ
+ประจำ	prajam	15150
+ประจำ	pracham	12878
+
+# พยายาม
+พยายาม	payayam	15124
+พยายาม	phayayam	13612
+
+# เนื่องจาก
+เนื่องจาก	nueangjak	15013
+เนื่องจาก	nuangjak	13512
+เนื่องจาก	neuangjak	12761
+
+# โอกาส
+โอกาส	okat	14902
+โอกาส	okas	13412
+
+# แม้
+แม้	mae	14863
+
+# อย่า
+อย่า	ya	14825
+
+# สมัย
+สมัย	samai	14837
+สมัย	samay	12611
+
+# สัมพันธ์
+สัมพันธ์	sampan	14815
+สัมพันธ์	samphan	13334
+
+# ประเภท
+ประเภท	pratet	14812
+ประเภท	praphet	12590
+
+# วัฒนธรรม
+วัฒนธรรม	watthanatham	14670
+วัฒนธรรม	wattanatam	13203
+
+# เหตุ
+เหตุ	het	14775
+เหตุ	hed	12559
+
+# ตนเอง
+ตนเอง	toneng	14652
+ตนเอง	tonaeng	12454
+
+# สัก
+สัก	sak	14530
+
+# นั่น
+นั่น	nan	14636
+
+# สินค้า
+สินค้า	sinka	14520
+
+# เดิม
+เดิม	derm	14506
+เดิม	doem	12330
+
+# จำเป็น
+จำเป็น	jampen	14435
+จำเป็น	champen	11548
+
+# เปลี่ยนแปลง
+เปลี่ยนแปลง	plianplaeng	14296
+เปลี่ยนแปลง	plienplang	12580
+
+# ถือ
+ถือ	thue	14273
+ถือ	theu	12846
+ถือ	tu	10705
+
+# ประกอบ
+ประกอบ	prakop	14205
+
+# ชนิด
+ชนิด	chanit	14155
+
+# กระทรวง
+กระทรวง	krasuang	14151
+กระทรวง	kratruang	12028
+กระทรวง	grasuang	11321
+
+# ปรากฏ
+ปรากฏ	prakot	13998
+ปรากฏ	bprakot	11198
+
+# แล้วก็
+แล้วก็	laewgor	13995
+แล้วก็	laewko	12596
+แล้วก็	laeoko	11896
+
+# ดำเนินการ
+ดำเนินการ	damnoenkan	13917
+ดำเนินการ	damneunkan	12525
+ดำเนินการ	damnernkan	11829
+
+# รู้จัก
+รู้จัก	rujak	13708
+รู้จัก	roojak	12337
+
+# เกิน
+เกิน	goen	13755
+เกิน	kern	12380
+
+# โดยเฉพาะ
+โดยเฉพาะ	doichaphor	13614
+โดยเฉพาะ	doeichapho	12253
+โดยเฉพาะ	doychapaw	10891
+
+# ทั้งหมด
+ทั้งหมด	thangmot	13772
+ทั้งหมด	tangmod	11706
+
+# ดังนั้น
+ดังนั้น	dangnan	13600
+
+# บริการ
+บริการ	borikan	13556
+บริการ	borigan	11523
+
+# ทราบ
+ทราบ	sap	13507
+ทราบ	saab	12156
+
+# ประมาณ
+ประมาณ	praman	13487
+
+# โครงการ
+โครงการ	krongkan	13284
+
+# จุด
+จุด	jood	13469
+จุด	jut	11449
+
+# ภาค
+ภาค	phak	13088
+
+# ตัวอย่าง
+ตัวอย่าง	tuayang	13205
+ตัวอย่าง	tuayaang	11224
+
+# เรียกว่า
+เรียกว่า	riakwa	13084
+เรียกว่า	reakwa	11121
+เรียกว่า	riagwa	9813
+
+# หรอก
+หรอก	rok	13078
+หรอก	lok	10462
+
+# โรค
+โรค	rok	13057
+
+# อายุ
+อายุ	ayu	13003
+
+# อาการ
+อาการ	akan	13022
+อาการ	aakaan	11069
+
+# พา
+พา	pa	12980
+
+# เหล่านี้
+เหล่านี้	laonee	12999
+เหล่านี้	laoni	11699
+
+# วิธีการ
+วิธีการ	witheekan	12796
+วิธีการ	witikan	11516
+
+# ความรู้สึก
+ความรู้สึก	khwamruseuk	12738
+ความรู้สึก	kwamrusuk	11464
+ความรู้สึก	khwamroosuek	10190
+
+# แทน
+แทน	taen	12718
+แทน	tan	10810
+
+# ที่อยู่
+ที่อยู่	teeyoo	12711
+ที่อยู่	tiyu	10804
+
+# ราชการ
+ราชการ	ratchakan	12538
+ราชการ	rachakan	11284
+
+# แตกต่าง
+แตกต่าง	taektang	12820
+แตกต่าง	taektaang	10897
+
+# คณะ
+คณะ	kana	12241
+คณะ	khana	11017
+
+# นา
+นา	na	12406
+
+# ไหม
+ไหม	mai	12461
+ไหม	may	10592
+
+# สภา
+สภา	sapha	12177
+สภา	sapa	10350
+
+# สภาพ
+สภาพ	saphap	12160
+สภาพ	sapap	10944
+
+# ที
+ที	tee	12135
+ที	ti	10315
+
+# พรรค
+พรรค	phak	12120
+พรรค	pak	10908
+
+# นาง
+นาง	nang	12075
+
+# กลายเป็น
+กลายเป็น	klaipen	11814
+กลายเป็น	klaaipen	10042
+
+# จับ
+จับ	jab	11784
+จับ	chap	9427
+
+# วิจัย
+วิจัย	wijai	11755
+วิจัย	wichai	9992
+
+# หัน
+หัน	han	11655
+
+# แนว
+แนว	naew	11697
+แนว	nair	9358
+
+# ประกาศ
+ประกาศ	prakat	12096
+ประกาศ	prakard	10282
+
+# แรง
+แรง	raeng	11963
+แรง	reng	10169
+
+# ไม่ว่า
+ไม่ว่า	maiwa	11643
+ไม่ว่า	maywa	9897
+
+# ยก
+ยก	yok	11605
+
+# เฉพาะ
+เฉพาะ	chaphoh	11640
+เฉพาะ	chapo	10476
+เฉพาะ	chapao	9312
+
+# อาศัย
+อาศัย	asai	11590
+อาศัย	asay	9852
+
+# ย่อม
+ย่อม	yom	11587
+
+# เท่า
+เท่า	tao	11393
+
+# ความรู้
+ความรู้	khwamru	11389
+ความรู้	kwamru	10250
+
+# นโยบาย
+นโยบาย	nayobai	11409
+นโยบาย	nayobaai	9698
+นโยบาย	nayobay	9698
+
+# ยอม
+ยอม	yom	11352
+
+# ราย
+ราย	rai	11320
+ราย	ray	9622
+
+# ควบคุม
+ควบคุม	khuabkhum	11310
+ควบคุม	kuabkum	10179
+ควบคุม	khuapkhoom	9048
+
+# วาง
+วาง	wang	11262
+
+# ธรรมชาติ
+ธรรมชาติ	thammachat	11274
+ธรรมชาติ	tammachat	9583
+
+# ส่วนใหญ่
+ส่วนใหญ่	suanyai	11259
+ส่วนใหญ่	suanyay	9570
+
+# ปกติ
+ปกติ	pokati	11235
+ปกติ	pakati	9550
+ปกติ	pokti	8988
+
+# ประการ
+ประการ	prakan	11194
+
+# บริหาร
+บริหาร	borihan	11184
+บริหาร	boriharn	10066
+
+# สัญญา
+สัญญา	sanya	11140
+สัญญา	sunya	8912
+
+# สมาชิก
+สมาชิก	samachik	11135
+
+# หลังจาก
+หลังจาก	langjak	11058
+
+# นิยม
+นิยม	niyom	11131
+
+# ต้น
+ต้น	ton	11007
+
+# อนุญาต
+อนุญาต	anuyat	10947
+อนุญาต	anuyaat	9305
+
+# ญี่ปุ่น
+ญี่ปุ่น	yipun	10913
+ญี่ปุ่น	yeepoon	9603
+
+# เปล่า
+เปล่า	plao	10827
+เปล่า	blao	8662
+
+# แก้ไข
+แก้ไข	kaekhai	10764
+แก้ไข	gaekhai	9149
+
+# ร่าง
+ร่าง	rang	10945
+
+# เพลง
+เพลง	pleng	10739
+
+# ทางการ
+ทางการ	thangkan	10887
+ทางการ	thangkarn	9798
+
+# พิเศษ
+พิเศษ	piset	10722
+พิเศษ	pised	9114
+
+# จัดการ
+จัดการ	jatkan	10679
+จัดการ	jadkan	9077
+
+# เป็นต้น
+เป็นต้น	penton	10667
+เป็นต้น	pental	8534
+
+# ทั้งนี้
+ทั้งนี้	tangni	10536
+ทั้งนี้	thangnee	9482
+
+# ความหมาย
+ความหมาย	khwammai	10629
+ความหมาย	kwammai	9566
+ความหมาย	khwammay	9035
+
+# บริเวณ
+บริเวณ	boriwen	10561
+บริเวณ	boriween	9505
+บริเวณ	borriwen	8449
+
+# ยุค
+ยุค	yuk	10486
+
+# สัตว์
+สัตว์	sat	10479
+
+# บท
+บท	bot	10466
+
+# ดูแล
+ดูแล	doolae	10448
+ดูแล	dulae	9403
+
+# เขต
+เขต	khet	10450
+
+# รวมทั้ง
+รวมทั้ง	ruamtang	10464
+รวมทั้ง	ruamthang	9418
+รวมทั้ง	roumtang	8371
+
+# บังคับ
+บังคับ	bangkhap	10399
+
+# อัตรา
+อัตรา	attra	10297
+อัตรา	atra	9267
+
+# ไม้
+ไม้	mai	10420
+ไม้	may	8857
+
+# เชิง
+เชิง	choeng	10243
+เชิง	cherng	9219
+เชิง	churng	8194
+
+# ได้แก่
+ได้แก่	daikae	10260
+ได้แก่	daikaae	8721
+
+# สำนักงาน
+สำนักงาน	samnakngan	10181
+
+# ทันที
+ทันที	tanti	10139
+ทันที	tuntee	9125
+
+# ตรวจ
+ตรวจ	truat	10239
+ตรวจ	truad	8703
+
+# เจ้าของ
+เจ้าของ	jaokhong	10069
+เจ้าของ	chaokhong	8559
+
+# ยอมรับ
+ยอมรับ	yomrap	10089
+ยอมรับ	yomrub	8878
+
+# สัมภาษณ์
+สัมภาษณ์	sampat	10159
+สัมภาษณ์	samphas	8635
+
+# ผู้ชาย
+ผู้ชาย	phuchai	10066
+ผู้ชาย	poochai	9059
+ผู้ชาย	phuchay	8053
+
+# ชุมชน
+ชุมชน	chumchon	9995
+
+# ขาด
+ขาด	khat	9975
+
+# นอกจาก
+นอกจาก	nokjak	10064
+นอกจาก	nokchak	8554
+
+# ทั่ว
+ทั่ว	thua	9977
+ทั่ว	tua	8480
+
+# รายงาน
+รายงาน	raingan	9856
+รายงาน	raingaan	8378
+
+# เจ้าหน้าที่
+เจ้าหน้าที่	jaonati	9881
+เจ้าหน้าที่	chaonathi	8399
+
+# ฉบับ
+ฉบับ	chabap	9844
+ฉบับ	chabub	8367
+
+# ฐานะ
+ฐานะ	thana	9843
+
+# ไง
+ไง	ngai	9919
+ไง	ngay	8431
+
+# ยังไง
+ยังไง	yangngai	9943
+ยังไง	yangai	8452
+
+# มิ
+มิ	mi	9842
+
+# สถาบัน
+สถาบัน	sathaban	9827
+
+# ประธาน
+ประธาน	prathan	9779
+
+# ปรับ
+ปรับ	prap	9756
+ปรับ	brap	7805
+
+# สนับสนุน
+สนับสนุน	sanapsanun	9738
+สนับสนุน	sanubsanun	8277
+
+# โต
+โต	to	9736
+โต	toe	8276
+
+# แพทย์
+แพทย์	paet	9679
+แพทย์	pat	8227
+
+# เกี่ยวข้อง
+เกี่ยวข้อง	kiawkhong	9693
+เกี่ยวข้อง	keawkhong	8239
+เกี่ยวข้อง	kiaokhong	7754
+
+# ดังนี้
+ดังนี้	dangnee	9663
+ดังนี้	dangni	8697
+
+# เสมอ
+เสมอ	samer	9639
+เสมอ	samoe	8675
+เสมอ	sameu	7711
+
+# หล่อน
+หล่อน	lon	9615
+
+# แก้
+แก้	kae	9576
+แก้	gae	8618
+แก้	kair	7182
+
+# ทหาร
+ทหาร	tahan	9560
+
+# เหลือ
+เหลือ	luea	9547
+เหลือ	lua	8592
+เหลือ	leua	8115
+
+# เครื่อง
+เครื่อง	krueang	9581
+เครื่อง	kruang	8623
+เครื่อง	kreuang	7665
+
+# ระเบียบ
+ระเบียบ	rabiap	9512
+ระเบียบ	rabieb	8561
+
+# อารมณ์
+อารมณ์	arom	9488
+
+# วิเคราะห์
+วิเคราะห์	wikhro	9497
+วิเคราะห์	wikrao	8072
+
+# ช่วยเหลือ
+ช่วยเหลือ	chuayluea	9465
+ช่วยเหลือ	chuaylua	8329
+ช่วยเหลือ	chuaylur	7572
+
+# ยังคง
+ยังคง	yangkhong	9461
+
+# จิต
+จิต	jit	9471
+จิต	chit	8050
+
+# รีบ
+รีบ	rib	9440
+
+# ปล่อย
+ปล่อย	ploi	9428
+ปล่อย	ploy	8485
+
+# เหตุผล
+เหตุผล	hetphon	9415
+เหตุผล	hedphol	8003
+เหตุผล	hetupon	7532
+
+# ต่างประเทศ
+ต่างประเทศ	tangpratet	9396
+ต่างประเทศ	tangprathet	8456
+
+# สั่ง
+สั่ง	sang	9372
+
+# มิได้
+มิได้	midai	9315
+
+# แบ่ง
+แบ่ง	baeng	9268
+แบ่ง	bang	7414
+
+# ปกครอง
+ปกครอง	pokkrong	9255
+
+# ถือว่า
+ถือว่า	thuewa	9239
+ถือว่า	thuwa	7853
+ถือว่า	tuwa	7853
+
+# เน้น
+เน้น	nen	9246
+
+# รูปแบบ
+รูปแบบ	ruupbaep	9230
+รูปแบบ	roopbaeb	8307
+รูปแบบ	rupbab	7384
+
+# เต็ม
+เต็ม	tem	9147
+
+# ความสำคัญ
+ความสำคัญ	khwamsamkhan	9209
+ความสำคัญ	kwamsamkan	8288
+
+# ธุรกิจ
+ธุรกิจ	thurakit	9092
+ธุรกิจ	thurakij	7728
+
+# หมายถึง
+หมายถึง	maitueng	9165
+หมายถึง	maithueng	8248
+หมายถึง	maytueng	7332
+
+# ชัดเจน
+ชัดเจน	chatjen	9062
+
+# นับ
+นับ	nap	9052
+
+# โอ
+โอ	oh	9047
+โอ	o	8142
+
+# อังกฤษ
+อังกฤษ	angkrit	9048
+อังกฤษ	angrit	7691
+
+# ร่างกาย
+ร่างกาย	rangkai	9037
+ร่างกาย	rangkay	7953
+
+# สนใจ
+สนใจ	sonjai	9031
+สนใจ	sonchai	7676
+
+# ทั่วไป
+ทั่วไป	tuapai	8978
+ทั่วไป	thuapai	7631
+
+# ความผิด
+ความผิด	khwamphit	8917
+ความผิด	kwampid	8025
+
+# ต่ำ
+ต่ำ	tam	8930
+ต่ำ	dtam	8037
+ต่ำ	tum	7144
+
+# ศาล
+ศาล	san	8950
+ศาล	saan	7608
+
+# ต่อมา
+ต่อมา	tomaa	8809
+
+# มากมาย
+มากมาย	makmai	8757
+
+# แรงงาน
+แรงงาน	raengngan	8728
+แรงงาน	rangngan	7419
+
+# สาร
+สาร	san	8735
+สาร	saan	7425
+
+# รายได้
+รายได้	raidai	8645
+รายได้	raydai	7348
+
+# เหตุการณ์
+เหตุการณ์	hetkan	8671
+เหตุการณ์	hedkan	7370
+เหตุการณ์	haetkan	6503
+
+# ไอ้
+ไอ้	ai	8588
+ไอ้	ay	7300
+
+# อธิบาย
+อธิบาย	athibai	8574
+อธิบาย	atibay	7288
+
+# กระบวนการ
+กระบวนการ	krabuankan	8585
+กระบวนการ	grabuankan	7297
+
+# ตก
+ตก	tok	8551
+
+# วัย
+วัย	wai	8534
+วัย	way	7254
+
+# นึก
+นึก	nuk	8475
+นึก	neuk	7628
+
+# เหมาะสม
+เหมาะสม	mosom	8433
+เหมาะสม	mawsom	7168
+
+# กรุงเทพ
+กรุงเทพ	krungthep	8464
+กรุงเทพ	groongtep	7194
+
+# แจ้ง
+แจ้ง	jaeng	8452
+แจ้ง	jeng	7184
+
+# ดาว
+ดาว	dao	8418
+ดาว	daw	7155
+
+# ที่สำคัญ
+ที่สำคัญ	theesamkhan	8397
+ที่สำคัญ	tisamkhan	7137
+
+# ธรรม
+ธรรม	tham	8387
+ธรรม	thom	6710
+
+# ร้อง
+ร้อง	rong	8294
+
+# ป้องกัน
+ป้องกัน	pongkan	8260
+
+# สุด
+สุด	sut	8217
+สุด	soot	7395
+
+# กรรมการ
+กรรมการ	kammakan	8205
+กรรมการ	kamakan	6974
+
+# ปัจจัย
+ปัจจัย	patjai	8187
+ปัจจัย	patchai	7368
+
+# แน่
+แน่	nae	8314
+แน่	naa	6651
+
+# ตัดสินใจ
+ตัดสินใจ	tatsinjai	8148
+ตัดสินใจ	tudsinjai	6926
+
+# อุตสาหกรรม
+อุตสาหกรรม	utsahakam	8136
+อุตสาหกรรม	udsahakam	6916
+อุตสาหกรรม	utsahagrrm	6102
+
+# คดี
+คดี	khadi	8124
+คดี	kadee	7312
+
+# ทำการ
+ทำการ	tamkan	8172
+ทำการ	thamkan	7355
+
+# สายตา
+สายตา	saita	8122
+สายตา	sayta	7310
+
+# ชน
+ชน	chon	8052
+
+# ค้า
+ค้า	ka	8026
+
+# คำถาม
+คำถาม	khamtham	8091
+
+# นอกจากนี้
+นอกจากนี้	nokjakni	8021
+นอกจากนี้	nokchakni	6818
+
+# ศรี
+ศรี	sri	7956
+ศรี	see	6763
+
+# รุ่น
+รุ่น	run	7904
+รุ่น	roon	6718
+
+# ที่ดิน
+ที่ดิน	teedin	7947
+ที่ดิน	thidin	6755
+
+# จนถึง
+จนถึง	jonthueng	7861
+จนถึง	jontung	7075
+จนถึง	jonteung	6682
+
+# ตำรวจ
+ตำรวจ	tamruat	7894
+ตำรวจ	tamruad	7105
+
+# ซี
+ซี	see	7869
+ซี	si	6689
+
+# กรม
+กรม	krom	7828
+กรม	grom	6654
+
+# ที่ผ่านมา
+ที่ผ่านมา	thiphanma	7860
+ที่ผ่านมา	teephanma	6681
+
+# ทิ้ง
+ทิ้ง	ting	7817
+
+# พฤติกรรม
+พฤติกรรม	prutikam	7846
+พฤติกรรม	pruetikam	7061
+พฤติกรรม	phruetikrrm	5884
+
+# โครงสร้าง
+โครงสร้าง	krongsang	7807
+โครงสร้าง	khrongsrang	7026
+
+# เลี้ยง
+เลี้ยง	liang	7788
+เลี้ยง	leang	6620
+
+# ขณะที่
+ขณะที่	khanathi	7794
+ขณะที่	kanati	7015
+
+# แหล่ง
+แหล่ง	laeng	7796
+
+# เพิ่ง
+เพิ่ง	perng	7750
+เพิ่ง	peung	6588
+เพิ่ง	phoeng	6200
+
+# ที่มา
+ที่มา	teema	7740
+ที่มา	thima	6579
+
+# ราช
+ราช	rat	7714
+ราช	rach	6943
+ราช	ratch	6171
+
+# ตรวจสอบ
+ตรวจสอบ	truadsop	7736
+ตรวจสอบ	truatsop	6962
+ตรวจสอบ	truajsop	6576
+
+# ค่อย
+ค่อย	khoi	7711
+ค่อย	khoy	6940
+
+# ไม่ค่อย
+ไม่ค่อย	maikhoi	7733
+ไม่ค่อย	maikoy	6960
+
+# เลิก
+เลิก	lerk	7683
+เลิก	loek	6531
+
+# ระบุ
+ระบุ	rabu	7711
+
+# รายการ
+รายการ	raikan	7677
+รายการ	raykan	6525
+
+# ผู้นำ
+ผู้นำ	phunam	7666
+ผู้นำ	poonam	6899
+
+# คุณภาพ
+คุณภาพ	khunaphap	7649
+คุณภาพ	kunapap	6884
+
+# ความจริง
+ความจริง	khwamjing	7648
+ความจริง	kwamjing	6883
+ความจริง	khwamjring	6118
+
+# กิจกรรม
+กิจกรรม	kitchakam	7624
+กิจกรรม	kijkam	6480
+กิจกรรม	kitjakam	6099
+
+# ศาสนา
+ศาสนา	satsana	7638
+ศาสนา	sasana	6874
+
+# ร้อยละ
+ร้อยละ	roila	7623
+ร้อยละ	royla	6861
+
+# อดีต
+อดีต	adit	7610
+อดีต	adeet	6849
+
+# หนุ่ม
+หนุ่ม	num	7591
+หนุ่ม	noom	6832
+
+# เช่นนี้
+เช่นนี้	chenni	7600
+
+# กิจการ
+กิจการ	kitkan	7568
+กิจการ	kijkan	6811
+
+# ขั้น
+ขั้น	khan	7472
+
+# แน่นอน
+แน่นอน	naenon	7550
+แน่นอน	naenorn	6418
+
+# ตัด
+ตัด	tat	7443
+
+# ส่งเสริม
+ส่งเสริม	songserm	7583
+ส่งเสริม	songsoem	6446
+
+# ข้าพเจ้า
+ข้าพเจ้า	khapchao	7462
+ข้าพเจ้า	kapjao	6716
+ข้าพเจ้า	khaphchao	5970
+
+# หน่วยงาน
+หน่วยงาน	nuayngan	7424
+หน่วยงาน	nuoyngan	6310
+
+# ก็ตาม
+ก็ตาม	kotam	7360
+ก็ตาม	gawtam	6256
+
+# เกือบ
+เกือบ	keuab	7363
+เกือบ	kueab	6627
+เกือบ	guab	5890
+
+# ชาวบ้าน
+ชาวบ้าน	chaoban	7331
+ชาวบ้าน	chaowban	6231
+
+# หนัง
+หนัง	nang	7265
+
+# บทบาท
+บทบาท	botbat	7349
+
+# สถานที่
+สถานที่	sathanthi	7337
+สถานที่	satanti	6603
+สถานที่	sathanti	6236
+
+# หน่อย
+หน่อย	noi	7260
+หน่อย	noy	6534
+
+# เพศ
+เพศ	phet	7212
+เพศ	pet	6491
+
+# พระองค์
+พระองค์	phraong	7207
+พระองค์	praong	6486
+
+# ความสามารถ
+ความสามารถ	khwamsamat	7202
+ความสามารถ	kwamsamarth	6122
+
+# สหรัฐ
+สหรัฐ	saharat	7190
+สหรัฐ	saharath	6112
+
+# พวกเขา
+พวกเขา	puakkhao	7187
+พวกเขา	puakkao	6109
+
+# เกษตร
+เกษตร	kaset	7180
+เกษตร	kasate	5744
+
+# ทฤษฎี
+ทฤษฎี	trissadi	7191
+ทฤษฎี	tritsadi	6472
+
+# ตกลง
+ตกลง	toklong	7113
+
+# โทษ
+โทษ	thot	7147
+โทษ	toad	5718
+
+# ถูกต้อง
+ถูกต้อง	tooktong	7104
+ถูกต้อง	thuktong	6394
+
+# รอง
+รอง	rong	7095
+
+# แทบ
+แทบ	taep	7087
+แทบ	thaep	6024
+
+# ปลาย
+ปลาย	plai	7071
+ปลาย	play	6010
+
+# หน่วย
+หน่วย	nuay	7060
+หน่วย	nuoy	6001
+
+# ยื่น
+ยื่น	yuen	7024
+ยื่น	yeun	6322
+
+# หมู่บ้าน
+หมู่บ้าน	mooban	7083
+หมู่บ้าน	muban	6375
+หมู่บ้าน	muuban	5666
+
+# เตรียม
+เตรียม	triam	7010
+เตรียม	triem	5958
+
+# คำสั่ง
+คำสั่ง	khamsang	7002
+คำสั่ง	kamsang	6302
+
+# หนี
+หนี	nee	6990
+หนี	ni	5942
+
+# ประเด็น
+ประเด็น	praden	7003
+
+# ติดต่อ
+ติดต่อ	tidtor	6935
+ติดต่อ	tidto	6242
+ติดต่อ	tittor	5548
+
+# มาตรฐาน
+มาตรฐาน	mattrathan	6964
+มาตรฐาน	matrathan	6268
+
+# สังเกต
+สังเกต	sangket	6907
+สังเกต	sangkate	5871
+
+# เจริญ
+เจริญ	charoen	6927
+เจริญ	jaroen	6581
+เจริญ	jarern	5888
+
+# สำนัก
+สำนัก	samnak	6833
+
+# จิตใจ
+จิตใจ	jitjai	6848
+จิตใจ	chitjai	5821
+
+# อย่างไรก็ตาม
+อย่างไรก็ตาม	yangraikotam	6818
+อย่างไรก็ตาม	yangraiktam	5454
+
+# อากาศ
+อากาศ	akat	6814
+อากาศ	akas	5792
+
+# ประสบ
+ประสบ	prasop	6810
+ประสบ	prasob	5788
+
+# เจตนา
+เจตนา	jettana	6796
+เจตนา	jetana	6116
+เจตนา	jedtana	5437
+
+# ดำเนิน
+ดำเนิน	damnoen	6766
+ดำเนิน	damnern	6428
+
+# เรื่อย
+เรื่อย	reuay	6793
+เรื่อย	ruay	5774
+เรื่อย	rueay	5434
+
+# องค์กร
+องค์กร	ongkorn	6782
+องค์กร	ongkon	5765
+
+# คอย
+คอย	khoy	6718
+คอย	khoi	5710
+
+# คนใน
+คนใน	khonnai	6672
+
+# แข่งขัน
+แข่งขัน	khengkhan	6593
+แข่งขัน	kaengkhan	5604
+
+# ข้าราชการ
+ข้าราชการ	kharatchakan	6667
+ข้าราชการ	kharachakan	6000
+
+# สรุป
+สรุป	sarup	6629
+สรุป	sarub	5635
+
+# ขยาย
+ขยาย	khayai	6645
+ขยาย	khayay	5980
+
+# หมายความ
+หมายความ	maikwam	6587
+หมายความ	maikhwam	5928
+หมายความ	maaikwaam	5599
+
+# ห้าม
+ห้าม	ham	6586
+
+# มั้ย
+มั้ย	mai	6559
+มั้ย	may	5575
+
+# สบาย
+สบาย	sabai	6544
+สบาย	sabay	5562
+
+# งบประมาณ
+งบประมาณ	ngoppraman	6543
+งบประมาณ	ngobpraman	5562
+
+# สื่อสาร
+สื่อสาร	suesan	6528
+สื่อสาร	suesarn	5875
+สื่อสาร	seusan	5222
+
+# ช่าง
+ช่าง	chang	6514
+
+# ในขณะที่
+ในขณะที่	naikhanathi	6498
+ในขณะที่	naikanati	5848
+ในขณะที่	naikhanati	5523
+
+# คล้าย
+คล้าย	klai	6480
+คล้าย	klay	5832
+
+# ทีม
+ทีม	team	6485
+ทีม	tim	5512
+
+# สา
+สา	sa	6496
+
+# ทรัพย์สิน
+ทรัพย์สิน	sapsin	6464
+ทรัพย์สิน	supsin	5494
+
+# ภาวะ
+ภาวะ	phawa	6455
+ภาวะ	pawa	5810
+
+# เอ
+เอ	ay	6369
+เอ	e	5414
+
+# วรรค
+วรรค	wak	6429
+วรรค	wakka	5143
+
+# ดิน
+ดิน	din	6366
+
+# มุม
+มุม	mum	6333
+มุม	moom	5383
+
+# ลา
+ลา	la	6300
+
+# สื่อ
+สื่อ	sue	6246
+สื่อ	seu	5621
+
+# เล่ม
+เล่ม	lem	6236
+
+# บ้า
+บ้า	baa	6240
+
+# สงบ
+สงบ	sangob	6270
+สงบ	sangop	5330
+สงบ	sa-ngob	4702
+
+# ชม
+ชม	chom	6215
+
+# หลักฐาน
+หลักฐาน	lakthan	6226
+
+# แปลก
+แปลก	plak	6205
+แปลก	plaek	5274
+
+# สาเหตุ
+สาเหตุ	sahet	6196
+สาเหตุ	sahetu	5267
+
+# รา
+รา	ra	6184
+
+# กล้า
+กล้า	kla	6174
+
+# จำกัด
+จำกัด	jamkat	6196
+จำกัด	chamkat	5267
+
+# นิติกรรม
+นิติกรรม	nitikam	6177
+นิติกรรม	nitikrrm	4633
+
+# ลำดับ
+ลำดับ	lamdap	6166
+
+# แนวทาง
+แนวทาง	naewthang	6165
+แนวทาง	naeothang	5240
+
+# ชวน
+ชวน	chuan	6145
+ชวน	chuon	4916
+
+# อันเป็น
+อันเป็น	anpen	6130
+
+# บ่อย
+บ่อย	boi	6117
+บ่อย	boy	5811
+
+# พลัง
+พลัง	palang	6112
+พลัง	phalang	5501
+พลัง	plang	4890
+
+# ศพ
+ศพ	sop	6144
+
+# ธรรมดา
+ธรรมดา	thammada	6073
+
+# แม้แต่
+แม้แต่	maetae	6051
+แม้แต่	maetair	5143
+
+# ยอด
+ยอด	yot	6051
+ยอด	yod	5446
+
+# ทั้งหลาย
+ทั้งหลาย	thanglai	6041
+
+# เมืองไทย
+เมืองไทย	mueangthai	6035
+เมืองไทย	meuangthai	5432
+เมืองไทย	muangthai	5130
+
+# เกินไป
+เกินไป	geunpai	6032
+เกินไป	kernpai	5429
+เกินไป	goenpai	4826
+
+# เอกสาร
+เอกสาร	ekasan	6024
+เอกสาร	ekkasan	5422
+
+# ย้าย
+ย้าย	yai	6030
+ย้าย	yaai	5126
+
+# นายกรัฐมนตรี
+นายกรัฐมนตรี	nayokratthamontri	6036
+นายกรัฐมนตรี	nayokrattamontree	5432
+นายกรัฐมนตรี	nayokrathamontri	4829
+
+# บันทึก
+บันทึก	banthuek	6007
+บันทึก	buntuek	5106
+
+# ทำหน้าที่
+ทำหน้าที่	thamnathi	6014
+ทำหน้าที่	tamnati	5413
+
+# คราว
+คราว	khrao	6005
+คราว	krao	5404
+
+# พื้น
+พื้น	peun	5979
+พื้น	pune	4783
+
+# ดำรง
+ดำรง	damrong	5977
+
+# เอกชน
+เอกชน	ekachon	5978
+เอกชน	ekkachon	5380
+
+# แนวคิด
+แนวคิด	naewkit	5923
+แนวคิด	naeokit	5035
+
+# ปริมาณ
+ปริมาณ	parimaan	5942
+ปริมาณ	primaan	5051
+
+# กรรม
+กรรม	kam	5921
+กรรม	gam	5033
+
+# ไหล
+ไหล	lai	5918
+ไหล	lay	5030
+
+# โดน
+โดน	don	5913
+โดน	doan	4730
+
+# ทุน
+ทุน	toon	5872
+ทุน	tun	5285
+
+# นก
+นก	nok	5904
+
+# กา
+กา	ka	5854
+
+# พ่อแม่
+พ่อแม่	phomae	5859
+พ่อแม่	pormae	4980
+
+# กี่
+กี่	kee	5843
+กี่	ki	4967
+
+# ไร้
+ไร้	rai	5836
+ไร้	ray	4961
+
+# กล่าวถึง
+กล่าวถึง	klaothueng	5801
+กล่าวถึง	klawthueng	5221
+กล่าวถึง	glaothung	4641
+
+# รายละเอียด
+รายละเอียด	railaiad	5779
+รายละเอียด	railaeiad	5201
+รายละเอียด	rairaiat	4623
+
+# เรียบร้อย
+เรียบร้อย	riabroi	5837
+เรียบร้อย	riaproy	5253
+เรียบร้อย	reabroy	4670
+
+# สถาน
+สถาน	sathan	5799
+
+# องค์
+องค์	ong	5784
+
+# เรียนรู้
+เรียนรู้	rianru	5770
+เรียนรู้	rienru	4904
+
+# รัฐธรรมนูญ
+รัฐธรรมนูญ	ratthammanun	5761
+รัฐธรรมนูญ	rattathammanoon	4897
+
+# งาม
+งาม	ngam	5752
+
+# คำตอบ
+คำตอบ	khamtop	5760
+
+# ค่อนข้าง
+ค่อนข้าง	khonkhang	5755
+
+# สถานการณ์
+สถานการณ์	sathanakan	5761
+สถานการณ์	sathannakarn	5185
+สถานการณ์	satarnkarn	4609
+
+# ประกอบด้วย
+ประกอบด้วย	prakopduay	5731
+ประกอบด้วย	prakobduay	5158
+ประกอบด้วย	prakopduy	4585
+
+# พิมพ์
+พิมพ์	pim	5718
+
+# อันตราย
+อันตราย	antarai	5742
+อันตราย	antaray	4881
+
+# โน้ต
+โน้ต	note	5728
+โน้ต	not	4869
+
+# วง
+วง	wong	5723
+
+# สุ
+สุ	su	5697
+
+# พื้นฐาน
+พื้นฐาน	puenthan	5710
+พื้นฐาน	puenthaan	4854
+พื้นฐาน	phuenthan	4568
+
+# เทคโนโลยี
+เทคโนโลยี	teknoloyi	5696
+เทคโนโลยี	technology	5126
+เทคโนโลยี	teknology	4842
+
+# อ่อน
+อ่อน	on	5703
+อ่อน	awn	4848
+
+# สม
+สม	som	5682
+
+# ดวง
+ดวง	duang	5669
+ดวง	doung	4819
+
+# กอง
+กอง	kong	5677
+
+# เท่ากับ
+เท่ากับ	taokap	5656
+เท่ากับ	thaokab	5090
+
+# มั่นคง
+มั่นคง	mankhong	5660
+
+# ความต้องการ
+ความต้องการ	khwamtongkan	5641
+ความต้องการ	kwamtongkan	5077
+
+# ฝน
+ฝน	fon	5651
+
+# นคร
+นคร	nakhon	5639
+นคร	nakorn	5075
+
+# ซ้ำ
+ซ้ำ	sam	5636
+ซ้ำ	zam	4509
+
+# หลวง
+หลวง	luang	5632
+หลวง	luong	4506
+
+# ฆ่า
+ฆ่า	kha	5630
+
+# อิทธิพล
+อิทธิพล	itthipon	5611
+อิทธิพล	itipon	5050
+
+# พร้อมกับ
+พร้อมกับ	phromkap	5600
+พร้อมกับ	promkap	5040
+
+# ประสบการณ์
+ประสบการณ์	prasopkan	5596
+ประสบการณ์	prasobkarn	5036
+
+# ภายใต้
+ภายใต้	phaitai	5594
+ภายใต้	paytay	4755
+
+# ลึก
+ลึก	luek	5587
+ลึก	luk	4749
+
+# ยาม
+ยาม	yam	5580
+
+# ศิลปะ
+ศิลปะ	sinlapa	5565
+ศิลปะ	silapa	5008
+ศิลปะ	sinlapha	4452
+
+# งั้น
+งั้น	ngan	5559
+งั้น	ngun	4725
+
+# สิ่งแวดล้อม
+สิ่งแวดล้อม	singwaedlom	5562
+สิ่งแวดล้อม	singwaetlom	4895
+สิ่งแวดล้อม	singwadlom	4450
+
+# กาย
+กาย	kai	5530
+กาย	kay	4977
+
+# สุขภาพ
+สุขภาพ	sukkhaphap	5508
+สุขภาพ	sukapap	4957
+
+# เป้าหมาย
+เป้าหมาย	paomai	5544
+เป้าหมาย	paomaai	4712
+
+# ส่งผล
+ส่งผล	songphon	5477
+ส่งผล	songpon	4929
+
+# นิ่ง
+นิ่ง	ning	5507
+
+# อี
+อี	ee	5469
+อี	i	4649
+
+# ชี้
+ชี้	chi	5461
+
+# ครบ
+ครบ	krob	5454
+ครบ	krop	4636
+
+# ชายหนุ่ม
+ชายหนุ่ม	chainum	5448
+ชายหนุ่ม	chaynum	4631
+
+# พระเจ้า
+พระเจ้า	prajao	5438
+พระเจ้า	prachao	4894
+พระเจ้า	prajaow	4350
+
+# ฯลฯ
+ฯลฯ	laelae	5432
+ฯลฯ	lae	4617
+
+# ตั้งใจ
+ตั้งใจ	tangjai	5430
+
+# แต่ง
+แต่ง	taeng	5424
+แต่ง	tang	4339
+
+# อย่างยิ่ง
+อย่างยิ่ง	yangying	5419
+
+# เกาะ
+เกาะ	kor	5404
+เกาะ	koh	4864
+เกาะ	ko	4593
+
+# แผน
+แผน	phaen	5426
+แผน	paen	4883
+แผน	phan	4341
+
+# เงื่อนไข
+เงื่อนไข	ngueankhai	5401
+เงื่อนไข	nguenkhai	4861
+เงื่อนไข	ngeuankhai	4591
+
+# ปลอดภัย
+ปลอดภัย	plodphai	5386
+ปลอดภัย	plotpai	4578
+
+# มหา
+มหา	maha	5378
+
+# อนาคต
+อนาคต	anakhot	5371
+อนาคต	anakot	4834
+
+# แต่งตั้ง
+แต่งตั้ง	tengtang	5371
+แต่งตั้ง	taengtang	4834
+
+# ประสิทธิภาพ
+ประสิทธิภาพ	prasitthiphap	5366
+ประสิทธิภาพ	prasitthipap	4829
+
+# แท้จริง
+แท้จริง	taejing	5377
+แท้จริง	taejring	4570
+
+# สมบูรณ์
+สมบูรณ์	somboon	5340
+สมบูรณ์	sombun	4806
+
+# เปิดเผย
+เปิดเผย	perdpoey	5363
+เปิดเผย	poetphoey	4559
+เปิดเผย	perdphery	4290
+
+# ชัย
+ชัย	chai	5312
+ชัย	chay	4515
+
+# เปรียบเทียบ
+เปรียบเทียบ	priapthiap	5328
+เปรียบเทียบ	priabthiab	4795
+เปรียบเทียบ	preabtheab	4262
+
+# สาขา
+สาขา	sakha	5325
+
+# เยอะ
+เยอะ	yoe	5287
+เยอะ	yer	4758
+เยอะ	yuh	4230
+
+# พ้น
+พ้น	pon	5304
+
+# ผู้คน
+ผู้คน	phukon	5291
+ผู้คน	pookon	4762
+
+# กรุง
+กรุง	krung	5257
+กรุง	groong	4468
+
+# อะ
+อะ	a	5287
+อะ	ah	4494
+
+# ปลูก
+ปลูก	pluk	5251
+
+# ลม
+ลม	lom	5246
+
+# มติ
+มติ	mati	5230
+มติ	matti	4446
+
+# ซะ
+ซะ	sa	5232
+
+# ฐาน
+ฐาน	than	5245
+
+# ฝึก
+ฝึก	fuek	5219
+ฝึก	feuk	4436
+
+# ก้าว
+ก้าว	kao	5197
+ก้าว	gao	4677
+
+# ละคร
+ละคร	lakhon	5202
+ละคร	lakorn	4942
+
+# ภายนอก
+ภายนอก	painok	5186
+ภายนอก	phainok	4667
+
+# ภาพยนตร์
+ภาพยนตร์	phapayon	5179
+ภาพยนตร์	papayon	4661
+ภาพยนตร์	phaphayon	4143
+
+# แปล
+แปล	plae	5167
+แปล	bplae	4392
+
+# พลังงาน
+พลังงาน	palangngan	5164
+พลังงาน	plangngan	4389
+
+# นั่นเอง
+นั่นเอง	naneng	5156
+นั่นเอง	nuneng	4383
+
+# แม้ว่า
+แม้ว่า	maewa	5168
+แม้ว่า	maewaa	4393
+
+# ผลงาน
+ผลงาน	phonngan	5150
+ผลงาน	pholngan	4378
+ผลงาน	polngan	4378
+
+# สูงสุด
+สูงสุด	sungsut	5149
+สูงสุด	soongsood	4377
+
+# ท้องถิ่น
+ท้องถิ่น	thongthin	5121
+
+# ผลกระทบ
+ผลกระทบ	phonkrathop	5131
+ผลกระทบ	polkrathop	4361
+
+# ต่อเนื่อง
+ต่อเนื่อง	toneuang	5119
+ต่อเนื่อง	tonueang	4607
+ต่อเนื่อง	tornuang	4095
+
+# ขณะ
+ขณะ	khana	5118
+
+# อาคาร
+อาคาร	akan	5111
+อาคาร	akhan	4344
+
+# ชัด
+ชัด	chat	5099
+
+# ตี
+ตี	tee	5040
+ตี	ti	4284
+
+# ส่วนตัว
+ส่วนตัว	suantua	5060
+ส่วนตัว	suantau	4048
+
+# พอใจ
+พอใจ	phochai	5091
+พอใจ	pawjai	4582
+พอใจ	porjai	4327
+
+# ข้าม
+ข้าม	kham	5049
+
+# รวดเร็ว
+รวดเร็ว	ruadreo	5030
+รวดเร็ว	ruatreo	4527
+รวดเร็ว	ruadrew	4276
+
+# ท่า
+ท่า	tha	5017
+
+# เหล่านั้น
+เหล่านั้น	laonan	5016
+
+# สมเด็จ
+สมเด็จ	somdet	5015
+สมเด็จ	somdej	4514
+
+# อ้าง
+อ้าง	ang	4993
+
+# ให้การ
+ให้การ	haikan	4998
+ให้การ	haigan	4248
+
+# รับรู้
+รับรู้	rapru	4978
+
+# ข้า
+ข้า	kha	4971
+
+# โรง
+โรง	rong	4950
+
+# ปรับปรุง
+ปรับปรุง	prapprung	4966
+
+# ซา
+ซา	sa	4966
+
+# บุญ
+บุญ	bun	4969
+บุญ	boon	4721
+
+# ทำลาย
+ทำลาย	thamlai	4928
+ทำลาย	tamlai	4435
+ทำลาย	thumlai	3942
+
+# แถว
+แถว	thaew	4909
+แถว	taew	4418
+แถว	thaeo	3927
+
+# เรื่องราว
+เรื่องราว	ruangrao	4907
+เรื่องราว	reuangraw	4416
+เรื่องราว	rueangrao	3926
+
+# เข้าสู่
+เข้าสู่	khaosu	4905
+เข้าสู่	kaosoo	4169
+
+# สนิท
+สนิท	sanit	4923
+
+# กระจาย
+กระจาย	krajai	4905
+กระจาย	krajay	4414
+
+# พวกเรา
+พวกเรา	puakrao	4902
+พวกเรา	puakerao	4167
+พวกเรา	phuakrao	3922
+
+# ประโยค
+ประโยค	prayok	4873
+ประโยค	brayok	4142
+
+# เพชร
+เพชร	phet	4901
+เพชร	pet	4411
+เพชร	phetch	3921
+
+# ความสำเร็จ
+ความสำเร็จ	khwamsamret	4878
+ความสำเร็จ	kwamsamret	4390
+
+# ดอก
+ดอก	dok	4894
+
+# ความเชื่อ
+ความเชื่อ	khwamchuea	4871
+ความเชื่อ	kwamchua	4384
+ความเชื่อ	khwamcheua	4140
+
+# กลิ่น
+กลิ่น	klin	4859
+
+# ดา
+ดา	da	4813
+
+# ก่อให้เกิด
+ก่อให้เกิด	kohaikoet	4855
+ก่อให้เกิด	korhaikerd	4370
+ก่อให้เกิด	kohaikert	4127
+
+# พืช
+พืช	phuet	4857
+พืช	peud	4371
+พืช	phut	3886
+
+# ห่าง
+ห่าง	hang	4835
+
+# แนะนำ
+แนะนำ	naenam	4809
+แนะนำ	naenum	4088
+
+# ต่อไปนี้
+ต่อไปนี้	topainee	4808
+ต่อไปนี้	torpainee	4087
+
+# เพิ่มเติม
+เพิ่มเติม	permterm	4803
+เพิ่มเติม	poemterm	4083
+เพิ่มเติม	pemtem	3842
+
+# ระ
+ระ	ra	4789
+
+# บัญญัติ
+บัญญัติ	banyat	4766
+บัญญัติ	banyad	4051
+
+# แถม
+แถม	thaem	4765
+แถม	taem	4288
+แถม	tam	3812
+
+# หลักการ
+หลักการ	lakkan	4758
+หลักการ	lakkarn	4282
+
+# ล้วน
+ล้วน	luan	4738
+ล้วน	luean	3790
+
+# แผ่นดิน
+แผ่นดิน	phaendin	4717
+แผ่นดิน	paendin	4009
+
+# ตลอดจน
+ตลอดจน	talotjon	4714
+ตลอดจน	taloadjon	4007
+
+# ประ
+ประ	pra	4715
+
+# สัมผัส
+สัมผัส	sampat	4711
+สัมผัส	samphat	4004
+
+# ภัย
+ภัย	phai	4712
+ภัย	pai	4005
+ภัย	phay	3770
+
+# วัตถุ
+วัตถุ	watthu	4688
+วัตถุ	wattu	4219
+
+# วิชาชีพ
+วิชาชีพ	wichacheep	4704
+วิชาชีพ	wichachip	3998
+
+# แง่
+แง่	ngae	4684
+แง่	nge	3981
+
+# ยัย
+ยัย	yai	4679
+ยัย	yay	4211
+
+# สมอง
+สมอง	samong	4672
+สมอง	sahmong	3971
+
+# เติบโต
+เติบโต	toepto	4647
+เติบโต	terbto	4182
+เติบโต	tuhpto	3718
+
+# เพียงแต่
+เพียงแต่	piangtae	4640
+เพียงแต่	phiangtae	4176
+เพียงแต่	piangtaae	3480
+
+# เก่ง
+เก่ง	keng	4635
+
+# โบราณ
+โบราณ	boran	4634
+
+# ทำนอง
+ทำนอง	thamnong	4617
+ทำนอง	tamnong	4155
+
+# ลูกค้า
+ลูกค้า	lukka	4625
+ลูกค้า	luukkhaa	3931
+
+# หิน
+หิน	hin	4609
+
+# ดนตรี
+ดนตรี	dontri	4639
+ดนตรี	dontree	4175
+
+# ไอ
+ไอ	ai	4609
+ไอ	i	3687
+
+# ต่อสู้
+ต่อสู้	torsu	4604
+ต่อสู้	tosu	4144
+
+# หลับ
+หลับ	lap	4608
+หลับ	lub	4147
+
+# หมู่
+หมู่	moo	4603
+หมู่	mu	4143
+
+# สะดวก
+สะดวก	saduak	4591
+
+# พนักงาน
+พนักงาน	phanakngan	4582
+พนักงาน	panakngan	4124
+
+# แสง
+แสง	saeng	4579
+แสง	sang	3892
+
+# เอ่ย
+เอ่ย	oey	4577
+เอ่ย	oei	3890
+
+# กระแส
+กระแส	krasae	4570
+กระแส	grasae	3884
+
+# ออกแบบ
+ออกแบบ	okbaep	4560
+ออกแบบ	okbap	3876
+ออกแบบ	okbaeb	3648
+
+# ยืนยัน
+ยืนยัน	yuenyan	4564
+ยืนยัน	yuenyun	3879
+ยืนยัน	yeunyan	3651
+
+# สำเร็จ
+สำเร็จ	samret	4560
+สำเร็จ	sumret	3876
+
+# เนี่ย
+เนี่ย	nia	4541
+เนี่ย	niea	3860
+
+# รุนแรง
+รุนแรง	runraeng	4530
+รุนแรง	runrang	3850
+
+# บางที
+บางที	bangti	4534
+บางที	bangtee	4081
+
+# ลูกจ้าง
+ลูกจ้าง	lukjang	4546
+
+# บรรดา
+บรรดา	banda	4532
+บรรดา	bunda	3626
+
+# คาด
+คาด	khat	4528
+
+# หลักเกณฑ์
+หลักเกณฑ์	lakken	4529
+หลักเกณฑ์	lakgen	3850
+
+# จากนั้น
+จากนั้น	jaknan	4523
+จากนั้น	chaknan	3845
+
+# ติดตาม
+ติดตาม	tittam	4507
+
+# หายใจ
+หายใจ	haijai	4505
+หายใจ	hayjai	4054
+
+# คุณสมบัติ
+คุณสมบัติ	khunsombat	4498
+คุณสมบัติ	kunsombat	4048
+
+# ก่อ
+ก่อ	kor	4530
+ก่อ	gor	4077
+ก่อ	ko	3850
+
+# นำเข้า
+นำเข้า	namkhao	4493
+
+# ดูเหมือน
+ดูเหมือน	dumuean	4481
+ดูเหมือน	duhmuean	3809
+ดูเหมือน	dumean	3585
+
+# สมควร
+สมควร	somkhuan	4483
+สมควร	somkuan	4035
+
+# กระทบ
+กระทบ	krathop	4478
+กระทบ	gratop	3806
+
+# ประชาธิปไตย
+ประชาธิปไตย	prachathipatai	4464
+ประชาธิปไตย	prachatipatai	3794
+
+# คัน
+คัน	khan	4464
+
+# เรียกร้อง
+เรียกร้อง	riakrong	4457
+เรียกร้อง	reakrong	3788
+
+# โดยที่
+โดยที่	doithi	4465
+โดยที่	doythi	4018
+
+# ห่วง
+ห่วง	huang	4440
+ห่วง	huong	3774
+
+# เกษตรกร
+เกษตรกร	kasetrakon	4434
+เกษตรกร	kasettrakorn	3991
+เกษตรกร	kasetrakorn	3769
+
+# มิใช่
+มิใช่	michai	4428
+มิใช่	michay	3764
+
+# ราว
+ราว	raw	4430
+ราว	rao	3987
+
+# อิสระ
+อิสระ	isara	4410
+อิสระ	itsara	3969
+
+# โรงแรม
+โรงแรม	rongraem	4386
+โรงแรม	rongram	3728
+
+# พันธุ์
+พันธุ์	pan	4376
+
+# เสด็จ
+เสด็จ	sadet	4371
+
+# มุ่ง
+มุ่ง	mung	4367
+
+# ชำระ
+ชำระ	chamra	4371
+ชำระ	chamara	3715
+
+# ฝรั่ง
+ฝรั่ง	farang	4368
+
+# อิน
+อิน	in	4358
+
+# สำรวจ
+สำรวจ	samruat	4347
+สำรวจ	samruad	3912
+สำรวจ	sumruat	3478
+
+# เริ่มต้น
+เริ่มต้น	roemton	4331
+เริ่มต้น	rermton	3898
+เริ่มต้น	reumton	3465
+
+# การเงิน
+การเงิน	karngern	4352
+การเงิน	karnguen	3917
+การเงิน	kanngoen	3699
+
+# ย่อย
+ย่อย	yoy	4336
+
+# ยึด
+ยึด	yued	4346
+ยึด	yeud	3911
+
+# เครื่องมือ
+เครื่องมือ	krueangmue	4328
+เครื่องมือ	kruangmue	3809
+เครื่องมือ	khrueangmue	3462
+
+# ท้าย
+ท้าย	tai	4314
+ท้าย	tay	3883
+
+# ปฏิเสธ
+ปฏิเสธ	patiset	4301
+ปฏิเสธ	patised	3656
+
+# ภายหลัง
+ภายหลัง	phailang	4293
+ภายหลัง	pailang	3864
+ภายหลัง	phaylang	3649
+
+# อุปกรณ์
+อุปกรณ์	upakorn	4292
+อุปกรณ์	uppakorn	3648
+
+# รับรอง
+รับรอง	raprong	4289
+
+# วิทยาศาสตร์
+วิทยาศาสตร์	witthayasat	4291
+วิทยาศาสตร์	wittayasat	3862
+
+# โรงงาน
+โรงงาน	rongngan	4284
+โรงงาน	rongngaan	3641
+
+# โดยตรง
+โดยตรง	doytrong	4286
+โดยตรง	doeytrong	3643
+
+# รัฐมนตรี
+รัฐมนตรี	rattamontri	4266
+รัฐมนตรี	ratthamontri	3839
+
+# มาตรการ
+มาตรการ	matrakan	4274
+มาตรการ	maatrakaan	3633
+
+# ขั้นตอน
+ขั้นตอน	khantawn	4248
+ขั้นตอน	khanton	4036
+ขั้นตอน	khantorn	3611
+
+# ผลประโยชน์
+ผลประโยชน์	polprayot	4265
+ผลประโยชน์	ponprayot	3838
+ผลประโยชน์	phonprayoch	3199
+
+# ยิง
+ยิง	ying	4240
+
+# สงคราม
+สงคราม	songkhram	4236
+สงคราม	songkram	3812
+
+# ทา
+ทา	ta	4241
+
+# จัดทำ
+จัดทำ	jattam	4234
+จัดทำ	jadtam	3599
+
+# องค์การ
+องค์การ	ongkan	4235
+องค์การ	ongkarn	3812
+
+# ดึง
+ดึง	deung	4214
+ดึง	dung	3582
+
+# วิ
+วิ	wi	4213
+
+# หยิบ
+หยิบ	yip	4206
+
+# พยาบาล
+พยาบาล	payaban	4214
+พยาบาล	phayabaan	3793
+
+# คุ้มครอง
+คุ้มครอง	khumkhrong	4211
+คุ้มครอง	kumkrong	3790
+
+# เชียง
+เชียง	chiang	4188
+
+# กะ
+กะ	ka	4183
+กะ	kah	3346
+
+# สหรัฐอเมริกา
+สหรัฐอเมริกา	saharatamerika	4180
+สหรัฐอเมริกา	saharadamerika	3553
+
+# ยุโรป
+ยุโรป	yurop	4173
+ยุโรป	yuroop	3756
+
+# กรอบ
+กรอบ	krop	4197
+กรอบ	krob	3777
+
+# พลาง
+พลาง	plang	4157
+พลาง	phlang	3533
+
+# กล่าวคือ
+กล่าวคือ	klaokhue	4156
+กล่าวคือ	klaokue	3740
+กล่าวคือ	glaokue	3325
+
+# คำพูด
+คำพูด	khamphut	4152
+คำพูด	kampoot	3737
+
+# ผู้เขียน
+ผู้เขียน	phukhian	4152
+ผู้เขียน	poohkian	3529
+ผู้เขียน	phukean	3322
+
+# วา
+วา	wa	4146
+
+# ปรึกษา
+ปรึกษา	pruksa	4140
+ปรึกษา	prueksa	3726
+
+# ประเมิน
+ประเมิน	pramern	4148
+ประเมิน	prameun	3526
+ประเมิน	prameon	3111
+
+# พอดี
+พอดี	podee	4140
+พอดี	pordee	3519
+
+# คุณค่า
+คุณค่า	khunkha	4150
+คุณค่า	koonkha	3528
+
+# จัดตั้ง
+จัดตั้ง	jattang	4135
+จัดตั้ง	chattang	3515
+
+# แล
+แล	lae	4130
+
+# กฎ
+กฎ	got	4133
+กฎ	kot	3720
+
+# บทบัญญัติ
+บทบัญญัติ	botbanyat	4119
+บทบัญญัติ	bodbunyat	3501
+
+# อย่างน้อย
+อย่างน้อย	yangnoi	4108
+อย่างน้อย	yangnoy	3615
+
+# ช่อง
+ช่อง	chong	4096
+
+# วัตถุประสงค์
+วัตถุประสงค์	watthuprasong	4095
+วัตถุประสงค์	watuprasong	3686
+
+# ม้า
+ม้า	ma	4111
+
+# คา
+คา	kha	4093
+
+# เชิญ
+เชิญ	chern	4089
+เชิญ	choen	3680
+เชิญ	cheun	3271
+
+# นิด
+นิด	nit	4081
+
+# จังหวะ
+จังหวะ	changwa	4079
+จังหวะ	jangwa	3875
+
+# มองเห็น
+มองเห็น	monghen	4066
+
+# เหมือนกับ
+เหมือนกับ	meuankap	4091
+เหมือนกับ	muankap	3682
+เหมือนกับ	mueankap	3477
+
+# สะท้อน
+สะท้อน	sathon	4059
+
+# หนังสือพิมพ์
+หนังสือพิมพ์	nangsuephim	4055
+หนังสือพิมพ์	nangsuphim	3650
+หนังสือพิมพ์	nangseuphim	3447
+
+# รอย
+รอย	roy	4049
+รอย	roi	3644
+
+# ดอกไม้
+ดอกไม้	dokmai	4042
+
+# แตก
+แตก	taek	4040
+แตก	tak	3232
+
+# ตาราง
+ตาราง	tarang	4045
+
+# อำเภอ
+อำเภอ	amphoe	4048
+อำเภอ	ampher	3643
+อำเภอ	ampoe	3238
+
+# ขน
+ขน	khon	4022
+
+# พุทธ
+พุทธ	put	4032
+พุทธ	phut	3427
+
+# รึ
+รึ	reu	4033
+รึ	ru	3428
+
+# เสื้อผ้า
+เสื้อผ้า	suaphaa	4035
+เสื้อผ้า	sueaphaa	3632
+เสื้อผ้า	seuapha	3228
+
+# ชนบท
+ชนบท	chonnabot	4016
+ชนบท	chonabot	3614
+ชนบท	chonbot	3213
+
+# วิชาการ
+วิชาการ	wichakan	4007
+
+# ค่าใช้จ่าย
+ค่าใช้จ่าย	kachaijai	4002
+ค่าใช้จ่าย	khachaijai	3602
+ค่าใช้จ่าย	khachaichai	2801
+
+# จำเลย
+จำเลย	jamloei	4006
+จำเลย	jamloey	3605
+จำเลย	chamleoy	3205
+
+# นาม
+นาม	nam	3990
+
+# เคลื่อนไหว
+เคลื่อนไหว	khleuanwai	3987
+เคลื่อนไหว	kluanwai	3588
+เคลื่อนไหว	khlueanwai	3389
+
+# เล็กน้อย
+เล็กน้อย	leknoi	3997
+เล็กน้อย	leknoy	3597
+
+# เค
+เค	khe	3983
+เค	kay	3386
+
+# เนื้อหา
+เนื้อหา	nueaha	3986
+เนื้อหา	neuaha	3587
+เนื้อหา	nuaha	3189
+
+# จนกระทั่ง
+จนกระทั่ง	jonkrathang	3948
+จนกระทั่ง	chonkrathang	3356
+
+# ที่ตั้ง
+ที่ตั้ง	teetang	3962
+ที่ตั้ง	thitang	3368
+
+# ถอน
+ถอน	thon	3963
+
+# พี
+พี	pee	3948
+พี	phi	3356
+
+# ความสนใจ
+ความสนใจ	khwamsonjai	3941
+ความสนใจ	kwamsonjai	3547
+
+# แผ่น
+แผ่น	phaen	3942
+แผ่น	pan	3351
+
+# ก็ดี
+ก็ดี	kodee	3905
+ก็ดี	kordee	3319
+
+# ระวัง
+ระวัง	rawang	3897
+
+# ส่งออก
+ส่งออก	songok	3945
+ส่งออก	songork	3353
+
+# ชนชั้น
+ชนชั้น	chonchan	3893
+
+# บรรยากาศ
+บรรยากาศ	banyakat	3889
+บรรยากาศ	banyakard	3306
+
+# คุณแม่
+คุณแม่	khunmae	3892
+
+# รางวัล
+รางวัล	rangwan	3895
+รางวัล	rangwal	3116
+
+# พูดถึง
+พูดถึง	phudtueng	3888
+พูดถึง	poodtueng	3499
+พูดถึง	phutthueng	3110
+
+# แท้
+แท้	tae	3888
+แท้	tare	3110
+
+# ผลิตภัณฑ์
+ผลิตภัณฑ์	palitapan	3884
+ผลิตภัณฑ์	phalitaphan	3496
+ผลิตภัณฑ์	phalittaphan	3107
+
+# ไม่ทัน
+ไม่ทัน	maitan	3870
+
+# นัด
+นัด	nat	3873
+
+# ล่า
+ล่า	la	3868
+
+# ขนส่ง
+ขนส่ง	khonsong	3860
+
+# โร
+โร	ro	3864
+
+# ชั่ว
+ชั่ว	chua	3856
+
+# หน้าตา
+หน้าตา	nata	3854
+
+# ฝรั่งเศส
+ฝรั่งเศส	farangset	3855
+ฝรั่งเศส	farangsed	3277
+
+# อันดับ
+อันดับ	andap	3852
+
+# น้ำหนัก
+น้ำหนัก	namnak	3843
+
+# ลอย
+ลอย	loy	3843
+ลอย	loi	3459
+
+# ปัญญา
+ปัญญา	panya	3839
+ปัญญา	punya	3263
+
+# ร้าย
+ร้าย	rai	3841
+ร้าย	ray	3457
+
+# เสี่ยง
+เสี่ยง	siang	3834
+เสี่ยง	seang	3259
+
+# ลับ
+ลับ	lap	3836
+
+# การเลือกตั้ง
+การเลือกตั้ง	karnlueaktang	3823
+การเลือกตั้ง	kanlueaktang	3441
+การเลือกตั้ง	karnleuaktang	3250
+
+# ต้นไม้
+ต้นไม้	tonmai	3814
+
+# ใส
+ใส	sai	3814
+ใส	say	3242
+
+# ที่นั่ง
+ที่นั่ง	theenang	3796
+ที่นั่ง	tinang	3416
+
+# ชนะ
+ชนะ	chana	3775
+
+# ฝาก
+ฝาก	fak	3768
+
+# เต็มที่
+เต็มที่	temtee	3758
+เต็มที่	temthi	3194
+
+# ดิ
+ดิ	di	3765
+
+# เลขาธิการ
+เลขาธิการ	lekhathikan	3757
+เลขาธิการ	lekathikarn	3306
+
+# พิสูจน์
+พิสูจน์	pisut	3768
+พิสูจน์	phisoot	3203
+
+# พลอย
+พลอย	ploy	3754
+พลอย	phloi	3191
+
+# สด
+สด	sot	3754
+สด	sod	3379
+
+# หมา
+หมา	ma	3752
+หมา	maa	3189
+
+# คึกฤทธิ์
+คึกฤทธิ์	khuekrit	3748
+คึกฤทธิ์	kuekrit	3373
+คึกฤทธิ์	khukrit	3186
+
+# ว่าง
+ว่าง	wang	3746
+
+# สอดคล้อง
+สอดคล้อง	sotklong	3739
+สอดคล้อง	sodklong	3365
+
+# สัญญาณ
+สัญญาณ	sanyan	3741
+สัญญาณ	sunyan	2993
+
+# ริม
+ริม	rim	3733
+
+# หลากหลาย
+หลากหลาย	laklai	3737
+หลากหลาย	laklaai	3176
+
+# ตัน
+ตัน	tan	3715
+
+# ดัน
+ดัน	dan	3710
+
+# บา
+บา	ba	3729
+
+# นายก
+นายก	nayok	3707
+
+# แอบ
+แอบ	aep	3695
+แอบ	aeb	3326
+
+# ผู้ป่วย
+ผู้ป่วย	phupuay	3670
+ผู้ป่วย	poopuay	3303
+ผู้ป่วย	phupoy	2936
+
+# ข้างต้น
+ข้างต้น	khangton	3706
+
+# ประชากร
+ประชากร	prachakorn	3694
+ประชากร	prachakon	3325
+
+# เทียบ
+เทียบ	thiap	3679
+เทียบ	tiab	3127
+
+# ฝีมือ
+ฝีมือ	feemue	3660
+ฝีมือ	feemu	3294
+ฝีมือ	fimeu	3111
+
+# ไหว
+ไหว	wai	3659
+ไหว	way	3110
+
+# สิ้น
+สิ้น	sin	3652
+
+# ฉะนั้น
+ฉะนั้น	chanan	3654
+
+# สมาคม
+สมาคม	samakhom	3644
+สมาคม	samakom	3280
+
+# หลง
+หลง	long	3638
+
+# ท่าทาง
+ท่าทาง	thathang	3638
+
+# เช่นเดียว
+เช่นเดียว	chendiao	3650
+เช่นเดียว	chendeaw	3212
+เช่นเดียว	chendiew	2920
+
+# มอบ
+มอบ	mop	3627
+
+# ขณะนี้
+ขณะนี้	khanani	3627
+ขณะนี้	kanani	3264
+
+# คิดถึง
+คิดถึง	kidteung	3615
+คิดถึง	kitthueng	3254
+คิดถึง	kitteung	3073
+
+# ใบหน้า
+ใบหน้า	baina	3634
+ใบหน้า	bina	2907
+
+# ไฟฟ้า
+ไฟฟ้า	faifa	3609
+
+# รี
+รี	ree	3596
+รี	ri	3057
+
+# กด
+กด	kot	3603
+กด	got	3063
+
+# ทีเดียว
+ทีเดียว	teediao	3593
+ทีเดียว	tidiao	3234
+ทีเดียว	teediaw	3054
+
+# จี
+จี	jee	3591
+จี	ji	3232
+
+# พาณิชย์
+พาณิชย์	panit	3579
+พาณิชย์	phanich	3221
+พาณิชย์	panich	3042
+
+# ข่าวสาร
+ข่าวสาร	khaosan	3582
+ข่าวสาร	khawsan	3045
+
+# อก
+อก	ok	3563
+อก	ohk	2850
+
+# ลูกสาว
+ลูกสาว	looksao	3558
+ลูกสาว	luksao	3202
+
+# ลงโทษ
+ลงโทษ	longthot	3549
+ลงโทษ	longtod	3017
+
+# ทั้งสิ้น
+ทั้งสิ้น	thangsin	3541
+
+# ถิ่น
+ถิ่น	thin	3552
+
+# พล
+พล	phon	3544
+พล	pol	3012
+พล	phol	2835
+
+# จำหน่าย
+จำหน่าย	chamnai	3538
+จำหน่าย	jamnai	3361
+
+# เทคนิค
+เทคนิค	teknik	3538
+เทคนิค	techniq	2830
+
+# ผี
+ผี	phi	3539
+ผี	pee	3185
+ผี	phee	3008
+
+# พิธี
+พิธี	piti	3613
+พิธี	pithee	3252
+
+# ฝั่ง
+ฝั่ง	fang	3537
+
+# วงศ์
+วงศ์	wong	3535
+
+# เมีย
+เมีย	mia	3523
+เมีย	miya	2995
+
+# เชื้อ
+เชื้อ	chuea	3529
+เชื้อ	cheua	3000
+เชื้อ	chua	3000
+
+# บริโภค
+บริโภค	boriphok	3522
+บริโภค	boripok	3170
+
+# ลูกชาย
+ลูกชาย	lukchai	3521
+ลูกชาย	lookchai	3169
+ลูกชาย	lukchay	2817
+
+# คอร์ด
+คอร์ด	khord	3516
+คอร์ด	khod	2989
+
+# เทพ
+เทพ	thep	3512
+
+# องค์ประกอบ
+องค์ประกอบ	ongprakop	3510
+องค์ประกอบ	ongprakorb	3159
+
+# ผสม
+ผสม	phasom	3505
+ผสม	pasom	3154
+
+# สติ
+สติ	sati	3497
+
+# ตอนนั้น
+ตอนนั้น	tonnan	3499
+
+# เซ
+เซ	se	3488
+
+# สอบสวน
+สอบสวน	sopsuan	3482
+สอบสวน	sobsuan	2960
+
+# กำเนิด
+กำเนิด	kamnerd	3481
+กำเนิด	kamnoed	2959
+
+# ราวกับ
+ราวกับ	raokap	3485
+ราวกับ	rawkap	3136
+
+# ปืน
+ปืน	peun	3479
+ปืน	puen	2957
+ปืน	pun	2957
+
+# ขัด
+ขัด	khat	3474
+
+# ดวงตา
+ดวงตา	duangta	3477
+ดวงตา	duongta	2782
+
+# เรือน
+เรือน	ruean	3469
+เรือน	ruan	2949
+
+# นั่นแหละ
+นั่นแหละ	nanlae	3464
+นั่นแหละ	nunlae	2944
+
+# รส
+รส	rot	3456
+รส	ros	2765
+
+# เลื่อน
+เลื่อน	luean	3452
+เลื่อน	lueon	2934
+เลื่อน	luan	2762
+
+# ริ
+ริ	ri	3449
+
+# นับแต่
+นับแต่	naptae	3453
+นับแต่	nabtae	2935
+
+# ขึ้นอยู่กับ
+ขึ้นอยู่กับ	khunyukap	3452
+ขึ้นอยู่กับ	kuenyukap	3107
+ขึ้นอยู่กับ	khuenyoogap	2762
+
+# ศึก
+ศึก	suk	3436
+ศึก	seuk	3092
+
+# ฤทธิ์
+ฤทธิ์	rit	3437
+
+# รับผิดชอบ
+รับผิดชอบ	rapphitchop	3449
+รับผิดชอบ	rubpidchob	3104
+รับผิดชอบ	rappidchawp	2759
+
+# ประกัน
+ประกัน	prakan	3429
+
+# ติ
+ติ	ti	3433
+
+# เสริม
+เสริม	serm	3425
+เสริม	soem	2911
+เสริม	sermn	2398
+
+# อเมริกัน
+อเมริกัน	amerikan	3420
+
+# ลาย
+ลาย	lai	3423
+ลาย	lay	3081
+
+# เส้นทาง
+เส้นทาง	senthang	3422
+
+# ละเอียด
+ละเอียด	laiad	3410
+ละเอียด	laeiad	3069
+ละเอียด	laiat	2728
+
+# โทรทัศน์
+โทรทัศน์	thorathat	3420
+โทรทัศน์	torathat	3078
+โทรทัศน์	thoratat	2736
+
+# วินิจฉัย
+วินิจฉัย	winitchai	3404
+วินิจฉัย	winichai	2893
+วินิจฉัย	winitchay	2723
+
+# ประธานาธิบดี
+ประธานาธิบดี	prathanathibodi	3412
+ประธานาธิบดี	pratanatibodee	2900
+
+# ผูกพัน
+ผูกพัน	phukphan	3401
+ผูกพัน	pookpan	3061
+
+# เช่นนั้น
+เช่นนั้น	chennan	3398
+
+# ตัวแทน
+ตัวแทน	tuathaen	3400
+ตัวแทน	tuatan	3060
+ตัวแทน	tuathan	2890
+
+# เตอร์
+เตอร์	ter	3398
+เตอร์	toe	2888
+
+# บิดา
+บิดา	bida	3394
+
+# คิดเห็น
+คิดเห็น	kithen	3383
+
+# พิษ
+พิษ	pit	3392
+พิษ	phit	2883
+
+# คุรุ
+คุรุ	kuru	3380
+คุรุ	khuru	2873
+
+# เฝ้า
+เฝ้า	fao	3376
+
+# ผู้แทน
+ผู้แทน	phutaen	3393
+ผู้แทน	putan	3054
+ผู้แทน	phuthaen	2714
+
+# สมรส
+สมรส	somrot	3372
+สมรส	somros	2698
+
+# ทั้งที่
+ทั้งที่	tangtee	3370
+ทั้งที่	thangthi	2864
+
+# ประสงค์
+ประสงค์	prasong	3368
+
+# โอน
+โอน	on	3362
+โอน	oon	2858
+
+# อินเดีย
+อินเดีย	india	3363
+อินเดีย	indeey	2690
+
+# ต้นทุน
+ต้นทุน	tonthun	3358
+ต้นทุน	tontun	3022
+
+# นิ
+นิ	ni	3363
+
+# ใกล้ชิด
+ใกล้ชิด	klaichit	3355
+ใกล้ชิด	glaichid	2852
+
+# น่าสนใจ
+น่าสนใจ	nasonjai	3349
+น่าสนใจ	nasonchai	2847
+
+# ลิ
+ลิ	li	3354
+
+# กองทุน
+กองทุน	kongtun	3353
+
+# สาระ
+สาระ	sara	3346
+
+# ไร่
+ไร่	rai	3340
+ไร่	rye	2672
+
+# ทน
+ทน	ton	3347
+
+# กระตุ้น
+กระตุ้น	kratoon	3341
+กระตุ้น	kratun	3007
+
+# ศักดิ์
+ศักดิ์	sak	3333
+
+# ไท
+ไท	thai	3330
+
+# นั่นคือ
+นั่นคือ	nankhue	3327
+นั่นคือ	nankue	2828
+นั่นคือ	nunkhue	2662
+
+# บุตร
+บุตร	but	3324
+บุตร	boot	2825
+
+# เมตร
+เมตร	met	3325
+เมตร	metr	2660
+
+# กีฬา
+กีฬา	kila	3323
+กีฬา	keela	2991
+
+# แล้วแต่
+แล้วแต่	laewtae	3313
+แล้วแต่	leawtae	2816
+แล้วแต่	laeotae	2650
+
+# มารดา
+มารดา	manda	3317
+มารดา	marada	2985
+มารดา	marda	2654
+
+# วิญญาณ
+วิญญาณ	winyan	3305
+วิญญาณ	winyaan	2809
+
+# ทะเบียน
+ทะเบียน	tabian	3310
+ทะเบียน	tabien	2979
+
+# คณะรัฐมนตรี
+คณะรัฐมนตรี	kanaratthamontri	3305
+คณะรัฐมนตรี	khanaratthamontree	2974
+
+# สนาม
+สนาม	sanam	3302
+
+# ยกเว้น
+ยกเว้น	yokwen	3299
+
+# การลงทุน
+การลงทุน	karnlongthun	3296
+การลงทุน	kanlongtun	2966
+การลงทุน	garnlongtoon	2637
+
+# ขับรถ
+ขับรถ	khaprot	3293
+ขับรถ	kaprod	2799
+
+# มูลค่า
+มูลค่า	moonkha	3291
+มูลค่า	munkha	2797
+
+# กลับบ้าน
+กลับบ้าน	klapban	3287
+กลับบ้าน	klubban	2794
+
+# แสดงออก
+แสดงออก	sadaengok	3294
+แสดงออก	sadangok	2800
+
+# จัง
+จัง	jang	3268
+
+# เพียงพอ
+เพียงพอ	phiangpho	3270
+เพียงพอ	piangpor	2878
+
+# วาด
+วาด	wat	3276
+
+# โฆษณา
+โฆษณา	khotsana	3267
+โฆษณา	khosana	2940
+
+# ทิศ
+ทิศ	thit	3262
+
+# แทนที่
+แทนที่	taenti	3256
+แทนที่	tanti	2768
+
+# ดังที่
+ดังที่	dangthi	3250
+ดังที่	dangtee	2925
+
+# ความขัดแย้ง
+ความขัดแย้ง	khwamkhatyaeng	3251
+ความขัดแย้ง	kwamkhatyaeng	2926
+ความขัดแย้ง	khwamkhadyeng	2601
+
+# แน่ใจ
+แน่ใจ	naejai	3246
+แน่ใจ	naichai	2597
+
+# เช่า
+เช่า	chao	3246
+
+# เอเชีย
+เอเชีย	echia	3248
+เอเชีย	asia	2923
+
+# ตีความ
+ตีความ	tikwam	3245
+ตีความ	teekwam	2920
+
+# คนเรา
+คนเรา	khonrao	3243
+
+# หุ่น
+หุ่น	hun	3239
+
+# เลือกตั้ง
+เลือกตั้ง	lueaktang	3219
+เลือกตั้ง	leuaktang	2897
+เลือกตั้ง	luaktang	2575
+
+# สวยงาม
+สวยงาม	suayngam	3235
+สวยงาม	suaingam	2750
+
+# บรรจุ
+บรรจุ	banju	3217
+บรรจุ	banchu	2895
+
+# วี
+วี	wee	3244
+วี	wi	2757
+
+# เยี่ยม
+เยี่ยม	yiam	3216
+เยี่ยม	yeam	2734
+
+# รวบรวม
+รวบรวม	ruabruam	3215
+รวบรวม	ruapruam	2733
+
+# บรรยาย
+บรรยาย	banyai	3209
+บรรยาย	banyay	2888
+
+# รัชกาล
+รัชกาล	ratchakan	3212
+รัชกาล	rachakan	2891
+
+# ปา
+ปา	pa	3203
+
+# ถ่าย
+ถ่าย	thai	3201
+ถ่าย	thay	2881
+
+# ไล่
+ไล่	lai	3200
+ไล่	lay	2720
+
+# เห็นด้วย
+เห็นด้วย	henduay	3200
+เห็นด้วย	henduai	2720
+
+# ซิ
+ซิ	si	3198
+ซิ	see	2718
+
+# ทรัพย์
+ทรัพย์	sap	3193
+ทรัพย์	sub	2714
+ทรัพย์	sapp	2395
+
+# เหนื่อย
+เหนื่อย	nuay	3178
+เหนื่อย	neuay	2860
+เหนื่อย	nueay	2542
+
+# ความร่วมมือ
+ความร่วมมือ	khwamruammue	3177
+ความร่วมมือ	kwamruammu	2859
+ความร่วมมือ	khwamruammeu	2700
+
+# กร
+กร	kon	3187
+กร	korn	2868
+
+# ฟิลิปปินส์
+ฟิลิปปินส์	filippin	3176
+ฟิลิปปินส์	philippines	2700
+ฟิลิปปินส์	filipin	2541
+
+# ทิศทาง
+ทิศทาง	tittang	3172
+ทิศทาง	thittang	2855
+
+# ต่างหาก
+ต่างหาก	tanghak	3159
+
+# คำนึง
+คำนึง	khamnueng	3162
+คำนึง	kamnung	2846
+คำนึง	khamneung	2530
+
+# ภูมิภาค
+ภูมิภาค	phumiphak	3168
+ภูมิภาค	poomipak	2851
+
+# ตัดสิน
+ตัดสิน	tatsin	3136
+
+# ทดลอง
+ทดลอง	todlong	3157
+ทดลอง	thotlong	2683
+
+# รับประทาน
+รับประทาน	rapprathan	3149
+
+# จิ
+จิ	ji	3132
+จิ	chi	2506
+
+# หลบ
+หลบ	lop	3122
+หลบ	lob	2654
+
+# อเมริกา
+อเมริกา	amerika	3122
+อเมริกา	america	2966
+
+# สร้างสรรค์
+สร้างสรรค์	sangsan	3107
+สร้างสรรค์	srangsan	2641
+
+# ถวาย
+ถวาย	thawai	3104
+ถวาย	thawaai	2638
+
+# ปฏิบัติงาน
+ปฏิบัติงาน	patibatngan	3112
+ปฏิบัติงาน	patibatngarn	2739
+
+# เหมาะ
+เหมาะ	mo	3104
+เหมาะ	moh	2794
+
+# เร่ง
+เร่ง	reng	3093
+
+# ลงทุน
+ลงทุน	longtun	3094
+
+# คนไข้
+คนไข้	khonkhai	3103
+
+# เกณฑ์
+เกณฑ์	ken	3091
+เกณฑ์	kain	2473
+
+# ระบอบ
+ระบอบ	rabop	3093
+
+# ยู
+ยู	yu	3090
+
+# อิ
+อิ	i	3084
+
+# ข้างหน้า
+ข้างหน้า	khangna	3086
+
+# จง
+จง	jong	3083
+
+# ผลผลิต
+ผลผลิต	phonphalit	3090
+ผลผลิต	polphalit	2626
+ผลผลิต	phonphalid	2472
+
+# น้ำท่วม
+น้ำท่วม	namtuam	3076
+น้ำท่วม	namthuam	2615
+
+# ข้อเท็จจริง
+ข้อเท็จจริง	khotetjing	3073
+ข้อเท็จจริง	khortetjing	2766
+ข้อเท็จจริง	khotedjring	2458
+
+# สตรี
+สตรี	satree	3068
+สตรี	satri	2761
+
+# แพ้
+แพ้	pae	3063
+
+# เรียง
+เรียง	riang	3064
+เรียง	reang	2604
+
+# โด
+โด	do	3059
+
+# ความเสียหาย
+ความเสียหาย	khwamsiahai	3058
+ความเสียหาย	kwamsiahai	2752
+
+# เยาวชน
+เยาวชน	yaowachon	3055
+เยาวชน	yaowchon	2597
+
+# พี่น้อง
+พี่น้อง	pinong	3040
+
+# บ้านเมือง
+บ้านเมือง	banmueang	3036
+บ้านเมือง	banmuang	2732
+บ้านเมือง	banmeuang	2429
+
+# ปฏิบัติการ
+ปฏิบัติการ	patibatkan	3033
+ปฏิบัติการ	patibatigan	2426
+
+# ทรัพยากร
+ทรัพยากร	sapphayakon	3053
+ทรัพยากร	sappayakorn	2748
+ทรัพยากร	sapyakorn	2442
+
+# วิทยา
+วิทยา	witthaya	3054
+วิทยา	wittaya	2749
+วิทยา	vittaya	2443
+
+# อาวุธ
+อาวุธ	awut	3032
+อาวุธ	avut	2577
+
+# หุ้น
+หุ้น	hun	3032
+
+# ก้าวหน้า
+ก้าวหน้า	kaona	3030
+ก้าวหน้า	kawna	2727
+
+# ประเพณี
+ประเพณี	prapheni	3026
+ประเพณี	prapenee	2723
+
+# นัย
+นัย	nai	3022
+นัย	nay	2720
+
+# แข็งแรง
+แข็งแรง	khaengraeng	3031
+แข็งแรง	kengreng	2728
+
+# เจรจา
+เจรจา	jenraja	3023
+เจรจา	jeraja	2721
+เจรจา	jenrajaa	2418
+
+# พร
+พร	phon	3018
+พร	porn	2716
+พร	phorn	2565
+
+# โค
+โค	kho	3015
+
+# สู้
+สู้	su	3012
+สู้	soo	2711
+
+# สืบ
+สืบ	seub	3018
+สืบ	sueb	2716
+สืบ	suep	2414
+
+# สมาธิ
+สมาธิ	samathi	3011
+สมาธิ	smati	2409
+
+# นับถือ
+นับถือ	napthue	3003
+นับถือ	napteu	2703
+นับถือ	naptue	2553
+
+# ตึก
+ตึก	tuek	2996
+ตึก	tuk	2547
+
+# คำนวณ
+คำนวณ	khamnuan	2993
+คำนวณ	kamnuan	2694
+
+# ศิลปิน
+ศิลปิน	sinlapin	2989
+ศิลปิน	silapin	2541
+
+# นึกถึง
+นึกถึง	nuekthueng	3008
+นึกถึง	neukteung	2707
+นึกถึง	nuktung	2406
+
+# ทำเป็น
+ทำเป็น	thampen	2988
+ทำเป็น	tampen	2689
+
+# เท่าไหร่
+เท่าไหร่	taorai	2978
+เท่าไหร่	thaorai	2531
+
+# วางแผน
+วางแผน	wangphaen	2983
+วางแผน	wangpaen	2685
+วางแผน	wangphan	2386
+
+# นอกจากนั้น
+นอกจากนั้น	nokjaknan	2967
+นอกจากนั้น	nawkjaknan	2522
+
+# สมัยใหม่
+สมัยใหม่	samaimai	2981
+สมัยใหม่	samaymai	2534
+
+# พุทธศาสนา
+พุทธศาสนา	putthasasana	2966
+พุทธศาสนา	putthasatsana	2669
+พุทธศาสนา	phutthasasana	2521
+
+# ฉาก
+ฉาก	chak	2956
+
+# โดยทั่วไป
+โดยทั่วไป	doithuapai	2964
+โดยทั่วไป	doytuapai	2519
+
+# นิสัย
+นิสัย	nisai	2959
+นิสัย	nisay	2604
+
+# ปรารถนา
+ปรารถนา	pratthana	2951
+ปรารถนา	prathana	2656
+ปรารถนา	prarthana	2361
+
+# ชาวนา
+ชาวนา	chawna	2944
+ชาวนา	chaona	2502
+
+# เวที
+เวที	wethi	2942
+เวที	wetee	2648
+
+# เห็นชอบ
+เห็นชอบ	henchop	2940
+
+# คลื่น
+คลื่น	kluen	2942
+คลื่น	klun	2501
+คลื่น	khluen	2354
+
+# สวม
+สวม	suam	2937
+สวม	suem	2350
+
+# สยาม
+สยาม	sayam	2942
+สยาม	siam	2648
+
+# อนุมัติ
+อนุมัติ	anumat	2936
+อนุมัติ	anumati	2642
+
+# ลำ
+ลำ	lam	2919
+
+# โปรด
+โปรด	prot	2926
+โปรด	proht	2487
+
+# ตรงนี้
+ตรงนี้	trongnee	2917
+ตรงนี้	trongni	2479
+
+# เสรีภาพ
+เสรีภาพ	sereepap	2917
+เสรีภาพ	seriphap	2625
+
+# ฟ้อง
+ฟ้อง	fong	2912
+
+# โครง
+โครง	krong	2908
+
+# สัน
+สัน	san	2904
+
+# โม
+โม	mo	2914
+
+# เรียบ
+เรียบ	riap	2904
+เรียบ	reap	2614
+เรียบ	riep	2323
+
+# ขยายตัว
+ขยายตัว	khayaitua	2899
+ขยายตัว	kayaitua	2609
+
+# ทุกวันนี้
+ทุกวันนี้	thukwannee	2896
+ทุกวันนี้	tukwannee	2606
+
+# ประมวล
+ประมวล	pramuan	2898
+
+# เตือน
+เตือน	tuean	2899
+เตือน	teuan	2464
+เตือน	tuan	2174
+
+# ความเป็นจริง
+ความเป็นจริง	khwampenjing	2891
+ความเป็นจริง	kwampenjing	2602
+
+# ปฏิรูป
+ปฏิรูป	patirup	2886
+ปฏิรูป	patiroop	2597
+
+# อด
+อด	ot	2884
+
+# เต้น
+เต้น	ten	2875
+
+# มอบหมาย
+มอบหมาย	mopmai	2881
+มอบหมาย	mobmai	2449
+มอบหมาย	mopmaai	2305
+
+# นายจ้าง
+นายจ้าง	naichang	2871
+นายจ้าง	naijang	2584
+
+# ช้าง
+ช้าง	chang	2877
+
+# อาญา
+อาญา	aya	2862
+อาญา	ayaa	2433
+
+# ประสาน
+ประสาน	prasan	2866
+
+# ฉาย
+ฉาย	chai	2861
+ฉาย	chay	2575
+
+# ทั้งนั้น
+ทั้งนั้น	tangnan	2870
+
+# ผู้นั้น
+ผู้นั้น	phunan	2857
+ผู้นั้น	poonan	2571
+
+# น้ำเสียง
+น้ำเสียง	namsiang	2857
+น้ำเสียง	namseang	2428
+
+# ทราย
+ทราย	sai	2852
+ทราย	say	2424
+
+# วงการ
+วงการ	wongkan	2852
+วงการ	wongkarn	2567
+
+# ขอบ
+ขอบ	khop	2849
+
+# คำพิพากษา
+คำพิพากษา	khampipaksa	2843
+คำพิพากษา	kampipaksa	2559
+
+# ดำเนินงาน
+ดำเนินงาน	damnoenngan	2841
+ดำเนินงาน	damneonngan	2557
+ดำเนินงาน	damnernngan	2415
+
+# วะ
+วะ	wa	2846
+
+# ทาน
+ทาน	tan	2834
+ทาน	than	2551
+
+# เฉย
+เฉย	choey	2830
+เฉย	chery	2406
+เฉย	choei	2264
+
+# ยุติธรรม
+ยุติธรรม	yutitham	2829
+ยุติธรรม	yuttitham	2546
+
+# ทำร้าย
+ทำร้าย	tamrai	2827
+ทำร้าย	thamrai	2403
+
+# โน
+โน	no	2826
+
+# ชิ
+ชิ	chi	2824
+
+# ทดสอบ
+ทดสอบ	todsop	2827
+ทดสอบ	thotsop	2403
+
+# วิทยุ
+วิทยุ	witthayu	2825
+วิทยุ	wittayu	2684
+วิทยุ	witayu	2401
+
+# ถ้าหาก
+ถ้าหาก	thahak	2823
+
+# ทศวรรษ
+ทศวรรษ	thotsawat	2822
+ทศวรรษ	totsawat	2540
+ทศวรรษ	thosawat	2258
+
+# รี่
+รี่	ree	2814
+รี่	ri	2392
+
+# โจทก์
+โจทก์	jot	2811
+
+# ศีรษะ
+ศีรษะ	sirsa	2806
+ศีรษะ	seersa	2525
+ศีรษะ	sisa	2385
+
+# ตัวเลข
+ตัวเลข	tualek	2806
+
+# สว่าง
+สว่าง	sawang	2805
+
+# ผู้อำนวยการ
+ผู้อำนวยการ	phuamnuaykan	2802
+ผู้อำนวยการ	puamnuaykarn	2522
+ผู้อำนวยการ	phooamnuaykan	2242
+
+# ภาระ
+ภาระ	phara	2793
+ภาระ	para	2514
+
+# สีหน้า
+สีหน้า	sina	2802
+สีหน้า	seena	2522
+
+# เร
+เร	re	2800
+
+# เสรี
+เสรี	seri	2788
+เสรี	saeri	2230
+
+# ลบ
+ลบ	lop	2778
+
+# สหกรณ์
+สหกรณ์	sahakorn	2788
+สหกรณ์	sahagorn	2230
+
+# แลกเปลี่ยน
+แลกเปลี่ยน	laekplian	2781
+แลกเปลี่ยน	lekplian	2364
+แลกเปลี่ยน	laekplean	2225
+
+# อธิบดี
+อธิบดี	athibodi	2778
+อธิบดี	atibodee	2361
+
+# หมาย
+หมาย	mai	2776
+หมาย	may	2498
+
+# วัง
+วัง	wang	2768
+
+# ต่อต้าน
+ต่อต้าน	totan	2761
+
+# ผู้บริหาร
+ผู้บริหาร	phuborihan	2765
+ผู้บริหาร	puboriharn	2350
+
+# พึง
+พึง	phueng	2753
+พึง	pung	2340
+
+# เจ
+เจ	jay	2758
+เจ	je	2482
+เจ	jeh	2206
+
+# จริงจัง
+จริงจัง	jingjang	2742
+จริงจัง	jringjang	2194
+
+# ประวัติ
+ประวัติ	prawat	2748
+ประวัติ	bprawat	2198
+
+# ราม
+ราม	ram	2750
+
+# เม็ด
+เม็ด	met	2732
+
+# เพราะว่า
+เพราะว่า	prowa	2734
+เพราะว่า	phrowa	2461
+เพราะว่า	prawa	2324
+
+# ท่อ
+ท่อ	tor	2731
+ท่อ	to	2321
+
+# สาธารณะ
+สาธารณะ	satarana	2714
+สาธารณะ	sathana	2171
+
+# มั่นใจ
+มั่นใจ	manjai	2709
+
+# กล่าวหา
+กล่าวหา	klaoha	2718
+กล่าวหา	klauha	2310
+
+# ก่อสร้าง
+ก่อสร้าง	kosang	2706
+ก่อสร้าง	korsang	2435
+
+# ปรับตัว
+ปรับตัว	prabtua	2727
+ปรับตัว	praptua	2454
+
+# หลังจากนั้น
+หลังจากนั้น	langjaknan	2704
+หลังจากนั้น	langchaknan	2298
+
+# กลไก
+กลไก	konlakai	2699
+กลไก	klonkai	2159
+
+# ไหว้
+ไหว้	wai	2695
+ไหว้	way	2291
+
+# เพราะฉะนั้น
+เพราะฉะนั้น	prochanan	2696
+เพราะฉะนั้น	prawchanan	2372
+
+# สัญลักษณ์
+สัญลักษณ์	sanyalak	2693
+สัญลักษณ์	sunyalak	2289
+
+# กษัตริย์
+กษัตริย์	kasat	2692
+กษัตริย์	kasatri	2288
+
+# เคารพ
+เคารพ	khaorop	2693
+เคารพ	kaorop	2424
+
+# พยัก
+พยัก	payak	2692
+พยัก	phayak	2423
+
+# รูปร่าง
+รูปร่าง	rooprang	2691
+รูปร่าง	rouprang	2287
+
+# ก้ม
+ก้ม	kom	2692
+
+# สะสม
+สะสม	sasom	2686
+
+# ลี
+ลี	lee	2684
+ลี	li	2416
+
+# ใช้งาน
+ใช้งาน	chaingan	2683
+ใช้งาน	chayngan	2281
+
+# สัดส่วน
+สัดส่วน	satsuan	2664
+
+# การคลัง
+การคลัง	kanklang	2655
+
+# หลักสูตร
+หลักสูตร	laksut	2655
+หลักสูตร	laksoot	2390
+
+# แนวโน้ม
+แนวโน้ม	naewnom	2662
+แนวโน้ม	naeonom	2263
+
+# อยุธยา
+อยุธยา	ayutthaya	2655
+อยุธยา	ayuthaya	2390
+
+# ดอกเบี้ย
+ดอกเบี้ย	dokbia	2653
+ดอกเบี้ย	dokbiya	2255
+
+# พม่า
+พม่า	phama	2652
+พม่า	pama	2254
+
+# ตอบแทน
+ตอบแทน	toptaen	2654
+ตอบแทน	toptan	2256
+
+# ทัน
+ทัน	tan	2647
+
+# ยินยอม
+ยินยอม	yinyom	2651
+ยินยอม	yinyorm	2253
+
+# บุรี
+บุรี	buri	2646
+
+# พยาน
+พยาน	payan	2652
+พยาน	phayan	2254
+
+# ชัก
+ชัก	chak	2642
+
+# โท
+โท	to	2631
+โท	toe	2236
+
+# บุคลากร
+บุคลากร	buklakon	2633
+บุคลากร	bukkhalakon	2370
+บุคลากร	bukkalakorn	2238
+
+# ชื่อเสียง
+ชื่อเสียง	chuesiang	2632
+ชื่อเสียง	chueseang	2237
+ชื่อเสียง	cheusiang	2106
+
+# บ่น
+บ่น	bon	2629
+
+# เอก
+เอก	ek	2625
+เอก	aek	2231
+
+# เผา
+เผา	phao	2623
+เผา	pao	2361
+
+# มิให้
+มิให้	mihai	2618
+
+# ตำนาน
+ตำนาน	tamnan	2622
+
+# ฟื้นฟู
+ฟื้นฟู	fuenfu	2617
+ฟื้นฟู	feunfu	2355
+
+# ที่แล้ว
+ที่แล้ว	thilaew	2611
+ที่แล้ว	teelaew	2350
+ที่แล้ว	thilaeo	2089
+
+# ส่วนร่วม
+ส่วนร่วม	suanruam	2612
+ส่วนร่วม	suanruom	2220
+
+# ข้อตกลง
+ข้อตกลง	khotoklong	2611
+ข้อตกลง	kawtoklong	2219
+
+# ตัวละคร
+ตัวละคร	tualakhon	2610
+ตัวละคร	tualakorn	2349
+
+# แน่น
+แน่น	naen	2598
+แน่น	nan	2078
+
+# เบื้องต้น
+เบื้องต้น	buengton	2608
+เบื้องต้น	bueangton	2347
+เบื้องต้น	beuangton	2086
+
+# สูญเสีย
+สูญเสีย	soonsia	2594
+สูญเสีย	sunsia	2335
+สูญเสีย	soonseea	2075
+
+# ถ่ายทอด
+ถ่ายทอด	thaithot	2609
+ถ่ายทอด	taitod	2348
+
+# ลำบาก
+ลำบาก	lambak	2588
+
+# ดับ
+ดับ	dap	2581
+
+# ลาน
+ลาน	lan	2584
+
+# สมัคร
+สมัคร	samak	2581
+สมัคร	samakr	2065
+
+# ยิ่งใหญ่
+ยิ่งใหญ่	yingyai	2579
+
+# กระ
+กระ	kra	2580
+กระ	gra	2193
+
+# มีอายุ
+มีอายุ	meeayu	2577
+มีอายุ	miayu	2190
+
+# ก๊าซ
+ก๊าซ	kas	2578
+ก๊าซ	gas	2449
+
+# นิทาน
+นิทาน	nitan	2575
+
+# ตระหนัก
+ตระหนัก	tranak	2572
+
+# ภูมิ
+ภูมิ	poom	2571
+ภูมิ	phum	2314
+ภูมิ	phumi	2057
+
+# แสวงหา
+แสวงหา	sawaengha	2570
+แสวงหา	sawengha	2184
+
+# มืด
+มืด	meud	2570
+มืด	mued	2313
+มืด	murd	2056
+
+# ฤดู
+ฤดู	ridu	2560
+ฤดู	reudu	2304
+ฤดู	rudu	2048
+
+# พี่ชาย
+พี่ชาย	pheechai	2562
+พี่ชาย	pichai	2306
+พี่ชาย	peechay	2178
+
+# ตรงข้าม
+ตรงข้าม	trongkham	2556
+
+# นี
+นี	nee	2544
+นี	ni	2290
+
+# แต่ว่า
+แต่ว่า	taewa	2551
+แต่ว่า	taewaa	2168
+
+# รอยยิ้ม
+รอยยิ้ม	royyim	2544
+
+# เฉลี่ย
+เฉลี่ย	chalia	2541
+เฉลี่ย	chaliea	2160
+เฉลี่ย	chaliay	2033
+
+# อาทิ
+อาทิ	arti	2541
+อาทิ	ati	2287
+อาทิ	athi	2160
+
+# ระเบิด
+ระเบิด	raberd	2540
+ระเบิด	rabert	2286
+ระเบิด	raboet	2159
+
+# เชื่อมโยง
+เชื่อมโยง	chueamyong	2533
+เชื่อมโยง	cheuamyong	2280
+เชื่อมโยง	chuamyong	2026
+
+# บันได
+บันได	bandai	2536
+บันได	bundai	2156
+
+# หลุด
+หลุด	lut	2530
+หลุด	loot	2150
+
+# ชิน
+ชิน	chin	2520
+
+# เหลือเกิน
+เหลือเกิน	luakoen	2527
+เหลือเกิน	luerkern	2274
+เหลือเกิน	luakern	2148
+
+# ได้ที่
+ได้ที่	daithi	2519
+ได้ที่	daithee	2267
+
+# ยากจน
+ยากจน	yakjon	2518
+ยากจน	yaakjon	2140
+
+# มหานคร
+มหานคร	mahanakhon	2510
+มหานคร	mahanakorn	2259
+
+# แปลง
+แปลง	plaeng	2518
+แปลง	plang	2140
+
+# ปรากฏการณ์
+ปรากฏการณ์	prakotkan	2503
+ปรากฏการณ์	prakodkarn	2253
+ปรากฏการณ์	prakotagan	1877
+
+# คุม
+คุม	khum	2507
+คุม	koom	2131
+
+# ผู้ปกครอง
+ผู้ปกครอง	phupokkhrong	2502
+ผู้ปกครอง	poopokkrong	2252
+
+# รัฐสภา
+รัฐสภา	ratthasapha	2500
+รัฐสภา	ratsapha	2250
+
+# โซ
+โซ	so	2502
+
+# ผู้ใช้
+ผู้ใช้	phuchai	2501
+ผู้ใช้	poochai	2126
+ผู้ใช้	phuchay	2001
+
+# วัยรุ่น
+วัยรุ่น	wairun	2500
+
+# สื่อมวลชน
+สื่อมวลชน	suemuanchon	2498
+สื่อมวลชน	sueamuanchon	2198
+สื่อมวลชน	suemuonchon	1998
+
+# ถัด
+ถัด	thad	2497
+
+# เผยแพร่
+เผยแพร่	phoeiphrae	2497
+เผยแพร่	poeyprae	2197
+เผยแพร่	phuiprae	1998
+
+# คลอง
+คลอง	klong	2495
+
+# ตื่นเต้น
+ตื่นเต้น	tuenten	2492
+ตื่นเต้น	teunten	2118
+
+# หัก
+หัก	hak	2490
+
+# ยกเลิก
+ยกเลิก	yokloek	2491
+ยกเลิก	yokleak	2192
+ยกเลิก	yokluek	1993
+
+# ปฏิวัติ
+ปฏิวัติ	patiwat	2481
+ปฏิวัติ	pativat	2233
+
+# ซัก
+ซัก	sak	2478
+
+# ถึงกับ
+ถึงกับ	theungkap	2477
+ถึงกับ	tuengkap	2229
+ถึงกับ	thuengkap	2105
+
+# อักษร
+อักษร	aksorn	2486
+อักษร	akson	2237
+
+# แขก
+แขก	khaek	2477
+แขก	kaek	2229
+แขก	khak	2105
+
+# เกียรติ
+เกียรติ	kiat	2470
+เกียรติ	kiet	2100
+
+# นิตยสาร
+นิตยสาร	nittayasan	2476
+นิตยสาร	nitayasan	2228
+
+# น้ำตา
+น้ำตา	namta	2467
+น้ำตา	namtaa	2097
+
+# ประสาท
+ประสาท	prasat	2473
+ประสาท	prasart	2102
+
+# กว้างขวาง
+กว้างขวาง	kwangkwang	2461
+
+# โชคดี
+โชคดี	chokdee	2460
+โชคดี	chokdi	2091
+
+# ปราศจาก
+ปราศจาก	pratchak	2462
+ปราศจาก	pradsajak	2093
+ปราศจาก	prassajak	1970
+
+# กำจัด
+กำจัด	kamjat	2461
+กำจัด	gamjat	2166
+
+# ผู้บริโภค
+ผู้บริโภค	phuboriphok	2445
+ผู้บริโภค	puboriphok	2078
+
+# ผู้จัดการ
+ผู้จัดการ	phujatkan	2450
+ผู้จัดการ	poojatkan	2082
+
+# จดหมาย
+จดหมาย	jotmai	2446
+จดหมาย	jodmai	2079
+
+# พระยา
+พระยา	praya	2444
+พระยา	phraya	2200
+
+# ขยับ
+ขยับ	khayap	2443
+
+# พูดคุย
+พูดคุย	phudkhui	2443
+พูดคุย	pudkuy	2199
+
+# ดินแดน
+ดินแดน	dindaen	2438
+ดินแดน	dindan	2072
+
+# เสียก่อน
+เสียก่อน	siakon	2441
+เสียก่อน	seakon	2075
+
+# ศูนย์กลาง
+ศูนย์กลาง	soonklang	2437
+ศูนย์กลาง	sunklang	2193
+
+# สนทนา
+สนทนา	sontana	2430
+สนทนา	sonthana	2187
+
+# ล้ม
+ล้ม	lom	2430
+
+# เสือ
+เสือ	suea	2432
+เสือ	sua	2189
+เสือ	seua	2067
+
+# เด็ดขาด
+เด็ดขาด	detkhat	2427
+เด็ดขาด	dedkhad	2063
+
+# ขี้
+ขี้	kee	2425
+ขี้	khi	2061
+
+# ตกเป็น
+ตกเป็น	tokpen	2428
+
+# ตะ
+ตะ	ta	2419
+
+# เซลล์
+เซลล์	sel	2424
+เซลล์	cell	2060
+
+# ตรา
+ตรา	tra	2421
+
+# ยะ
+ยะ	ya	2405
+
+# ลาว
+ลาว	lao	2409
+ลาว	laao	1927
+
+# เอส
+เอส	es	2405
+เอส	ess	2044
+
+# วาระ
+วาระ	wara	2403
+
+# ประกอบการ
+ประกอบการ	prakopkan	2411
+ประกอบการ	prakobkarn	2170
+
+# ภาคใต้
+ภาคใต้	phaktai	2398
+ภาคใต้	paktai	2158
+
+# ชาติไทย
+ชาติไทย	chatthai	2393
+ชาติไทย	chartthai	2154
+
+# ใกล้เคียง
+ใกล้เคียง	klaikhiang	2394
+ใกล้เคียง	glaikiang	2035
+
+# โล
+โล	lo	2387
+
+# สิ้นสุด
+สิ้นสุด	sinsut	2391
+สิ้นสุด	sinsood	2152
+
+# วรรณคดี
+วรรณคดี	wannakhadi	2383
+วรรณคดี	wannakhadee	2145
+
+# รอด
+รอด	rod	2381
+
+# ตำบล
+ตำบล	tambon	2378
+ตำบล	tumbon	2021
+
+# บุหรี่
+บุหรี่	buri	2363
+บุหรี่	boori	2009
+
+# แผล
+แผล	plae	2367
+แผล	plair	2012
+
+# เติม
+เติม	toem	2356
+เติม	term	2003
+
+# เครือข่าย
+เครือข่าย	khrueakhai	2367
+เครือข่าย	kruakhai	2130
+เครือข่าย	krueakai	2012
+
+# โก
+โก	go	2354
+โก	ko	2119
+
+# เข้ม
+เข้ม	khem	2353
+
+# หัวข้อ
+หัวข้อ	huakho	2352
+หัวข้อ	hwakho	1882
+
+# คว้า
+คว้า	khwa	2350
+คว้า	kwa	2115
+
+# เศษ
+เศษ	set	2346
+
+# กิ
+กิ	ki	2349
+กิ	gi	1997
+
+# ศีลธรรม
+ศีลธรรม	sinlatham	2347
+ศีลธรรม	silatham	1995
+ศีลธรรม	seenlatham	1878
+
+# จารึก
+จารึก	jaruk	2346
+จารึก	charuk	1994
+
+# ลักษณ์
+ลักษณ์	lak	2341
+
+# หญ้า
+หญ้า	ya	2338
+
+# ใช้ได้
+ใช้ได้	chaidai	2345
+ใช้ได้	chaydai	1993
+
+# แถบ
+แถบ	thaep	2336
+แถบ	taep	2102
+แถบ	thab	1869
+
+# คอมมิวนิสต์
+คอมมิวนิสต์	kommiwnit	2337
+คอมมิวนิสต์	communist	2103
+คอมมิวนิสต์	kommunit	1870
+
+# สภาวะ
+สภาวะ	sapawa	2332
+สภาวะ	saphawa	2099
+
+# หลีกเลี่ยง
+หลีกเลี่ยง	leeklieng	2335
+หลีกเลี่ยง	likliang	2102
+หลีกเลี่ยง	leekliang	1985
+
+# เท
+เท	te	2334
+เท	tay	1984
+เท	tey	1867
+
+# ล่วงหน้า
+ล่วงหน้า	luangna	2331
+ล่วงหน้า	luangnaa	1981
+
+# จดทะเบียน
+จดทะเบียน	jotthabian	2329
+จดทะเบียน	jodtabien	2096
+
+# เล
+เล	le	2327
+เล	lay	1862
+
+# โย
+โย	yo	2328
+
+# รู้ตัว
+รู้ตัว	rutua	2327
+รู้ตัว	rootua	1978
+
+# บาดเจ็บ
+บาดเจ็บ	batjep	2323
+บาดเจ็บ	badjep	2091
+
+# หมายเลข
+หมายเลข	mailek	2324
+หมายเลข	maailek	1975
+หมายเลข	maaylek	1859
+
+# ระบาย
+ระบาย	rabai	2325
+ระบาย	rabay	2092
+
+# ข้อบังคับ
+ข้อบังคับ	khobangkhap	2320
+ข้อบังคับ	korbangkap	1972
+
+# เชื่อม
+เชื่อม	chueam	2326
+เชื่อม	cheuam	2093
+เชื่อม	chuam	1861
+
+# ปลัด
+ปลัด	palat	2319
+ปลัด	plat	2087
+
+# ทั้งคู่
+ทั้งคู่	tangku	2319
+ทั้งคู่	thangkhu	1971
+
+# แข็ง
+แข็ง	khaeng	2310
+แข็ง	keng	2079
+
+# เม
+เม	me	2313
+เม	may	1850
+
+# อบรม
+อบรม	oprom	2313
+อบรม	obrom	2082
+
+# ตะโกน
+ตะโกน	takon	2317
+
+# กองทัพ
+กองทัพ	kongtap	2307
+กองทัพ	kongthap	2076
+
+# หมวด
+หมวด	muat	2303
+หมวด	muad	2073
+
+# บี
+บี	bee	2303
+บี	bi	1958
+
+# ค้าง
+ค้าง	khang	2301
+
+# อาเซียน
+อาเซียน	asean	2299
+อาเซียน	aseiyan	1954
+อาเซียน	asian	1839
+
+# ท่ามกลาง
+ท่ามกลาง	thamklang	2300
+ท่ามกลาง	tamklang	2070
+
+# หารือ
+หารือ	haru	2296
+หารือ	hareu	2066
+
+# กอด
+กอด	kot	2298
+กอด	kod	2068
+
+# ตัวแปร
+ตัวแปร	tuabprae	2296
+ตัวแปร	tuaprae	2066
+
+# ริน
+ริน	rin	2295
+
+# ธิ
+ธิ	ti	2291
+
+# สวรรค์
+สวรรค์	sawan	2294
+สวรรค์	sawang	1720
+
+# คุณหมอ
+คุณหมอ	khunmor	2284
+คุณหมอ	khunmoh	1941
+คุณหมอ	khunmaw	1827
+
+# ทำท่า
+ทำท่า	thamtha	2286
+ทำท่า	tamta	2057
+
+# ปัก
+ปัก	pak	2283
+
+# กันและกัน
+กันและกัน	kanlaekan	2283
+กันและกัน	kanlaekun	1941
+กันและกัน	ganlaegan	1826
+
+# จา
+จา	ja	2288
+จา	cha	1830
+
+# พรรคการเมือง
+พรรคการเมือง	phakkanmueang	2283
+พรรคการเมือง	pakkanmuang	2055
+พรรคการเมือง	phakkarnmueang	1826
+
+# เหล็ก
+เหล็ก	lek	2280
+
+# ชิง
+ชิง	ching	2282
+
+# เดือดร้อน
+เดือดร้อน	duearon	2281
+เดือดร้อน	duatron	2053
+เดือดร้อน	deuadron	1939
+
+# ถัง
+ถัง	thang	2280
+ถัง	tang	2052
+
+# ออกเสียง
+ออกเสียง	oksiang	2279
+ออกเสียง	oksieng	1937
+
+# คัดเลือก
+คัดเลือก	katluek	2275
+คัดเลือก	khatlueak	2048
+คัดเลือก	katleuk	1820
+
+# สั่น
+สั่น	san	2277
+
+# ก้อน
+ก้อน	kon	2276
+
+# แต่อย่างใด
+แต่อย่างใด	taeyangdai	2270
+แต่อย่างใด	tayangdai	1998
+
+# อุปสรรค
+อุปสรรค	upasak	2271
+อุปสรรค	uppasak	2044
+อุปสรรค	upsak	1817
+
+# มิติ
+มิติ	miti	2269
+
+# โปรแกรม
+โปรแกรม	prokraem	2269
+โปรแกรม	prokram	2042
+โปรแกรม	prokrem	1815
+
+# โมง
+โมง	mong	2266
+
+# เหรียญ
+เหรียญ	rian	2263
+เหรียญ	rean	1924
+เหรียญ	riang	1810
+
+# เจ้านาย
+เจ้านาย	jaonai	2263
+เจ้านาย	chaonai	1924
+
+# ตอบสนอง
+ตอบสนอง	topsanong	2256
+ตอบสนอง	tobsanong	1918
+
+# ปรกติ
+ปรกติ	pokkati	2256
+ปรกติ	prokkati	1918
+
+# ราชอาณาจักร
+ราชอาณาจักร	ratchaanachak	2251
+ราชอาณาจักร	rachaanachak	2026
+ราชอาณาจักร	radchaanajak	1801
+
+# อนุรักษ์
+อนุรักษ์	anurak	2250
+
+# บวก
+บวก	buak	2246
+บวก	buag	1797
+
+# เศรษฐศาสตร์
+เศรษฐศาสตร์	setthasat	2242
+เศรษฐศาสตร์	settasat	2018
+
+# รายจ่าย
+รายจ่าย	raichai	2250
+รายจ่าย	raijai	2025
+รายจ่าย	raaichaai	1688
+
+# เด่น
+เด่น	den	2235
+
+# ฉลาด
+ฉลาด	chalat	2235
+ฉลาด	chalad	2012
+
+# สิทธิ์
+สิทธิ์	sit	2229
+
+# เครื่องหมาย
+เครื่องหมาย	khrueangmai	2240
+เครื่องหมาย	krueangmai	2016
+เครื่องหมาย	khreuangmay	1792
+
+# ขอบเขต
+ขอบเขต	khopkhet	2227
+
+# ที่จริง
+ที่จริง	teejing	2229
+ที่จริง	thiijing	1895
+
+# ประพฤติ
+ประพฤติ	praphruet	2226
+ประพฤติ	prapruet	2003
+ประพฤติ	praprut	1892
+
+# คม
+คม	khom	2221
+
+# คนงาน
+คนงาน	khonngan	2218
+คนงาน	konngan	1996
+
+# เอ็ม
+เอ็ม	em	2221
+
+# จนกว่า
+จนกว่า	jonkwa	2218
+จนกว่า	chonkwa	1885
+
+# ศตวรรษ
+ศตวรรษ	satawat	2216
+ศตวรรษ	sattawat	1884
+
+# นับว่า
+นับว่า	napwa	2214
+
+# ปั้น
+ปั้น	pan	2213
+
+# ครอบครอง
+ครอบครอง	krobkrong	2212
+ครอบครอง	kropkrong	1880
+
+# พระพุทธเจ้า
+พระพุทธเจ้า	phraphutthachao	2214
+พระพุทธเจ้า	prapudjao	1882
+พระพุทธเจ้า	phraputtajao	1771
+
+# บทความ
+บทความ	botkwam	2211
+บทความ	bodkwam	1879
+
+# ทักษิณ
+ทักษิณ	taksin	2210
+ทักษิณ	thaksin	2100
+
+# ผูก
+ผูก	phook	2210
+ผูก	puk	1878
+
+# ศัตรู
+ศัตรู	sattru	2210
+ศัตรู	satru	1989
+
+# จอมพล
+จอมพล	jomphon	2209
+จอมพล	jompon	1988
+
+# กระจก
+กระจก	krajok	2202
+
+# กำลังใจ
+กำลังใจ	kamlangjai	2203
+กำลังใจ	gamlangjai	1983
+กำลังใจ	kamlangchai	1652
+
+# ทุนนิยม
+ทุนนิยม	thunniyom	2198
+ทุนนิยม	toonniyom	1868
+
+# บรรลุ
+บรรลุ	banlu	2193
+
+# กุล
+กุล	kun	2196
+กุล	kul	1867
+
+# ราษฎร
+ราษฎร	ratsadon	2190
+ราษฎร	radsadon	1862
+
+# กำไร
+กำไร	kamrai	2190
+กำไร	gamrai	1971
+
+# ทดแทน
+ทดแทน	todtan	2192
+ทดแทน	todthan	1863
+
+# ค่าจ้าง
+ค่าจ้าง	khajang	2188
+ค่าจ้าง	kajang	1969
+
+# มุก
+มุก	muk	2185
+มุก	mook	1966
+
+# เชื่อมั่น
+เชื่อมั่น	chueaman	2179
+เชื่อมั่น	cheuaman	1961
+เชื่อมั่น	chueman	1852
+
+# งดงาม
+งดงาม	ngotngam	2177
+งดงาม	ngodngam	1850
+
+# ถึงแม้
+ถึงแม้	tuengmae	2176
+ถึงแม้	thuengmae	1958
+ถึงแม้	tungmae	1850
+
+# นิยาม
+นิยาม	niyam	2174
+
+# ขยะ
+ขยะ	kaya	2170
+ขยะ	khaya	1953
+
+# เหยื่อ
+เหยื่อ	yuea	2171
+เหยื่อ	yua	1910
+เหยื่อ	yeua	1737
+
+# อวัยวะ
+อวัยวะ	awaiyawa	2170
+อวัยวะ	avaiyava	1844
+
+# รองรับ
+รองรับ	rongrap	2165
+รองรับ	rongrub	1840
+
+# เป็นไร
+เป็นไร	penrai	2163
+
+# เห
+เห	he	2161
+
+# เบอร์
+เบอร์	ber	2155
+เบอร์	boe	1832
+
+# สูบ
+สูบ	soop	2154
+สูบ	sup	1939
+
+# ชี้แจง
+ชี้แจง	chiijaeng	2154
+ชี้แจง	cheejaeng	1831
+ชี้แจง	chijang	1831
+
+# ขณะเดียวกัน
+ขณะเดียวกัน	khanadiaokan	2149
+ขณะเดียวกัน	kanadiawkan	1934
+ขณะเดียวกัน	khanadeaokan	1719
+
+# สากล
+สากล	sakon	2149
+สากล	sakol	1827
+
+# รุ่ง
+รุ่ง	rung	2149
+
+# กัด
+กัด	kat	2147
+
+# แข่ง
+แข่ง	khaeng	2147
+แข่ง	kaeng	1932
+แข่ง	khang	1718
+
+# กฎหมายแพ่ง
+กฎหมายแพ่ง	kotmaiphaeng	2144
+กฎหมายแพ่ง	kodmaaipheng	1822
+
+# กันเอง
+กันเอง	kaneng	2146
+กันเอง	kanaeng	1824
+
+# จำคุก
+จำคุก	jamkhuk	2147
+จำคุก	jumkhuk	1825
+
+# ข่าย
+ข่าย	khai	2143
+ข่าย	kai	1929
+ข่าย	khay	1822
+
+# ตระกูล
+ตระกูล	trakool	2139
+ตระกูล	trakun	1818
+
+# ขอรับ
+ขอรับ	khorap	2140
+ขอรับ	khorub	1926
+
+# อากร
+อากร	akon	2152
+อากร	akorn	1937
+
+# ที่ปรึกษา
+ที่ปรึกษา	theepruksa	2140
+ที่ปรึกษา	tipruksa	1819
+
+# เว้นแต่
+เว้นแต่	wentae	2137
+เว้นแต่	wentaae	1816
+
+# มีชื่อ
+มีชื่อ	meechue	2136
+มีชื่อ	michu	1922
+มีชื่อ	meecheu	1816
+
+# จริยธรรม
+จริยธรรม	jariyatham	2134
+จริยธรรม	jariyatam	1814
+
+# สระ
+สระ	sara	2133
+
+# กิจ
+กิจ	kit	2133
+กิจ	kij	1813
+
+# ผ่าตัด
+ผ่าตัด	patat	2133
+ผ่าตัด	phatat	1813
+
+# เน
+เน	ne	2131
+
+# แฟชั่น
+แฟชั่น	fashion	2125
+แฟชั่น	faechan	1700
+
+# ทางเลือก
+ทางเลือก	thangleuak	2130
+ทางเลือก	tangluak	1917
+ทางเลือก	thangleuk	1704
+
+# นักการเมือง
+นักการเมือง	nakkanmueang	2127
+นักการเมือง	nakkanmuang	1914
+นักการเมือง	nakkarnmueang	1702
+
+# เสียหาย
+เสียหาย	siahai	2128
+เสียหาย	siahaai	1809
+
+# ชื่อว่า
+ชื่อว่า	chuewa	2125
+ชื่อว่า	cheuwa	1912
+ชื่อว่า	chuuwa	1700
+
+# โชว์
+โชว์	show	2115
+โชว์	cho	1798
+
+# พระบรม
+พระบรม	phraborom	2125
+พระบรม	praborom	1912
+
+# อบอุ่น
+อบอุ่น	opun	2115
+อบอุ่น	obaun	1692
+
+# ถ้อยคำ
+ถ้อยคำ	thoikham	2111
+ถ้อยคำ	toykham	1900
+
+# ประหยัด
+ประหยัด	prayat	2115
+ประหยัด	prayad	1798
+
+# กู้
+กู้	ku	2108
+กู้	goo	1897
+กู้	gu	1792
+
+# เหล่า
+เหล่า	lao	2105
+
+# ลาก
+ลาก	lak	2103
+
+# เพียงใด
+เพียงใด	phiangdai	2104
+เพียงใด	piangdai	1894
+
+# นี่แหละ
+นี่แหละ	nila	2099
+นี่แหละ	neela	1847
+
+# ค้นพบ
+ค้นพบ	khonphop	2096
+ค้นพบ	konpop	1782
+
+# ล่าสุด
+ล่าสุด	lasut	2097
+ล่าสุด	lasud	1782
+
+# สมบัติ
+สมบัติ	sombat	2099
+สมบัติ	sombut	1784
+
+# จัดหา
+จัดหา	jatha	2095
+จัดหา	jadha	1781
+
+# ตำรา
+ตำรา	tamra	2095
+ตำรา	tumra	1781
+
+# ชู
+ชู	choo	2088
+ชู	chu	1879
+
+# ย้ำ
+ย้ำ	yam	2090
+
+# วิจารณ์
+วิจารณ์	wijan	2081
+วิจารณ์	wichan	1873
+
+# ชั่วคราว
+ชั่วคราว	chuakrao	2072
+ชั่วคราว	chuakraw	1761
+
+# ผู้ผลิต
+ผู้ผลิต	phuphalit	2080
+ผู้ผลิต	puphalit	1768
+
+# กวี
+กวี	kawi	2085
+กวี	kavi	1668
+
+# เข้มแข็ง
+เข้มแข็ง	khemkhaeng	2070
+เข้มแข็ง	kemkaeng	1863
+เข้มแข็ง	khemkheng	1656
+
+# สบ
+สบ	sop	2064
+
+# พิพากษา
+พิพากษา	phiphaksa	2061
+พิพากษา	pipaksa	1855
+
+# ประชาธิปัตย์
+ประชาธิปัตย์	prachatipat	2060
+ประชาธิปัตย์	prachathipat	1854
+
+# ศักยภาพ
+ศักยภาพ	sakyaphap	2058
+ศักยภาพ	sakkayaphap	1852
+
+# นี้เอง
+นี้เอง	nieng	2061
+นี้เอง	neeeng	1752
+นี้เอง	niieng	1649
+
+# รู
+รู	ru	2055
+รู	roo	1850
+
+# มีเสียง
+มีเสียง	misiang	2055
+มีเสียง	meesiang	1850
+
+# ค่านิยม
+ค่านิยม	khaniyom	2053
+
+# ผืน
+ผืน	phuen	2055
+ผืน	puen	1850
+ผืน	pheun	1747
+
+# เบิก
+เบิก	berk	2052
+เบิก	boek	1744
+เบิก	burk	1642
+
+# ยาง
+ยาง	yang	2051
+
+# ผิวหนัง
+ผิวหนัง	phiwnang	2046
+ผิวหนัง	piuhnang	1739
+ผิวหนัง	phiunang	1637
+
+# มีด
+มีด	meed	2044
+มีด	mit	1737
+
+# ล้อ
+ล้อ	lo	2045
+
+# สถิติ
+สถิติ	satiti	2051
+สถิติ	sathiti	1846
+
+# กล้ามเนื้อ
+กล้ามเนื้อ	klamnuea	2042
+กล้ามเนื้อ	klamnua	1838
+กล้ามเนื้อ	klamneua	1736
+
+# ความรุนแรง
+ความรุนแรง	khwamrunraeng	2042
+ความรุนแรง	kwamrunrang	1736
+
+# ประมง
+ประมง	pramong	2041
+
+# จัดสรร
+จัดสรร	jatsan	2040
+จัดสรร	chatsan	1734
+
+# ความดี
+ความดี	khwamdee	2039
+ความดี	kwamdee	1835
+
+# ความพยายาม
+ความพยายาม	khwamphayayam	2043
+ความพยายาม	kwampayayam	1839
+
+# เสื่อม
+เสื่อม	sueam	2040
+เสื่อม	seuam	1836
+
+# ยาเสพติด
+ยาเสพติด	yasebtid	2038
+ยาเสพติด	yaseptit	1834
+ยาเสพติด	yasephtid	1630
+
+# ขวบ
+ขวบ	khuap	2037
+ขวบ	kuab	1731
+
+# สังกัด
+สังกัด	sangkat	2024
+
+# ลาออก
+ลาออก	laork	2030
+ลาออก	laaork	1726
+
+# เผชิญ
+เผชิญ	phachoen	2024
+เผชิญ	pachern	1822
+เผชิญ	phachern	1720
+
+# วิน
+วิน	win	2009
+
+# ยุ่ง
+ยุ่ง	yung	2013
+
+# เทียน
+เทียน	tian	2016
+เทียน	thian	1814
+เทียน	tien	1714
+
+# นอกเหนือ
+นอกเหนือ	noknuea	2017
+นอกเหนือ	nokneua	1815
+นอกเหนือ	noknua	1614
+
+# พุ่ง
+พุ่ง	phung	2009
+พุ่ง	poong	1708
+
+# คลอด
+คลอด	klod	2008
+คลอด	khlot	1707
+
+# หมุน
+หมุน	moon	2008
+หมุน	mun	1807
+
+# ชั่น
+ชั่น	chan	2007
+
+# สาธารณสุข
+สาธารณสุข	satharanasuk	2008
+สาธารณสุข	sataranasuk	1807
+สาธารณสุข	sathalanasuk	1606
+
+# วัสดุ
+วัสดุ	watsadu	2004
+วัสดุ	wasadu	1703
+
+# พระราชทาน
+พระราชทาน	phrarachathan	2004
+พระราชทาน	prarachathan	1804
+พระราชทาน	phraratchathan	1703
+
+# สูตร
+สูตร	sut	1994
+สูตร	soot	1795
+
+# ลัทธิ
+ลัทธิ	latthi	1999
+ลัทธิ	lathi	1799
+
+# ฝึกอบรม
+ฝึกอบรม	fuekoprom	1998
+ฝึกอบรม	feukoprom	1798
+
+# ด่า
+ด่า	da	1995
+
+# อุบัติเหตุ
+อุบัติเหตุ	ubatihet	1990
+อุบัติเหตุ	oobatihet	1692
+
+# ทับ
+ทับ	tap	1991
+
+# อุดมศึกษา
+อุดมศึกษา	udomsuksa	1989
+อุดมศึกษา	udomseuksa	1750
+
+# ไร
+ไร	rai	1985
+ไร	ray	1687
+
+# ดั้งเดิม
+ดั้งเดิม	dangderm	1987
+ดั้งเดิม	dangdoem	1689
+
+# ส่าย
+ส่าย	sai	1984
+ส่าย	say	1686
+
+# เคลื่อน
+เคลื่อน	kluean	1985
+เคลื่อน	kluan	1687
+เคลื่อน	khluean	1588
+
+# คิ้ว
+คิ้ว	kiw	1981
+คิ้ว	khiw	1684
+
+# ผิดพลาด
+ผิดพลาด	pitplat	1973
+ผิดพลาด	phitphlat	1677
+
+# ประดับ
+ประดับ	pradap	1965
+
+# ไหม้
+ไหม้	mai	1970
+ไหม้	may	1674
+
+# เสา
+เสา	sao	1969
+เสา	sau	1575
+
+# ครอง
+ครอง	krong	1964
+
+# นักวิชาการ
+นักวิชาการ	nakwichakan	1963
+
+# พอสมควร
+พอสมควร	phosomkhuan	1963
+พอสมควร	posomkuan	1767
+
+# มายัง
+มายัง	mayang	1962
+
+# อนุกรรมการ
+อนุกรรมการ	anukammakan	1962
+อนุกรรมการ	anukrammakan	1668

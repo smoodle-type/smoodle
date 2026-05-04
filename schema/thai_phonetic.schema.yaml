@@ -9,20 +9,29 @@
 schema:
   schema_id: thai_phonetic
   name: smoodle Thai phonetic
-  version: "0.0.2-algebra-spike"
+  version: "0.0.3"
   author:
     - lex
   description: |
     Type romanized Thai phonetic approximations, get Thai script.
-    v0.0.1 ships ~500 most common Thai words with multiple romanization
-    variants per word. Tone marks are stored in the dictionary; users
-    type tone-free romanization.
 
-    v0.0.2 (algebra spike): adds speller/algebra rules for phonemic
-    equivalence classes (aspiration kh~k, ph~p, th~t; vowel length
-    aa~a, ii~i, etc.; final voicing p~b, t~d). Lets the dict carry
-    fewer hand-enumerated variants per word (Path A in design doc).
-    Purely additive: existing dict variants keep matching as before.
+    v0.0.1: ~500 most common Thai words with multiple romanization
+    variants per word. Tone marks live in the Thai output, not input.
+
+    v0.0.2 (algebra spike): speller/algebra rules for phonemic
+    equivalence (aspiration kh~k, ph~p, th~t; vowel length aa~a,
+    ii~i, etc.; final voicing p~b, t~d). Dict carries 1-3 spelling
+    variants per Thai word; algebra fills in the rest (Path A).
+
+    v0.0.3: dict scaled to 2101 Thai words from TNC (Chulalongkorn
+    Thai National Corpus, CC0). Weights are raw TNC frequencies
+    scaled by per-variant LLM quality (q in 70-100). Requires a
+    one-line patch in vendored librime — DictEntryIterator::Peek
+    upstream returns chunks[0] without sorting on first call, so
+    when an algebra-derived spelling shares a syllable with a direct
+    one, the alphabetically-earlier syllable wins position #1
+    regardless of weight (e.g. "yaai"<"yai" → ย้าย out-ranked ใหญ่).
+    Patch calls Sort() once before the first Peek. See docs/RESUME.md.
 
 switches:
   - name: ascii_mode
@@ -92,7 +101,11 @@ translator:
   dictionary: thai_phonetic
   enable_completion: true
   enable_sentence: false
-  initial_quality: 1.0
+  # initial_quality is added to exp(log_weight) for every candidate. With
+  # 1.0 the constant dominates the dynamic range (exp(weight - log(1e8))
+  # is ~1e-3 for weight=10.34 freq), masking frequency differences and
+  # causing ranking ties. 0 lets weights dictate rank.
+  initial_quality: 0
 
 punctuator:
   import_preset: symbols
