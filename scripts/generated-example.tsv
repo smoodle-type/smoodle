@@ -1,207 +1,119 @@
-# Rime dictionary
-# encoding: utf-8
-#
-# smoodle Thai phonetic dictionary — v0.0.1 STUB
-#
-# This is a 10-word stub for Sub-task 3 verification: confirm Rime handles
-# Thai script correctly (NFC-normalized forms, combining tone marks,
-# above/below-vowels, candidate-window rendering).
-#
-# After verification passes, this expands to ~500 most-common Thai words.
-
----
-name: thai_phonetic
-version: "0.0.1-stub"
-sort: by_weight
-use_preset_vocabulary: false
-columns:
-  - text
-  - code
-  - weight
-encoder:
-  exclude_patterns:
-    - '^[^\x00-\x7f]+$'
-...
-# สวัสดี
-สวัสดี	sawadee	100
 สวัสดี	sawatdee	100
 สวัสดี	sawasdee	95
-สวัสดี	sawadii	90
+สวัสดี	sawadee	90
 สวัสดี	sawaddee	80
-สวัสดี	sawatdii	80
-
-# ครับ
+สวัสดี	sawatdii	75
 ครับ	krap	100
 ครับ	khrap	95
 ครับ	kub	90
 ครับ	khap	85
 ครับ	krub	80
-
-# ค่ะ
 ค่ะ	ka	100
 ค่ะ	kha	95
-ค่ะ	khaa	90
 ค่ะ	kah	85
 ค่ะ	khah	75
-
-# ไม่
-ไม่	mai	100
-ไม่	my	85
-ไม่	maii	75
-
-# ใช่
-ใช่	chai	100
-ใช่	chaii	85
-ใช่	chay	80
-
-# ขอบคุณ
 ขอบคุณ	khobkhun	100
 ขอบคุณ	kobkhun	95
-ขอบคุณ	khopkhun	90
 ขอบคุณ	kopkhun	90
-ขอบคุณ	kobkoon	85
-ขอบคุณ	khopkoon	80
+ขอบคุณ	khopkhun	85
 ขอบคุณ	kobkun	75
-
-# กิน
-กิน	gin	100
-กิน	kin	95
-กิน	khin	80
-
-# ข้าว
-ข้าว	kao	100
-ข้าว	khao	100
-ข้าว	khaaw	90
-ข้าว	khaao	80
-ข้าว	kaow	75
-
-# น้ำ
-น้ำ	nam	100
-น้ำ	naam	95
-น้ำ	num	80
-
-# ผม
-ผม	phom	100
-ผม	pom	100
-ผม	pohm	85
-ผม	phohm	80
-
-# ขอโทษ
 ขอโทษ	khotot	100
 ขอโทษ	khorthot	95
 ขอโทษ	khotos	90
 ขอโทษ	kortot	85
 ขอโทษ	khawthot	75
-
-# อาจจะ
+ใช่	chai	100
+ใช่	chaii	85
+ใช่	chay	80
+ไม่	mai	100
+ไม่	my	85
+ไม่	maii	75
 อาจจะ	adja	100
 อาจจะ	atja	90
 อาจจะ	aatja	85
 อาจจะ	adcha	80
 อาจจะ	aadja	75
-
-# ดื่ม
+กิน	gin	100
+กิน	kin	95
+กิน	khin	80
 ดื่ม	deum	100
 ดื่ม	duem	90
 ดื่ม	dum	85
 ดื่ม	derm	75
-
-# ไป
 ไป	pai	100
 ไป	bai	90
 ไป	phai	80
 ไป	by	75
-
-# มา
 มา	ma	100
 มา	maa	90
-
-# นอน
 นอน	non	100
 นอน	norn	90
 นอน	naun	80
 นอน	nawn	75
-
-# ทำ
 ทำ	tam	100
 ทำ	tham	95
 ทำ	tum	85
 ทำ	thum	75
-
-# กาแฟ
+ข้าว	khao	100
+ข้าว	kao	90
+ข้าว	khaao	80
+ข้าว	kaow	75
+น้ำ	nam	100
+น้ำ	naam	90
+น้ำ	num	80
 กาแฟ	kafae	100
 กาแฟ	gafae	90
 กาแฟ	kaffe	85
 กาแฟ	gaafae	75
 กาแฟ	kahfae	70
-
-# ผัก
 ผัก	pak	100
 ผัก	phak	90
 ผัก	pug	80
 ผัก	phug	75
-
-# เนื้อ
 เนื้อ	nuea	100
 เนื้อ	nua	90
 เนื้อ	neua	85
 เนื้อ	nue	75
-
-# แม่
 แม่	mae	100
 แม่	may	85
 แม่	meh	80
 แม่	me	75
-
-# พ่อ
 พ่อ	por	100
 พ่อ	paw	90
 พ่อ	phor	85
 พ่อ	po	80
 พ่อ	phaw	75
-
-# พี่
 พี่	pee	100
 พี่	pii	90
 พี่	phi	85
 พี่	phee	80
 พี่	pi	75
-
-# น้อง
 น้อง	nong	100
 น้อง	naung	85
 น้อง	nawng	80
 น้อง	nhong	75
-
-# ลูก
 ลูก	luk	100
 ลูก	look	95
 ลูก	luuk	85
 ลูก	louk	72
-
-# วัน
 วัน	wan	100
 วัน	wun	85
 วัน	waan	80
-
-# คืน
 คืน	kuen	100
 คืน	khuen	90
 คืน	keun	85
 คืน	kun	75
-
-# ชั่วโมง
 ชั่วโมง	chuamong	100
 ชั่วโมง	chuwamong	85
 ชั่วโมง	chamong	75
-
-# นาที
 นาที	natee	100
 นาที	nathi	90
 นาที	nati	85
 นาที	naati	75
-
-# ฉัน
+ผม	phom	100
+ผม	pom	95
+ผม	phohm	80
+ผม	pohm	75
 ฉัน	chan	100
 ฉัน	chun	90
 ฉัน	shan	80

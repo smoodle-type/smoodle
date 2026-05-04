@@ -96,7 +96,12 @@ def generate_variants(
     model: str,
     use_thinking: bool,
 ) -> list[dict]:
-    """Call the Claude API for one Thai word; return the variant list."""
+    """Call the Claude API for one Thai word; return a deduped variant list.
+
+    The LLM occasionally emits the same romanization twice with different
+    weights (observed: ดื่ม → deum at both 100 and 80). This dedupes by
+    romanization, keeping the highest weight, then sorts weight-desc.
+    """
     response = client.messages.create(
         model=model,
         max_tokens=1024,
@@ -112,7 +117,16 @@ def generate_variants(
     )
     text_block = next(b for b in response.content if b.type == "text")
     payload = json.loads(text_block.text)
-    return payload["variants"]
+
+    # Dedup by romanization, keep highest weight
+    by_roman: dict[str, int] = {}
+    for v in payload["variants"]:
+        r, w = v["romanization"], v["weight"]
+        if r not in by_roman or w > by_roman[r]:
+            by_roman[r] = w
+    deduped = [{"romanization": r, "weight": w} for r, w in by_roman.items()]
+    deduped.sort(key=lambda x: -x["weight"])
+    return deduped
 
 
 def already_in_output(output_path: Path, thai_word: str) -> bool:
