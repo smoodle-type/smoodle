@@ -1,0 +1,140 @@
+# smoodle v0.1 dictionary fixture
+#
+# 50 (romanization, expected_thai) assertions covering the 601-word /
+# 1193-entry dict (commit 6b68a99). Two assertion classes:
+#
+#   1. DIRECT — `romanization` is present as a literal dict entry for
+#      `expected_thai`. Verified by string-match in test_dict.py.
+#
+#   2. ALGEBRA — tagged with `via: <rule-name>`. The romanization is
+#      NOT in the dict but IS algebra-derivable from a dict entry by
+#      the named rule (see speller.algebra in thai_phonetic.schema.yaml).
+#      String-match driver SKIPs these with a note; full pipeline test
+#      via librime CLI (future) will drive them through the engine.
+#
+# Coverage targets:
+#   - Direct: 30 entries, ~2 per category × 16 categories
+#   - Algebra: 20 entries, 1-2 per algebra rule × 12 rules
+
+assertions:
+  # === DIRECT: greetings, particles ===
+  - {romanization: "sawadee",      expected_thai: "สวัสดี"}
+  - {romanization: "khopkhun",     expected_thai: "ขอบคุณ"}
+  - {romanization: "maipenrai",    expected_thai: "ไม่เป็นไร"}
+
+  # === DIRECT: pronouns ===
+  - {romanization: "phom",         expected_thai: "ผม"}
+  - {romanization: "chan",         expected_thai: "ฉัน"}
+  - {romanization: "khun",         expected_thai: "คุณ"}
+
+  # === DIRECT: numbers ===
+  - {romanization: "nung",         expected_thai: "หนึ่ง"}
+  - {romanization: "song",         expected_thai: "สอง"}
+  - {romanization: "sip",          expected_thai: "สิบ"}
+
+  # === DIRECT: time ===
+  - {romanization: "wan",          expected_thai: "วัน"}
+  - {romanization: "duean",        expected_thai: "เดือน"}
+  - {romanization: "natee",        expected_thai: "นาที"}
+
+  # === DIRECT: family ===
+  - {romanization: "mae",          expected_thai: "แม่"}
+  - {romanization: "por",          expected_thai: "พ่อ"}
+  - {romanization: "luk",          expected_thai: "ลูก"}
+
+  # === DIRECT: body ===
+  - {romanization: "hua",          expected_thai: "หัว"}
+  - {romanization: "tao",          expected_thai: "เท้า"}
+
+  # === DIRECT: food ===
+  - {romanization: "kao",          expected_thai: "ข้าว"}
+  - {romanization: "moo",          expected_thai: "หมู"}
+  - {romanization: "kafae",        expected_thai: "กาแฟ"}
+
+  # === DIRECT: verbs ===
+  - {romanization: "gin",          expected_thai: "กิน"}
+  - {romanization: "pai",          expected_thai: "ไป"}
+  - {romanization: "ma",           expected_thai: "มา"}
+
+  # === DIRECT: adjectives ===
+  - {romanization: "yai",          expected_thai: "ใหญ่"}
+  - {romanization: "lek",          expected_thai: "เล็ก"}
+  - {romanization: "dee",          expected_thai: "ดี"}
+
+  # === DIRECT: places ===
+  - {romanization: "baan",         expected_thai: "บ้าน"}
+  - {romanization: "talat",        expected_thai: "ตลาด"}
+
+  # === DIRECT: transport ===
+  - {romanization: "rot",          expected_thai: "รถ"}
+
+  # === DIRECT: home ===
+  - {romanization: "kaoee",        expected_thai: "เก้าอี้"}
+
+  # === DIRECT: work/money ===
+  - {romanization: "ngern",        expected_thai: "เงิน"}
+  - {romanization: "baht",         expected_thai: "บาท"}
+
+  # === DIRECT: emotions ===
+  - {romanization: "deejai",       expected_thai: "ดีใจ"}
+
+  # === DIRECT: tech ===
+  - {romanization: "muethue",      expected_thai: "มือถือ"}
+
+  # === DIRECT: question words ===
+  - {romanization: "arai",         expected_thai: "อะไร"}
+  - {romanization: "krai",         expected_thai: "ใคร"}
+
+  # 30 direct entries above. Algebra-tagged entries below.
+
+  # === ALGEBRA kh→k: aspiration drop, anywhere in word ===
+  - {romanization: "kopkoon",      expected_thai: "ขอบคุณ",  via: "kh->k"}
+  - {romanization: "khopkun",      expected_thai: "ขอบคุณ",  via: "kh->k"}
+
+  # === ALGEBRA ph→p: aspiration drop ===
+  - {romanization: "puean",        expected_thai: "เพื่อน",  via: "ph->p"}
+
+  # === ALGEBRA th→t: aspiration drop ===
+  - {romanization: "kotot",        expected_thai: "ขอโทษ",   via: "th->t"}
+  - {romanization: "toe",          expected_thai: "เถอะ",    via: "th->t"}
+
+  # === ALGEBRA aa→a: vowel-length collapse ===
+  - {romanization: "khaw",         expected_thai: "ข้าว",     via: "aa->a"}
+  - {romanization: "kongwan",      expected_thai: "ของหวาน", via: "aa->a"}
+
+  # === ALGEBRA ii→i: vowel-length collapse ===
+  - {romanization: "sawadi",       expected_thai: "สวัสดี",  via: "ii->i"}
+  - {romanization: "pi",           expected_thai: "ปี",       via: "ii->i"}
+
+  # === ALGEBRA oo→o: vowel-length collapse ===
+  - {romanization: "khopkon",      expected_thai: "ขอบคุณ",  via: "oo->o"}
+  - {romanization: "lok",          expected_thai: "ลูก",      via: "oo->o"}
+
+  # === ALGEBRA uu→u: vowel-length collapse ===
+  - {romanization: "mu",           expected_thai: "มือ",      via: "uu->u"}
+
+  # === ALGEBRA ee→e: vowel-length collapse ===
+  - {romanization: "sawade",       expected_thai: "สวัสดี",  via: "ee->e"}
+  - {romanization: "nate",         expected_thai: "นาที",    via: "ee->e"}
+
+  # === ALGEBRA p$→b: final-stop voicing ===
+  - {romanization: "khrab",        expected_thai: "ครับ",     via: "p$->b"}
+  - {romanization: "krab",         expected_thai: "ครับ",     via: "p$->b"}
+
+  # === ALGEBRA b$→p: final-stop voicing ===
+  - {romanization: "kup",          expected_thai: "ครับ",     via: "b$->p"}
+  - {romanization: "klup",         expected_thai: "กลับ",     via: "b$->p"}
+
+  # === ALGEBRA t$→d: final-stop voicing ===
+  - {romanization: "khotod",       expected_thai: "ขอโทษ",   via: "t$->d"}
+
+  # === ALGEBRA d$→t: final-stop voicing ===
+  - {romanization: "phat",         expected_thai: "ผัด",      via: "d$->t"}
+
+  # 50 total. Manual-verify checklist (run after `bash scripts/install.sh`
+  # + Squirrel Deploy):
+  #   - All 30 direct entries should produce the expected Thai immediately.
+  #   - All 20 algebra entries should produce the expected Thai via the
+  #     algebra layer. If any FAIL, the rule may not be firing as expected
+  #     (e.g., single-pass-vs-multi-pass semantics, regex anchoring) — flag
+  #     it and we'll revise the schema.

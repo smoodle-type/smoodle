@@ -50,28 +50,41 @@ DEFAULT_DICT = REPO_ROOT / "schema" / "thai_phonetic.dict.yaml"
 class Assertion(NamedTuple):
     romanization: str
     expected_thai: str
+    via: str | None  # algebra rule label if this is an algebra-derived case, else None
 
 
 def parse_fixture(fixture_path: Path) -> list[Assertion]:
     """Parse the fixture YAML manually.
 
-    The format is a fixed shape (`assertions: [{romanization, expected_thai}, ...]`)
-    so a regex-based parser is simpler than pulling in PyYAML. This script
+    Recognized inline-mapping shapes (one per line):
+      - {romanization: "...", expected_thai: "..."}
+      - {romanization: "...", expected_thai: "...", via: "<rule>"}
+
+    A regex-based parser is simpler than pulling in PyYAML. This script
     deliberately stays stdlib-only so it runs out-of-the-box on any
     Python 3.10+ install.
     """
     if not fixture_path.exists():
         sys.exit(f"ERROR: fixture not found: {fixture_path}")
 
-    pattern = re.compile(
+    direct_pat = re.compile(
         r'^\s*-\s*\{\s*romanization:\s*"([^"]+)"\s*,'
         r'\s*expected_thai:\s*"([^"]+)"\s*\}\s*$'
     )
+    via_pat = re.compile(
+        r'^\s*-\s*\{\s*romanization:\s*"([^"]+)"\s*,'
+        r'\s*expected_thai:\s*"([^"]+)"\s*,'
+        r'\s*via:\s*"([^"]+)"\s*\}\s*$'
+    )
     out: list[Assertion] = []
     for raw in fixture_path.read_text(encoding="utf-8").splitlines():
-        m = pattern.match(raw)
+        m = via_pat.match(raw)
         if m:
-            out.append(Assertion(m.group(1), m.group(2)))
+            out.append(Assertion(m.group(1), m.group(2), m.group(3)))
+            continue
+        m = direct_pat.match(raw)
+        if m:
+            out.append(Assertion(m.group(1), m.group(2), None))
     return out
 
 
@@ -132,22 +145,42 @@ def main() -> int:
     if not dict_pairs:
         sys.exit(f"ERROR: no entries parsed from {args.dict_path}")
 
+    direct = [a for a in assertions if a.via is None]
+    algebra = [a for a in assertions if a.via is not None]
+
     failures: list[str] = []
-    for a in assertions:
+    for a in direct:
         if (a.expected_thai, a.romanization) not in dict_pairs:
             failures.append(f"  MISSING  {a.romanization!r:<14} -> {a.expected_thai}")
 
-    print(f"smoodle dict test: {len(assertions)} assertions, "
-          f"{len(dict_pairs)} dict entries scanned")
+    print(f"smoodle dict test: {len(direct)} direct + {len(algebra)} algebra-tagged "
+          f"assertions, {len(dict_pairs)} dict entries scanned")
+
+    if algebra:
+        # Sanity-check: an algebra-tagged entry MUST NOT also be in the dict
+        # directly — if it is, the test is mistagged and we'd be giving the
+        # algebra rule false credit.
+        mistagged: list[str] = []
+        for a in algebra:
+            if (a.expected_thai, a.romanization) in dict_pairs:
+                mistagged.append(f"  MISTAGGED  {a.romanization!r:<14} -> {a.expected_thai}  "
+                                 f"(via: {a.via!r}, but is also a direct dict entry)")
+        if mistagged:
+            print("\n" + "\n".join(mistagged))
+            print(f"\nFAIL  {len(mistagged)} mistagged: tagged as algebra-derived but "
+                  f"also direct dict entries.")
+            return 1
+        print(f"NOTE  {len(algebra)} algebra-tagged assertions SKIPPED "
+              f"(string-match cannot verify; run librime CLI test to exercise them).")
 
     if failures:
         print(f"\n{len(failures)} failure(s):")
         for line in failures:
             print(line)
-        print(f"\nFAIL  {len(failures)}/{len(assertions)} assertions missing from dict.")
+        print(f"\nFAIL  {len(failures)}/{len(direct)} direct assertions missing from dict.")
         return 1
 
-    print(f"PASS  all {len(assertions)} assertions present in dict.")
+    print(f"PASS  all {len(direct)} direct assertions present in dict.")
     return 0
 
 
