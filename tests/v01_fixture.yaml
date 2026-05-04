@@ -87,9 +87,16 @@ assertions:
 
   # 30 direct entries above. Algebra-tagged entries below.
 
-  # === ALGEBRA kh→k: aspiration drop, anywhere in word ===
+  # === ALGEBRA kh→k: aspiration drop ===
+  # Rime applies each derive rule to the FIRST regex match per dict spelling
+  # (single-pass), so unanchored `derive/kh/k/` against `khopkhun` yields
+  # `kopkhun` (first kh dropped) but NOT `khopkun` (would need second kh
+  # dropped while first stays). Cases below pick a single-pass substitution
+  # from a real dict entry:
+  #   khopkoon -> kopkoon
+  #   khap -> kap (kap is also direct for ขับ/กับ — both surface as candidates)
   - {romanization: "kopkoon",      expected_thai: "ขอบคุณ",  via: "kh->k"}
-  - {romanization: "khopkun",      expected_thai: "ขอบคุณ",  via: "kh->k"}
+  - {romanization: "kap",          expected_thai: "ครับ",     via: "kh->k"}
 
   # === ALGEBRA ph→p: aspiration drop ===
   - {romanization: "puean",        expected_thai: "เพื่อน",  via: "ph->p"}

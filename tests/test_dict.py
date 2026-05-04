@@ -37,6 +37,7 @@ from __future__ import annotations
 
 import argparse
 import re
+import subprocess
 import sys
 from pathlib import Path
 from typing import NamedTuple
@@ -45,6 +46,8 @@ from typing import NamedTuple
 REPO_ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_FIXTURE = REPO_ROOT / "tests" / "v001_fixture.yaml"
 DEFAULT_DICT = REPO_ROOT / "schema" / "thai_phonetic.dict.yaml"
+DEFAULT_RIME_CLI = REPO_ROOT / "vendor" / "librime" / "build" / "bin" / "rime_api_console"
+DEFAULT_RIME_TESTDIR = Path("/tmp/smoodle-rime-test")
 
 
 class Assertion(NamedTuple):
@@ -122,6 +125,89 @@ def parse_dict_entries(dict_path: Path) -> set[tuple[str, str]]:
     return pairs
 
 
+_CANDIDATE_LINE = re.compile(r"^\s*\d+\.\s+\[?(.+?)\]?(?:\s+~\S+)?\s*$")
+
+
+def query_rime(roman: str, cli: Path, test_dir: Path, top_n: int) -> list[str]:
+    """Spawn rime_api_console once, feed `roman`, return the top-N candidates.
+
+    `print_menu` in tools/rime_api_console.cc emits one line per candidate as
+    `<n>. [<top1>]` for the highlighted entry and `<n>.  <other>` for the rest,
+    with optional ` ~<remainder>` suffix when the input is a prefix match.
+    """
+    proc = subprocess.run(
+        [str(cli)],
+        cwd=test_dir,
+        input=roman + "\n",
+        text=True,
+        capture_output=True,
+        timeout=15,
+    )
+    candidates: list[str] = []
+    for line in proc.stdout.splitlines():
+        m = _CANDIDATE_LINE.match(line)
+        if m:
+            candidates.append(m.group(1).strip())
+            if len(candidates) >= top_n:
+                break
+    return candidates
+
+
+def run_engine_mode(
+    direct: list[Assertion],
+    algebra: list[Assertion],
+    cli: Path,
+    test_dir: Path,
+    top_n: int,
+) -> int:
+    """Drive each assertion through rime_api_console; check expected_thai
+    appears in the top-N candidate list. Both direct and algebra-tagged
+    assertions are exercised end-to-end."""
+    if not cli.is_file():
+        sys.exit(f"ERROR: rime_api_console not built. Expected at {cli}\n"
+                 f"       Build it first: cd vendor/librime && make release")
+    if not (test_dir / "default.yaml").exists():
+        sys.exit(f"ERROR: Rime test working dir not initialized at {test_dir}\n"
+                 f"       Run: scripts/init_rime_testdir.sh {test_dir}")
+
+    # Refresh test dir's schema + dict in case the repo's changed since init
+    for f in ("thai_phonetic.schema.yaml", "thai_phonetic.dict.yaml"):
+        src = REPO_ROOT / "schema" / f
+        dst = test_dir / f
+        if src.read_bytes() != (dst.read_bytes() if dst.exists() else b""):
+            dst.write_bytes(src.read_bytes())
+            # Force re-deploy by removing the compiled prism
+            for stale in test_dir.glob("build"):
+                if stale.is_dir():
+                    import shutil
+                    shutil.rmtree(stale)
+
+    failures: list[str] = []
+    all_assertions = [(a, "direct") for a in direct] + [(a, f"via {a.via}") for a in algebra]
+    print(f"smoodle dict test (engine mode): driving {len(all_assertions)} entries "
+          f"through {cli.name}, checking top-{top_n} candidates...")
+    for a, label in all_assertions:
+        try:
+            candidates = query_rime(a.romanization, cli, test_dir, top_n)
+        except subprocess.TimeoutExpired:
+            failures.append(f"  TIMEOUT  [{label}]  {a.romanization!r:<14} -> {a.expected_thai}")
+            continue
+        if a.expected_thai not in candidates:
+            top1 = candidates[0] if candidates else "(no candidates)"
+            failures.append(f"  MISS     [{label}]  {a.romanization!r:<14} -> "
+                            f"{a.expected_thai}  (top1: {top1})")
+
+    if failures:
+        print(f"\n{len(failures)} failure(s):")
+        for line in failures:
+            print(line)
+        print(f"\nFAIL  {len(failures)}/{len(all_assertions)} entries missing from candidate list.")
+        return 1
+
+    print(f"PASS  all {len(all_assertions)} entries produced expected Thai in top-{top_n}.")
+    return 0
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__,
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -130,23 +216,32 @@ def main() -> int:
     parser.add_argument("--dict", dest="dict_path", type=Path, default=DEFAULT_DICT,
                         help=f"Rime dict YAML to test (default: {DEFAULT_DICT.relative_to(REPO_ROOT)})")
     parser.add_argument("--use-rime-api-console", action="store_true",
-                        help="Future: invoke rime_api_console for full pipeline testing. Not yet implemented.")
+                        help="Drive each assertion through librime via rime_api_console. "
+                             "Exercises both direct and algebra-tagged entries end-to-end.")
+    parser.add_argument("--rime-cli", type=Path, default=DEFAULT_RIME_CLI,
+                        help=f"Path to rime_api_console (default: {DEFAULT_RIME_CLI.relative_to(REPO_ROOT)})")
+    parser.add_argument("--rime-test-dir", type=Path, default=DEFAULT_RIME_TESTDIR,
+                        help=f"Rime working directory (default: {DEFAULT_RIME_TESTDIR}). "
+                             f"Initialize with scripts/init_rime_testdir.sh.")
+    parser.add_argument("--top-n", type=int, default=5,
+                        help="In engine mode, accept expected_thai if present in top-N "
+                             "candidates (default: 5).")
     args = parser.parse_args()
-
-    if args.use_rime_api_console:
-        sys.exit("--use-rime-api-console is not yet implemented; "
-                 "compile librime first, then we'll wire it up.")
 
     assertions = parse_fixture(args.fixture)
     if not assertions:
         sys.exit(f"ERROR: no assertions parsed from {args.fixture}")
 
+    direct = [a for a in assertions if a.via is None]
+    algebra = [a for a in assertions if a.via is not None]
+
+    if args.use_rime_api_console:
+        return run_engine_mode(direct, algebra, args.rime_cli, args.rime_test_dir, args.top_n)
+
+    # String-match mode (default)
     dict_pairs = parse_dict_entries(args.dict_path)
     if not dict_pairs:
         sys.exit(f"ERROR: no entries parsed from {args.dict_path}")
-
-    direct = [a for a in assertions if a.via is None]
-    algebra = [a for a in assertions if a.via is not None]
 
     failures: list[str] = []
     for a in direct:
@@ -171,7 +266,8 @@ def main() -> int:
                   f"also direct dict entries.")
             return 1
         print(f"NOTE  {len(algebra)} algebra-tagged assertions SKIPPED "
-              f"(string-match cannot verify; run librime CLI test to exercise them).")
+              f"(string-match cannot verify; run with --use-rime-api-console "
+              f"to exercise them end-to-end).")
 
     if failures:
         print(f"\n{len(failures)} failure(s):")
