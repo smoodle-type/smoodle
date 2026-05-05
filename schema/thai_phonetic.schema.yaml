@@ -9,7 +9,7 @@
 schema:
   schema_id: thai_phonetic
   name: smoodle Thai phonetic
-  version: "0.0.3"
+  version: "0.0.4"
   author:
     - lex
   description: |
@@ -32,6 +32,11 @@ schema:
     one, the alphabetically-earlier syllable wins position #1
     regardless of weight (e.g. "yaai"<"yai" → ย้าย out-ranked ใหญ่).
     Patch calls Sort() once before the first Peek. See docs/RESUME.md.
+
+    v0.0.4: dict expanded to 10257 Thai words / 19468 entries —
+    covers ~65% of the TNC freq>=50 tail (LLM romanization run was
+    paused at 8338/12792 to conserve API quota; the remainder will
+    ship as v0.0.5). Same weight scheme as v0.0.3.
 
 switches:
   - name: ascii_mode
