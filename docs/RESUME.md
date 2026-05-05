@@ -29,21 +29,22 @@ draw, not shipping speed.
 
 ## State as of last session
 
-Branch: `main`. **v0.0.4 committed; install.sh ran but Squirrel Deploy
-still pending on this machine.** Dict at 10257 Thai words / 19468 entries
-(5× v0.0.3). Same TNC-weighted scheme — raw `tnc_freq × q/100`. Engine
-test passes 56/56. Required librime patch is still in the vendored build
-AND in Squirrel.app/Contents/Frameworks/librime.1.dylib (unchanged from
-last session; v0.0.4 only touched the dict).
+Branch: `main`. **v0.0.5 committed; install.sh ran but Squirrel Deploy
+still pending on this machine.** Dict at 14868 Thai words / 28187 entries
+(7× v0.0.3, 1.45× v0.0.4). Covers 12767/12792 = 99.8% of the TNC
+freq>=50 tail. Same TNC-weighted scheme — raw `tnc_freq × q/100`.
+Engine test passes 56/56. Librime patch unchanged from v0.0.3
+(vendored build + Squirrel.app/Contents/Frameworks/librime.1.dylib).
 
-**v0.0.5 backlog:** the LLM romanization run for the freq>=50 tail was
-paused at 8338/12792 words (65%) to conserve API quota. The TSV
-(`scripts/generated-tnc-full.tsv`) is preserved and the script is
-resumable — same command picks up where it left off. Estimated
-remaining: ~4454 words, ~75 min at 5 workers.
+**25 words deferred.** The relay returned 500
+("No available Claude accounts support claude-opus-4-7") on the last
+~25 words of the run. Mostly proper nouns and loanwords (ไซบีเรีย,
+ไฟร์, ไซมอน, ไข่เค็ม, โครงการหลวง...). Easy to retry later or fall
+back to haiku-4-5 / sonnet-4-6 with `--model`.
 
 Dogfood feedback from v0.0.3 was "looks good so far, but we need more
-words" — answered by the v0.0.4 expansion. Next dogfood probe is open.
+words" — answered by the v0.0.4 / v0.0.5 expansion. Next dogfood probe
+is open.
 
 **The librime Peek-sort patch** fixes an upstream bug:
 `DictEntryIterator::Peek()` returned `chunks[0]` without sorting on the
@@ -74,6 +75,8 @@ Two caveats:
 
 Recent commits:
 ```
+(this commit)  v0.0.5: finish TNC freq>=50 tail (14868 words / 28187 entries)
+abbc2eb RESUME.md: refresh for v0.0.4 + capture v0.0.5 backlog
 a1b649a v0.0.4: scale dict to 10257 Thai words (5x expansion)
 57523f0 RESUME.md: dogfood live with patched librime, flag Sparkle overwrite
 6eb359c RESUME.md: refresh for v0.0.3 + librime patch
@@ -189,45 +192,43 @@ run, so iteration is just edit-fixture → re-run.
 
 ## What's likely next (pick one)
 
-Two near-term items dominate: (a) **deploy v0.0.4 in Squirrel** (was
-installed to `~/Library/Rime/` last session but Deploy was not clicked;
-expect a slower-than-v0.0.3 deploy since the dict is 5× bigger), and
-(b) **dogfood probe** of the expanded dict. **The next session should
-ask "did v0.0.4 deploy go OK and how does the bigger dict feel?"**
-before picking infrastructure work.
+Primary near-term: **deploy v0.0.5 in Squirrel** (installed to
+`~/Library/Rime/` but Deploy not yet clicked; recompile of 28187
+entries is the slowest deploy yet — still seconds, not minutes) and
+**dogfood probe** of the now-comprehensive dict. **The next session
+should ask "did v0.0.5 deploy go OK and how does it feel with the
+near-complete TNC tail?"** before picking infrastructure work.
 
-1. **Deploy v0.0.4 + dogfood.** Click Squirrel's menu-bar Deploy.
-   Watch Console.app for compilation errors (10257 words / 19468
-   entries — `dict_compiler` should still finish in seconds, but
-   first deploy will be slower). Then test the previously-confirmed
-   probe (`yai → ใหญ่`) plus a few new high-freq words to confirm
-   the larger dict still ranks them correctly.
-2. **Finish v0.0.5 generation.** ~4454 words remaining in the
-   freq>=50 tail. Resume with the same command (script auto-skips
-   done words from `scripts/generated-tnc-full.tsv`). Re-run the
-   merge with the same recipe (v0.0.2 quality-only base + concat
-   of all three TSVs as --add, --tnc-freq for fresh reweight).
-3. **Triage dogfood feedback.** If the user reports OOV, romanization
+1. **Deploy v0.0.5 + dogfood.** Click Squirrel's menu-bar Deploy.
+   Watch Console.app for compilation errors. Test the previously-
+   confirmed probe (`yai → ใหญ่`) plus a sweep through new domains
+   (proper nouns from the tail, casual words, recent loanwords).
+2. **Triage dogfood feedback.** If the user reports OOV, romanization
    mismatches, or unexpected ranking, fix-now (dict edits, more LLM
    variants, manual weight bumps) vs defer. Watch-fors:
    - OOV on names / slang / recent loanwords (TNC is formal-corpus-biased)
    - Wrong romanization (user types `kafe` but dict only has `kafae`)
    - Rankings that disagree with intent despite TNC freq
      (e.g. `kao → เขา` over ข้าว — freq-correct but maybe intent-wrong)
-4. **File upstream PR** for the librime `DictEntryIterator::Peek` bug.
+3. **File upstream PR** for the librime `DictEntryIterator::Peek` bug.
    Repro is minimal; patch is at `vendor/librime-1.16.0-peek-sort.patch`.
-5. **v0.2 Sub-task 1 (the eureka layer):** vendor/librime is built;
+4. **v0.2 Sub-task 1 (the eureka layer):** vendor/librime is built;
    `make` against its headers + dylib should produce a hello-world
    plugin dropped into Squirrel's `Frameworks/rime-plugins/`. Reference
    dylibs: `librime-lua.dylib`, `librime-octagram.dylib`,
    `librime-predict.dylib`. Also check `rime-llm-translator` on AUR.
-6. **Ship publicly.** Patched dylib is only on this machine. For
+5. **Ship publicly.** Patched dylib is only on this machine. For
    public release: build universal librime, OR wait for upstream merge,
    OR flip release config to Path B (enumeration-fat, no algebra → no
    patch needed).
-7. **Verify `kao → เขา` decision after typing.** TNC says เขา (142k)
+6. **Verify `kao → เขา` decision after typing.** TNC says เขา (142k)
    beats ข้าว (12k); casual-chat-IME use might prefer rice. Bump or
    leave once dogfood weighs in.
+7. **Retry the 25 deferred words.** Either re-run when the relay
+   recovers opus-4-7 capacity, or use `--model claude-haiku-4-5`
+   (cheaper but lower-quality) / `claude-sonnet-4-6` (mid-tier).
+   Bias is heavy toward proper nouns and recent loanwords, so
+   missing them is a smaller hit than missing common verbs.
 
 ## Open questions still on deck
 

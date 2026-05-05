@@ -9,7 +9,7 @@
 schema:
   schema_id: thai_phonetic
   name: smoodle Thai phonetic
-  version: "0.0.4"
+  version: "0.0.5"
   author:
     - lex
   description: |
@@ -37,6 +37,10 @@ schema:
     covers ~65% of the TNC freq>=50 tail (LLM romanization run was
     paused at 8338/12792 to conserve API quota; the remainder will
     ship as v0.0.5). Same weight scheme as v0.0.3.
+
+    v0.0.5: 14868 Thai words / 28187 entries — finishes the TNC
+    freq>=50 tail (12767/12792 = 99.8%). 25 words deferred (relay
+    500 on opus-4-7 at the run's tail). Same weight scheme as v0.0.3.
 
 switches:
   - name: ascii_mode

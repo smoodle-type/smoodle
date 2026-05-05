@@ -63,10 +63,13 @@ FRONTMATTER = """\
 # scheme as v0.0.3 (raw tnc_freq * q/100). Generation was paused at
 # 65% of the freq>=50 tail to conserve API quota; remaining ~4500
 # words queue for v0.0.5.
+#
+# v0.0.5 finishes the freq>=50 tail. Coverage 12767/12792 = 99.8%;
+# 25 words deferred to a future run (relay 500 on opus-4-7 capacity).
 
 ---
 name: thai_phonetic
-version: "0.0.4"
+version: "0.0.5"
 sort: by_weight
 use_preset_vocabulary: false
 columns:
