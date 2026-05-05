@@ -29,58 +29,53 @@ draw, not shipping speed.
 
 ## State as of last session
 
-Branch: `main`. **v0.0.3 (uncommitted, awaiting decision):** dict scaled
-to 2101 Thai words / 4050 entries via TNC frequency seeding; weights are
-TNC raw frequencies × per-variant LLM quality. Engine test passes 56/56.
-Several ranking issues fixed (yai→ใหญ่, pi→ปี, mu→มือ, khun→ขึ้น vs คุณ).
+Branch: `main`. **v0.0.3 committed and live in Squirrel.** Dict at 2101
+Thai words / 4050 entries, TNC-frequency-weighted. Engine test passes
+56/56. Required librime patch applied to vendored build AND swapped into
+Squirrel.app. User confirmed `yai → ใหญ่ #1` in real Squirrel typing;
+the previously-inverted ranking is fixed. Dogfood is live but no
+substantive usage feedback collected yet beyond that one probe.
 
-**Required librime patch.** The dict scale-up exposed a librime bug:
-`DictEntryIterator::Peek()` returns `chunks[0]` without sorting on first
-call. Chunks are pushed in syllable-id order (alphabetical of syllable
-strings). When an algebra-derived spelling like `yaai`→`yai` shares
-position with a direct `yai` entry, the alphabetically-earlier syllable's
-chunk wins position #1 regardless of weight. The patch (in
-`vendor/librime/src/rime/dict/dictionary.cc` + `dictionary.h`) calls
+**The librime Peek-sort patch** fixes an upstream bug:
+`DictEntryIterator::Peek()` returned `chunks[0]` without sorting on the
+first call. Chunks were pushed in syllable-id order (alphabetical of
+syllable strings). When an algebra-derived spelling like `yaai`→`yai`
+shared input with a direct `yai` entry, the alphabetically-earlier
+syllable's chunk won position #1 regardless of weight. The patch calls
 `Sort()` once before the first Peek, gated by a `sorted_initial_` flag.
-**Anyone re-cloning librime must reapply this patch** before rebuilding.
-Upstream PR worth filing.
+Saved as `vendor/librime-1.16.0-peek-sort.patch`. Worth filing upstream.
 
-**Dogfood is live (pre-scale-up).** Schema deployed to `~/Library/Rime/`,
-Squirrel restarted with fresh build, user confirmed `sawadee → สวัสดี`
-works at v0.0.2. No dogfood feedback collected yet. After committing
-v0.0.3, redeploy and dogfood the larger dict.
+**Squirrel.app dylib swap.** Squirrel ships its own bundled
+`librime.1.dylib` (universal x86_64+arm64, 7.2MB). We replaced it with
+our patched arm64-only build (2.5MB) — Squirrel has the
+`cs.disable-library-validation` entitlement, so it loads the
+differently-signed dylib without complaint. Original is preserved at
+`/Library/Input Methods/Squirrel.app/Contents/Frameworks/librime.1.dylib.smoodle-backup`.
+Two caveats:
+  - Sparkle auto-update from Rime project could overwrite the patch.
+    Watch for that. Reapply via:
+    ```
+    sudo cp /Users/lex/Dev/my_repos/experiment/smoodle/vendor/librime/build/lib/librime.1.16.0.dylib \
+            "/Library/Input Methods/Squirrel.app/Contents/Frameworks/librime.1.dylib"
+    ```
+  - This machine is Apple Silicon. The arm64-only swap-in would break
+    Squirrel on Intel Macs (the bundled binary is universal; ours
+    isn't). For shipping a release, either build universal librime or
+    flip to a Path B dict (no algebra → no bug → no patch needed).
 
-Recent commits:
+Recent commits (v0.0.3 series):
 ```
+6eb359c RESUME.md: refresh for v0.0.3 + librime patch
+666c745 v0.0.3: scale dict to 2101 Thai words, TNC-frequency-weighted ranking
+f7153cf Pipeline: parallel romanization + TNC frequency reweighting
+67bc08b Patch librime DictEntryIterator::Peek first-call sort
 363d481 RESUME.md: note dogfood is live, awaiting feedback
 3977246 RESUME.md: refresh after v0.1 fixture + librime CLI wiring
 d2812ec Wire librime CLI test: end-to-end engine pipeline coverage (56/56 pass)
 c454a6f Add v0.1 fixture (56 entries: 35 direct + 21 algebra-tagged)
 6b68a99 v0.0.2: dict scaled to 601 Thai words / 1193 entries (Path A)
 b405383 v0.0.2: speller/algebra for Thai phonemic equivalence (Path A)
-824691e Add docs/RESUME.md for cross-session handoff
-390688b v0.0.1 dict expanded to 30 Thai words / 125 entries
-ee0b678 v0.0.1 stub: thai_phonetic schema + 10-word dict + install script
 ```
-
-Uncommitted (v0.0.3 work):
-- `schema/thai_phonetic.schema.yaml` — version bumped, `initial_quality: 0`,
-  long description block referencing the librime patch
-- `schema/thai_phonetic.dict.yaml` — 2101 Thai words, 4050 entries, TNC-
-  weighted; CC0 attribution to Chulalongkorn TNC + PyThaiNLP in frontmatter
-- `scripts/generate_dict.py` — added `--workers N` (ThreadPoolExecutor,
-  SDK is thread-safe; pre-computes skip set once instead of re-reading
-  output per word). Used 5 workers; 1500 words ≈ 25 min.
-- `scripts/merge_dict.py` — `--tnc-freq` reweights every variant to
-  `tnc_freq × (LLM_q / 100)`, `--default-freq 10` for the 35 dict words
-  not in TNC's tokenization (compounds like ถุงเท้า, ผัดไทย). Note:
-  Rime's dict_compiler `log()`s the weight at compile and table_translator
-  `exp()`s at query, so we store RAW counts — pre-logging double-logs.
-- `scripts/words-tnc.txt` — top 1500 new words by TNC frequency (excluded
-  the 601 already in dict)
-- `scripts/generated-tnc.tsv` — LLM romanization output for those 1500
-- `scripts/tnc_freq.txt` — copy of PyThaiNLP's tnc_freq.txt (CC0)
-- `vendor/librime/src/rime/dict/dictionary.{cc,h}` — the Peek-sort patch
 
 ## Architecture (do not relitigate without strong reason)
 
@@ -185,41 +180,44 @@ run, so iteration is just edit-fixture → re-run.
 
 ## What's likely next (pick one)
 
-1. **Commit the v0.0.3 work + redeploy + dogfood.** The 2101-word
-   TNC-weighted dict passes 56/56 engine tests with the Peek-sort patch
-   applied. Bundle the librime patch into a separate commit. Run
-   `bash scripts/install.sh` and Deploy in Squirrel. Type Thai for a
-   few days. Watch for: OOV (still likely on names, slang, very-recent
-   loanwords), weird candidates (TNC freq has biases — formal-text-
-   heavy), and any rankings the user disagrees with despite the freq
-   data agreeing.
-2. **File upstream PR** for the librime DictEntryIterator::Peek bug.
-   Repro is minimal (3 dict entries + 1 derive rule) and we have
-   the patch.
+The primary bottleneck before more infrastructure work is **dogfood
+feedback**. Squirrel is running the patched librime + 2101-word dict.
+The user has confirmed `yai → ใหญ่` works; nothing else has been
+typed in real use yet. **The next session should ask "how did the
+dogfood go?" first** before picking from the list below.
+
+1. **Triage dogfood feedback.** If the user reports OOV, romanization
+   mismatches, or unexpected ranking, fix-now (dict edits, more LLM
+   variants, manual weight bumps) vs defer (corpus replacement, v0.2
+   scope). Concrete watch-fors:
+   - OOV on names / slang / recent loanwords (TNC is formal-corpus-biased)
+   - Wrong romanization (user types `kafe` but dict only has `kafae`)
+   - Rankings that the user disagrees with despite TNC saying otherwise
+     (e.g. `kao → เขา` over ข้าว — freq-correct but maybe intent-wrong)
+2. **File upstream PR** for the librime `DictEntryIterator::Peek` bug.
+   Repro is minimal (3 dict entries + 1 derive rule); we have the
+   patch in `vendor/librime-1.16.0-peek-sort.patch`. Useful regardless
+   of whether smoodle keeps Path A or flips to Path B.
 3. **v0.2 Sub-task 1 (the eureka layer):** vendor/librime is built;
    `make` against its headers + dylib should produce a hello-world
    plugin dropped into Squirrel's `Frameworks/rime-plugins/`. The
    reference dylibs are `librime-lua.dylib`, `librime-octagram.dylib`,
    `librime-predict.dylib` — read their source for plugin ABI patterns.
    Also check `rime-llm-translator` on AUR (Linux); may be portable.
-4. **Ship v0.0.3 milestone:** push to GitHub, post a release with
-   `smoodle-config-0.0.3.zip` (just the schema/ dir). Note: end users
-   would also need the librime patch unless we wait for upstream.
-   Workaround for v0.0.3 release without the patch: ship a config that
-   AVOIDS algebra rules that collide with direct entries — i.e. flip
-   to "Path B" (enumeration-fat dict) for the release config.
+4. **Ship v0.0.3 milestone publicly.** Currently the patched dylib is
+   only on this machine. For a public release, three options (open
+   question 5 below):
+   - Build universal librime locally + ship instructions to swap
+   - Wait for upstream PR merge + Squirrel rebundle
+   - Flip the public-release config to Path B (enumeration-fat dict,
+     no algebra → no patch needed → ranking is freq-clean)
 5. **Add more dict entries.** 13775 TNC words are above freq-50; we
    took the top 1500. Easy to scale further if dogfood shows OOV gaps.
-6. **Address candidate-ordering edge cases surfaced by engine test:**
-   With the patch + TNC weights, the original RESUME-flagged pairs are
-   now frequency-correct:
-   - `yai` → ใหญ่ #1 ✓ (was inverted)
-   - `pi` → ปี #1 ✓ (was พี่)
-   - `mu` → มือ #1 ✓ (was หมู่)
-   - `kao` → เขา #1 (was ข้าว). NB: เขา has TNC freq 142k vs ข้าว 12k,
-     so this is freq-correct but may not match user intent — "kao"
-     for rice is more common in casual chat than เขา (he/she). Real
-     usage data would override.
+   `bash scripts/install.sh` after merging is enough; no patch changes.
+6. **Verify `kao → เขา` decision after typing.** TNC says เขา (142k)
+   beats ข้าว (12k), but casual-chat-IME use might prefer rice. If
+   dogfood agrees with TNC, leave it. If it doesn't, manual weight
+   bump on ข้าว or wait for real-typing-frequency data.
 
 ## Open questions still on deck
 
