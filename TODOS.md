@@ -109,21 +109,25 @@ versioned librime distribution.
 1. ✓ **DONE 2026-05-05** — `gh repo fork rime/librime --clone=false`
    created https://github.com/LoneExile/librime (default branch
    `master`, parent `rime/librime`).
-2. Wire local `vendor/librime/` to the fork as `origin` (or add
-   as a `smoodle` remote alongside upstream `rime/librime`).
-3. Apply `vendor/librime-1.16.0-peek-sort.patch` as a real commit
-   on a `1.16.0-smoodle` branch. Commit message:
-   "Patch DictEntryIterator::Peek first-call sort (smoodle fork)"
-   with body explaining the bug + smoodle's repro.
-4. Tag `1.16.0-smoodle.1` at that commit. Push tag.
-5. Build per-OS dylibs from the tag (macOS arm64 first; Lane B will
-   add Windows DLL + macos-13 Intel + lipo into universal mac).
-6. Update `docs/RESUME.md` to reference the fork tag instead of the
-   loose `.patch` file. Keep the loose patch file in `vendor/` as
-   a fallback / documentation reference for ~1 release cycle.
-7. Update `scripts/install.sh` (or new `scripts/install-librime-fork.sh`)
-   to build-or-fetch the fork-tagged dylib and dylib-swap into
-   Squirrel's `Frameworks/`.
+2. ✓ **DONE 2026-05-05** — `git remote add smoodle https://github.com/LoneExile/librime.git`
+   inside `vendor/librime/`. Origin still points at upstream.
+3. ✓ **DONE 2026-05-05** — branched `1.16.0-smoodle` from upstream
+   tag 1.16.0; committed peek-sort patch as
+   `a75b6a48 fix(dict): sort DictEntryIterator chunks on first Peek`.
+4. ✓ **DONE 2026-05-05** — annotated tag `1.16.0-smoodle.1` pushed
+   to LoneExile/librime alongside the branch.
+5. **PENDING (deferred)** — per-OS dylib CI matrix. Phase 1 macOS-only
+   dogfood builds locally from the tag. Lane B (Windows) kickoff is
+   the trigger to set up `.github/workflows/librime-build.yml`.
+6. ✓ **DONE 2026-05-05** — docs/RESUME.md rewired to reference the
+   fork tag as primary source-of-truth. Loose patch retained as
+   historical fallback for ~1 release cycle.
+7. **NEXT** — write `scripts/install-librime-fork.sh` (separate from
+   `install.sh` to keep schema-copy fast/sudoless): clone fork at
+   tag, build, back up Squirrel's bundled dylib, swap in the patched
+   one. Requires sudo for the swap (Squirrel is in
+   `/Library/Input Methods/`). Estimated ~50-80 lines + 2-3 new
+   tests in `tests/test_installers.py`.
 
 **CI matrix (deferred):** Once Lane B kicks off, add
 `.github/workflows/librime-build.yml` that builds dylib/.dll/.so
@@ -153,9 +157,13 @@ everywhere, simplify installers.
 
 ## 4. Rebuild vendor/librime against current homebrew deps
 
-**Status:** OPEN
+**Status:** ✓ CLOSED 2026-05-05 — root cause was missing `glog`
+brew formula (Homebrew bumped past `libglog.2.dylib`). Fixed via
+`brew install glog` (0.7.1 + gflags 2.3.0) + clean rebuild
+(`rm -rf build && make release`). Engine fixture restored to
+56/56 PASS against the rebuilt `rime_api_console`.
 **Created:** 2026-05-05 (Phase 1 kickoff baseline diagnostic)
-**Priority:** Low — does not block fork bring-up, but blocks
+**Priority:** Low — did not block fork bring-up, but blocked
 `tests/test_dict.py --use-rime-api-console` engine-mode runs.
 
 **What:** The vendored `rime_api_console` binary at

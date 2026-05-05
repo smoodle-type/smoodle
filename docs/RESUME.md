@@ -47,7 +47,12 @@ syllable strings). When an algebra-derived spelling like `yaai`→`yai`
 shared input with a direct `yai` entry, the alphabetically-earlier
 syllable's chunk won position #1 regardless of weight. The patch calls
 `Sort()` once before the first Peek, gated by a `sorted_initial_` flag.
-Saved as `vendor/librime-1.16.0-peek-sort.patch`. Worth filing upstream.
+
+**Source-of-truth (as of 2026-05-05):** carried as commit `a75b6a48` on
+the `1.16.0-smoodle` branch of https://github.com/LoneExile/librime,
+tagged `1.16.0-smoodle.1`. The loose patch file at
+`vendor/librime-1.16.0-peek-sort.patch` is kept for ~1 release cycle
+as historical fallback only. Upstream PR (TODOS.md #1) still pending.
 
 **Squirrel.app dylib swap.** Squirrel ships its own bundled
 `librime.1.dylib` (universal x86_64+arm64, 7.2MB). We replaced it with
@@ -171,14 +176,16 @@ run, so iteration is just edit-fixture → re-run.
   Token can be rotated at the relay's admin panel. The generator scripts
   read `ANTHROPIC_API_KEY` and `ANTHROPIC_BASE_URL` from env — must
   re-export from `ANTHROPIC_CUSTOM_*` (see Quick start below).
-- **vendor/librime/ is ~2 GB** after build. Gitignored. Re-clone with
-  `git clone --recurse-submodules https://github.com/rime/librime.git
-  vendor/librime && cd vendor/librime && git checkout 1.16.0 &&
-  git submodule update --init --recursive` if missing. **Then re-apply
-  the Peek-sort patch** (see "Required librime patch" above): one block
-  in `src/rime/dict/dictionary.cc` Peek + a `sorted_initial_` field in
-  `dictionary.h`. Without it, ranking is wrong for any input where an
+- **vendor/librime/ is ~2 GB** after build. Gitignored. Re-clone from
+  the smoodle fork (peek-sort patch already applied as a real commit):
+  `git clone --recurse-submodules https://github.com/LoneExile/librime.git
+  vendor/librime && cd vendor/librime && git checkout 1.16.0-smoodle.1 &&
+  git submodule update --init --recursive`.
+  Without the peek-sort fix, ranking is wrong for any input where an
   algebra-derived spelling collides with a direct one.
+  Upstream-clean alternative (no patch): `git clone .../rime/librime.git`
+  then `git checkout 1.16.0` + manually re-apply
+  `vendor/librime-1.16.0-peek-sort.patch`. Kept only as fallback.
 - **Brew deps for librime build:** cmake, boost, leveldb, marisa,
   yaml-cpp, opencc, googletest, pkg-config, ninja, glog. All installed.
 - **Don't archive Squirrel, agents, or environments.** Permanent.
@@ -205,7 +212,9 @@ complete TNC tail?"** before picking infrastructure work.
    - Rankings that disagree with intent despite TNC freq
      (e.g. `kao → เขา` over ข้าว — freq-correct but maybe intent-wrong)
 3. **File upstream PR** for the librime `DictEntryIterator::Peek` bug.
-   Repro is minimal; patch is at `vendor/librime-1.16.0-peek-sort.patch`.
+   Repro is minimal; patch lives at LoneExile/librime commit `a75b6a48`
+   (tag `1.16.0-smoodle.1`). Demoted to Low priority in TODOS.md #1
+   since the fork now absorbs the distribution problem.
 4. **v0.2 Sub-task 1 (the eureka layer):** vendor/librime is built;
    `make` against its headers + dylib should produce a hello-world
    plugin dropped into Squirrel's `Frameworks/rime-plugins/`. Reference
@@ -316,9 +325,11 @@ fresh reweight.
 - Don't pre-log the dict weights. Rime's `dict_compiler` already applies
   `log()` at compile and `table_translator` applies `exp()` at query.
   Storing raw frequencies is correct; storing log-frequencies double-logs.
-- Don't trust ranking from a fresh-cloned librime without applying the
-  Peek-sort patch (`vendor/librime/src/rime/dict/dictionary.{cc,h}`).
-  The first candidate will be wrong whenever an algebra-derived spelling
-  shares a syllable with a direct one and sorts alphabetically earlier.
+- Don't trust ranking from upstream `rime/librime` without the peek-sort
+  fix. Use `LoneExile/librime` tag `1.16.0-smoodle.1` (preferred), or
+  re-apply `vendor/librime-1.16.0-peek-sort.patch` against
+  `src/rime/dict/dictionary.{cc,h}`. Without it, the first candidate
+  will be wrong whenever an algebra-derived spelling shares a syllable
+  with a direct one and sorts alphabetically earlier.
 - Don't change the architecture from Rime/Squirrel without a Step 0
   scope challenge with the user. Flag concerns; user decides.
