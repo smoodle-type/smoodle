@@ -29,12 +29,21 @@ draw, not shipping speed.
 
 ## State as of last session
 
-Branch: `main`. **v0.0.3 committed and live in Squirrel.** Dict at 2101
-Thai words / 4050 entries, TNC-frequency-weighted. Engine test passes
-56/56. Required librime patch applied to vendored build AND swapped into
-Squirrel.app. User confirmed `yai → ใหญ่ #1` in real Squirrel typing;
-the previously-inverted ranking is fixed. Dogfood is live but no
-substantive usage feedback collected yet beyond that one probe.
+Branch: `main`. **v0.0.4 committed; install.sh ran but Squirrel Deploy
+still pending on this machine.** Dict at 10257 Thai words / 19468 entries
+(5× v0.0.3). Same TNC-weighted scheme — raw `tnc_freq × q/100`. Engine
+test passes 56/56. Required librime patch is still in the vendored build
+AND in Squirrel.app/Contents/Frameworks/librime.1.dylib (unchanged from
+last session; v0.0.4 only touched the dict).
+
+**v0.0.5 backlog:** the LLM romanization run for the freq>=50 tail was
+paused at 8338/12792 words (65%) to conserve API quota. The TSV
+(`scripts/generated-tnc-full.tsv`) is preserved and the script is
+resumable — same command picks up where it left off. Estimated
+remaining: ~4454 words, ~75 min at 5 workers.
+
+Dogfood feedback from v0.0.3 was "looks good so far, but we need more
+words" — answered by the v0.0.4 expansion. Next dogfood probe is open.
 
 **The librime Peek-sort patch** fixes an upstream bug:
 `DictEntryIterator::Peek()` returned `chunks[0]` without sorting on the
@@ -63,16 +72,14 @@ Two caveats:
     isn't). For shipping a release, either build universal librime or
     flip to a Path B dict (no algebra → no bug → no patch needed).
 
-Recent commits (v0.0.3 series):
+Recent commits:
 ```
+a1b649a v0.0.4: scale dict to 10257 Thai words (5x expansion)
+57523f0 RESUME.md: dogfood live with patched librime, flag Sparkle overwrite
 6eb359c RESUME.md: refresh for v0.0.3 + librime patch
 666c745 v0.0.3: scale dict to 2101 Thai words, TNC-frequency-weighted ranking
 f7153cf Pipeline: parallel romanization + TNC frequency reweighting
 67bc08b Patch librime DictEntryIterator::Peek first-call sort
-363d481 RESUME.md: note dogfood is live, awaiting feedback
-3977246 RESUME.md: refresh after v0.1 fixture + librime CLI wiring
-d2812ec Wire librime CLI test: end-to-end engine pipeline coverage (56/56 pass)
-c454a6f Add v0.1 fixture (56 entries: 35 direct + 21 algebra-tagged)
 6b68a99 v0.0.2: dict scaled to 601 Thai words / 1193 entries (Path A)
 b405383 v0.0.2: speller/algebra for Thai phonemic equivalence (Path A)
 ```
@@ -131,10 +138,12 @@ smoodle/
 │   ├── words-example.txt         # 30-word seed (still here for reference)
 │   ├── words-500.txt             # 601-word categorized list (v0.0.2)
 │   ├── words-tnc.txt             # top 1500 new words by TNC freq (v0.0.3)
+│   ├── words-tnc-full.txt        # all 12792 TNC freq>=50 not in v0.0.3 (v0.0.4)
 │   ├── tnc_freq.txt              # PyThaiNLP TNC unigram (CC0, ~106k entries)
 │   ├── generated-example.tsv     # raw LLM output for words-example.txt
 │   ├── generated-500.tsv         # raw LLM output for words-500.txt
-│   └── generated-tnc.tsv         # raw LLM output for words-tnc.txt (1500 words)
+│   ├── generated-tnc.tsv         # raw LLM output for words-tnc.txt (1500 words)
+│   └── generated-tnc-full.tsv    # raw LLM output, partial — 8338/12792 done (v0.0.5 to finish)
 ├── tests/
 │   ├── v001_fixture.yaml         # original 30-entry v0.0.1 acceptance fixture
 │   ├── v01_fixture.yaml          # 56 entries (35 direct + 21 algebra-tagged)
@@ -180,44 +189,45 @@ run, so iteration is just edit-fixture → re-run.
 
 ## What's likely next (pick one)
 
-The primary bottleneck before more infrastructure work is **dogfood
-feedback**. Squirrel is running the patched librime + 2101-word dict.
-The user has confirmed `yai → ใหญ่` works; nothing else has been
-typed in real use yet. **The next session should ask "how did the
-dogfood go?" first** before picking from the list below.
+Two near-term items dominate: (a) **deploy v0.0.4 in Squirrel** (was
+installed to `~/Library/Rime/` last session but Deploy was not clicked;
+expect a slower-than-v0.0.3 deploy since the dict is 5× bigger), and
+(b) **dogfood probe** of the expanded dict. **The next session should
+ask "did v0.0.4 deploy go OK and how does the bigger dict feel?"**
+before picking infrastructure work.
 
-1. **Triage dogfood feedback.** If the user reports OOV, romanization
+1. **Deploy v0.0.4 + dogfood.** Click Squirrel's menu-bar Deploy.
+   Watch Console.app for compilation errors (10257 words / 19468
+   entries — `dict_compiler` should still finish in seconds, but
+   first deploy will be slower). Then test the previously-confirmed
+   probe (`yai → ใหญ่`) plus a few new high-freq words to confirm
+   the larger dict still ranks them correctly.
+2. **Finish v0.0.5 generation.** ~4454 words remaining in the
+   freq>=50 tail. Resume with the same command (script auto-skips
+   done words from `scripts/generated-tnc-full.tsv`). Re-run the
+   merge with the same recipe (v0.0.2 quality-only base + concat
+   of all three TSVs as --add, --tnc-freq for fresh reweight).
+3. **Triage dogfood feedback.** If the user reports OOV, romanization
    mismatches, or unexpected ranking, fix-now (dict edits, more LLM
-   variants, manual weight bumps) vs defer (corpus replacement, v0.2
-   scope). Concrete watch-fors:
+   variants, manual weight bumps) vs defer. Watch-fors:
    - OOV on names / slang / recent loanwords (TNC is formal-corpus-biased)
    - Wrong romanization (user types `kafe` but dict only has `kafae`)
-   - Rankings that the user disagrees with despite TNC saying otherwise
+   - Rankings that disagree with intent despite TNC freq
      (e.g. `kao → เขา` over ข้าว — freq-correct but maybe intent-wrong)
-2. **File upstream PR** for the librime `DictEntryIterator::Peek` bug.
-   Repro is minimal (3 dict entries + 1 derive rule); we have the
-   patch in `vendor/librime-1.16.0-peek-sort.patch`. Useful regardless
-   of whether smoodle keeps Path A or flips to Path B.
-3. **v0.2 Sub-task 1 (the eureka layer):** vendor/librime is built;
+4. **File upstream PR** for the librime `DictEntryIterator::Peek` bug.
+   Repro is minimal; patch is at `vendor/librime-1.16.0-peek-sort.patch`.
+5. **v0.2 Sub-task 1 (the eureka layer):** vendor/librime is built;
    `make` against its headers + dylib should produce a hello-world
-   plugin dropped into Squirrel's `Frameworks/rime-plugins/`. The
-   reference dylibs are `librime-lua.dylib`, `librime-octagram.dylib`,
-   `librime-predict.dylib` — read their source for plugin ABI patterns.
-   Also check `rime-llm-translator` on AUR (Linux); may be portable.
-4. **Ship v0.0.3 milestone publicly.** Currently the patched dylib is
-   only on this machine. For a public release, three options (open
-   question 5 below):
-   - Build universal librime locally + ship instructions to swap
-   - Wait for upstream PR merge + Squirrel rebundle
-   - Flip the public-release config to Path B (enumeration-fat dict,
-     no algebra → no patch needed → ranking is freq-clean)
-5. **Add more dict entries.** 13775 TNC words are above freq-50; we
-   took the top 1500. Easy to scale further if dogfood shows OOV gaps.
-   `bash scripts/install.sh` after merging is enough; no patch changes.
-6. **Verify `kao → เขา` decision after typing.** TNC says เขา (142k)
-   beats ข้าว (12k), but casual-chat-IME use might prefer rice. If
-   dogfood agrees with TNC, leave it. If it doesn't, manual weight
-   bump on ข้าว or wait for real-typing-frequency data.
+   plugin dropped into Squirrel's `Frameworks/rime-plugins/`. Reference
+   dylibs: `librime-lua.dylib`, `librime-octagram.dylib`,
+   `librime-predict.dylib`. Also check `rime-llm-translator` on AUR.
+6. **Ship publicly.** Patched dylib is only on this machine. For
+   public release: build universal librime, OR wait for upstream merge,
+   OR flip release config to Path B (enumeration-fat, no algebra → no
+   patch needed).
+7. **Verify `kao → เขา` decision after typing.** TNC says เขา (142k)
+   beats ข้าว (12k); casual-chat-IME use might prefer rice. Bump or
+   leave once dogfood weighs in.
 
 ## Open questions still on deck
 
@@ -258,18 +268,50 @@ python3 scripts/generate_dict.py \
   --output scripts/generated-tnc.tsv \
   --workers 5
 
-# Merge a TSV into the dict with TNC frequency reweighting (v0.0.3+)
+# Resume the v0.0.5 generation (skips ~8338 done words automatically)
+python3 scripts/generate_dict.py \
+  --words scripts/words-tnc-full.txt \
+  --output scripts/generated-tnc-full.tsv \
+  --workers 5
+
+# Merge for v0.0.4+: rebuild from raw-quality sources to avoid
+# double-reweighting an on-disk TNC-rescaled dict. Use v0.0.2's commit
+# as the quality-only base, concat all generated TSVs as --add.
+git show 6b68a99:schema/thai_phonetic.dict.yaml > /tmp/v002-base.yaml
+cat scripts/generated-tnc.tsv scripts/generated-tnc-full.tsv > /tmp/add.tsv
 python3 scripts/merge_dict.py \
-  --base schema/thai_phonetic.dict.yaml \
-  --add scripts/generated-tnc.tsv \
+  --base /tmp/v002-base.yaml \
+  --add /tmp/add.tsv \
   --tnc-freq scripts/tnc_freq.txt \
   --default-freq 10 \
   --output schema/thai_phonetic.dict.yaml
+# Then bump version in scripts/merge_dict.py FRONTMATTER and
+# schema/thai_phonetic.schema.yaml in lockstep.
 
 # Re-pull TNC freq if scripts/tnc_freq.txt is missing (CC0)
 curl -sL https://raw.githubusercontent.com/PyThaiNLP/pythainlp/dev/pythainlp/corpus/tnc_freq.txt \
   -o scripts/tnc_freq.txt
 ```
+
+## Don't double-reweight when merging
+
+The on-disk dict carries TNC-rescaled weights (raw `f × q/100` counts
+in the millions). If you run `merge_dict.py --tnc-freq` against it
+again, every weight gets multiplied by `f/100` *again* and the result
+is meaningless (`f² × q / 10000`). Two ways to stay safe:
+
+1. **Always merge from raw-quality sources** (the recipe in Quick start
+   above). v0.0.2 dict is the canonical quality-only base — fetch it
+   via `git show 6b68a99:schema/thai_phonetic.dict.yaml`. Concat any
+   subset of `scripts/generated-*.tsv` as the `--add`.
+2. **Never re-run `--tnc-freq` against an already-rescaled dict.**
+   You can run `merge_dict.py` *without* `--tnc-freq` to add more
+   variants while preserving on-disk weights, but ANY use of
+   `--tnc-freq` must be paired with a quality-only base.
+
+This bit us once in the v0.0.3 session; commit a1b649a documents the
+rebuild path. The fix is mechanical: rebuild from sources, single
+fresh reweight.
 
 ## Don't do
 
