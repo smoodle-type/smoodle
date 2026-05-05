@@ -29,22 +29,16 @@ draw, not shipping speed.
 
 ## State as of last session
 
-Branch: `main`. **v0.0.5 committed; install.sh ran but Squirrel Deploy
-still pending on this machine.** Dict at 14868 Thai words / 28187 entries
-(7× v0.0.3, 1.45× v0.0.4). Covers 12767/12792 = 99.8% of the TNC
-freq>=50 tail. Same TNC-weighted scheme — raw `tnc_freq × q/100`.
-Engine test passes 56/56. Librime patch unchanged from v0.0.3
-(vendored build + Squirrel.app/Contents/Frameworks/librime.1.dylib).
-
-**25 words deferred.** The relay returned 500
-("No available Claude accounts support claude-opus-4-7") on the last
-~25 words of the run. Mostly proper nouns and loanwords (ไซบีเรีย,
-ไฟร์, ไซมอน, ไข่เค็ม, โครงการหลวง...). Easy to retry later or fall
-back to haiku-4-5 / sonnet-4-6 with `--model`.
+Branch: `main`. **v0.0.6 committed; install.sh ran but Squirrel Deploy
+still pending on this machine.** Dict at 14893 Thai words / 28239 entries
+(7× v0.0.3). **100% of the TNC freq>=50 tail** (12792/12792). Same
+TNC-weighted scheme — raw `tnc_freq × q/100`. Engine test passes 56/56.
+Librime patch unchanged from v0.0.3 (vendored build +
+Squirrel.app/Contents/Frameworks/librime.1.dylib).
 
 Dogfood feedback from v0.0.3 was "looks good so far, but we need more
-words" — answered by the v0.0.4 / v0.0.5 expansion. Next dogfood probe
-is open.
+words" — answered by the v0.0.4 / v0.0.5 / v0.0.6 expansion sequence.
+Next dogfood probe is open.
 
 **The librime Peek-sort patch** fixes an upstream bug:
 `DictEntryIterator::Peek()` returned `chunks[0]` without sorting on the
@@ -75,7 +69,8 @@ Two caveats:
 
 Recent commits:
 ```
-(this commit)  v0.0.5: finish TNC freq>=50 tail (14868 words / 28187 entries)
+(this commit)  v0.0.6: close 25-word gap (now 100% of TNC freq>=50)
+9601730 v0.0.5: finish TNC freq>=50 tail (14868 words / 28187 entries)
 abbc2eb RESUME.md: refresh for v0.0.4 + capture v0.0.5 backlog
 a1b649a v0.0.4: scale dict to 10257 Thai words (5x expansion)
 57523f0 RESUME.md: dogfood live with patched librime, flag Sparkle overwrite
@@ -84,7 +79,6 @@ a1b649a v0.0.4: scale dict to 10257 Thai words (5x expansion)
 f7153cf Pipeline: parallel romanization + TNC frequency reweighting
 67bc08b Patch librime DictEntryIterator::Peek first-call sort
 6b68a99 v0.0.2: dict scaled to 601 Thai words / 1193 entries (Path A)
-b405383 v0.0.2: speller/algebra for Thai phonemic equivalence (Path A)
 ```
 
 ## Architecture (do not relitigate without strong reason)
@@ -192,14 +186,14 @@ run, so iteration is just edit-fixture → re-run.
 
 ## What's likely next (pick one)
 
-Primary near-term: **deploy v0.0.5 in Squirrel** (installed to
-`~/Library/Rime/` but Deploy not yet clicked; recompile of 28187
+Primary near-term: **deploy v0.0.6 in Squirrel** (installed to
+`~/Library/Rime/` but Deploy not yet clicked; recompile of 28239
 entries is the slowest deploy yet — still seconds, not minutes) and
 **dogfood probe** of the now-comprehensive dict. **The next session
-should ask "did v0.0.5 deploy go OK and how does it feel with the
-near-complete TNC tail?"** before picking infrastructure work.
+should ask "did v0.0.6 deploy go OK and how does it feel with the
+complete TNC tail?"** before picking infrastructure work.
 
-1. **Deploy v0.0.5 + dogfood.** Click Squirrel's menu-bar Deploy.
+1. **Deploy v0.0.6 + dogfood.** Click Squirrel's menu-bar Deploy.
    Watch Console.app for compilation errors. Test the previously-
    confirmed probe (`yai → ใหญ่`) plus a sweep through new domains
    (proper nouns from the tail, casual words, recent loanwords).
@@ -224,11 +218,6 @@ near-complete TNC tail?"** before picking infrastructure work.
 6. **Verify `kao → เขา` decision after typing.** TNC says เขา (142k)
    beats ข้าว (12k); casual-chat-IME use might prefer rice. Bump or
    leave once dogfood weighs in.
-7. **Retry the 25 deferred words.** Either re-run when the relay
-   recovers opus-4-7 capacity, or use `--model claude-haiku-4-5`
-   (cheaper but lower-quality) / `claude-sonnet-4-6` (mid-tier).
-   Bias is heavy toward proper nouns and recent loanwords, so
-   missing them is a smaller hit than missing common verbs.
 
 ## Open questions still on deck
 

@@ -66,10 +66,13 @@ FRONTMATTER = """\
 #
 # v0.0.5 finishes the freq>=50 tail. Coverage 12767/12792 = 99.8%;
 # 25 words deferred to a future run (relay 500 on opus-4-7 capacity).
+#
+# v0.0.6 closes the 25-word gap (relay recovered). Now 12792/12792 =
+# 100% of the TNC freq>=50 tail.
 
 ---
 name: thai_phonetic
-version: "0.0.5"
+version: "0.0.6"
 sort: by_weight
 use_preset_vocabulary: false
 columns:

@@ -24,10 +24,13 @@
 #
 # v0.0.5 finishes the freq>=50 tail. Coverage 12767/12792 = 99.8%;
 # 25 words deferred to a future run (relay 500 on opus-4-7 capacity).
+#
+# v0.0.6 closes the 25-word gap (relay recovered). Now 12792/12792 =
+# 100% of the TNC freq>=50 tail.
 
 ---
 name: thai_phonetic
-version: "0.0.5"
+version: "0.0.6"
 sort: by_weight
 use_preset_vocabulary: false
 columns:
@@ -57961,3 +57964,105 @@ encoder:
 
 # เป้ง
 เป้ง	peng	50
+
+# เยีย
+เยีย	yia	50
+
+# เพ้นท์
+เพ้นท์	pen	50
+เพ้นท์	paint	45
+
+# แสนรู้
+แสนรู้	saenru	51
+แสนรู้	sanru	43
+
+# เมอร์ส
+เมอร์ส	mers	50
+เมอร์ส	moers	42
+
+# เฟิน
+เฟิน	fern	50
+เฟิน	foen	42
+
+# เวฟ
+เวฟ	wave	50
+เวฟ	wef	42
+
+# เลยตามเลย
+เลยตามเลย	loeitamloei	50
+เลยตามเลย	leytamley	45
+เลยตามเลย	luaytamluay	40
+
+# เศวตฉัตร
+เศวตฉัตร	sawetchat	50
+เศวตฉัตร	savetchat	42
+
+# เศวต
+เศวต	sawet	50
+เศวต	savet	42
+
+# เสียงเขียว
+เสียงเขียว	siangkhiao	50
+เสียงเขียว	siangkiew	44
+เสียงเขียว	siangkhiew	42
+
+# เหลอ
+เหลอ	loe	50
+เหลอ	ler	45
+เหลอ	lur	40
+
+# เอกวาดอร์
+เอกวาดอร์	ekwador	50
+เอกวาดอร์	ekuador	45
+
+# เอนทรานซ์
+เอนทรานซ์	entrance	50
+เอนทรานซ์	entran	42
+
+# เหง
+เหง	ngeh	50
+เหง	nge	45
+
+# แก้วมรกต
+แก้วมรกต	kaewmorakot	50
+แก้วมรกต	gaewmorakot	42
+
+# แบม
+แบม	bam	50
+แบม	baem	45
+
+# แคลงใจ
+แคลงใจ	klaengjai	50
+แคลงใจ	klangjai	42
+
+# แยร์
+แยร์	yae	50
+แยร์	yer	42
+
+# โบ้
+โบ้	bo	50
+
+# โอดโอย
+โอดโอย	otoi	50
+โอดโอย	odoi	42
+โอดโอย	otoy	40
+
+# ไข่เค็ม
+ไข่เค็ม	khaikhem	50
+ไข่เค็ม	khaykhem	42
+
+# โครงการหลวง
+โครงการหลวง	khrongkanluang	50
+โครงการหลวง	krongkarnluang	42
+
+# ไซมอน
+ไซมอน	saimon	50
+ไซมอน	simon	48
+
+# ไซบีเรีย
+ไซบีเรีย	saiberia	50
+ไซบีเรีย	saibiria	42
+
+# ไฟร์
+ไฟร์	fai	50
+ไฟร์	fire	42
