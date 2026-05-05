@@ -10,7 +10,7 @@ For active execution plan, see the design doc at
 
 **Status:** OPEN
 **Created:** 2026-05-05 (eng review, /plan-eng-review)
-**Priority:** Low — Path A + lex/librime fork (TODO 3, kickoff
+**Priority:** Low — Path A + LoneExile/librime fork (TODO 3, kickoff
 2026-05-05) absorbs the patch via fork. Upstream merge becomes
 optional / community-goodwill / fork-retirement trigger; not gating
 any Phase 1 milestone.
@@ -19,7 +19,7 @@ any Phase 1 milestone.
 to upstream rime/librime on GitHub.
 
 **Why it matters:** If upstream merges, smoodle can drop the
-lex/librime fork (TODO 3) and ship against system librime
+LoneExile/librime fork (TODO 3) and ship against system librime
 everywhere. Until merge, the fork carries the patch. Also benefits
 any other Rime schema author hitting the same bug (Mandarin pinyin
 variants, Cantonese, Japanese romaji collisions, etc.).
@@ -31,7 +31,7 @@ variants, Cantonese, Japanese romaji collisions, etc.).
 2. Open issue on rime/librime describing the bug with repro.
 3. Open PR with the patch (~10 lines in
    `src/rime/dict/dictionary.{cc,h}` adding a `sorted_initial_`
-   flag). Reference the lex/librime fork's commit as a working
+   flag). Reference the LoneExile/librime fork's commit as a working
    implementation if helpful.
 4. Monitor / respond to maintainer feedback. PR review timeline is
    weeks-to-months.
@@ -40,7 +40,7 @@ variants, Cantonese, Japanese romaji collisions, etc.).
 Phase 1 packaging via fork.
 
 **Done when:** PR is merged into rime/librime master (then drop
-lex/librime fork — see TODO 3), OR closed with "won't fix" and the
+LoneExile/librime fork — see TODO 3), OR closed with "won't fix" and the
 reasoning is documented here.
 
 ---
@@ -79,7 +79,7 @@ yes/no answer with evidence.
 
 ---
 
-## 3. Create lex/librime fork — Path A bring-up
+## 3. Create LoneExile/librime fork — Path A bring-up
 
 **Status:** OPEN
 **Created:** 2026-05-05 (Phase 1 kickoff session)
@@ -106,10 +106,11 @@ versioned librime distribution.
   contagion).
 
 **Concrete steps:**
-1. **GitHub:** fork `rime/librime` to `lex/librime` (1-click on
-   github.com/rime/librime). User action — cannot be automated.
-2. Clone the fork locally to `vendor/librime-fork/` (or rename
-   `vendor/librime/` to point at the fork remote).
+1. ✓ **DONE 2026-05-05** — `gh repo fork rime/librime --clone=false`
+   created https://github.com/LoneExile/librime (default branch
+   `master`, parent `rime/librime`).
+2. Wire local `vendor/librime/` to the fork as `origin` (or add
+   as a `smoodle` remote alongside upstream `rime/librime`).
 3. Apply `vendor/librime-1.16.0-peek-sort.patch` as a real commit
    on a `1.16.0-smoodle` branch. Commit message:
    "Patch DictEntryIterator::Peek first-call sort (smoodle fork)"
@@ -141,12 +142,45 @@ when Lane C scoping starts.
 that point, drop the smoodle commit, ship system librime
 everywhere, simplify installers.
 
-**Depends on / blocked by:** User must perform the GitHub fork
-button-click (step 1).
+**Depends on / blocked by:** Nothing blocking. Step 1 cleared
+2026-05-05 via `gh`. Steps 2-7 ready to proceed when convenient.
 
-**Done when:** `lex/librime` exists on GitHub, has a
+**Done when:** `LoneExile/librime` exists on GitHub, has a
 `1.16.0-smoodle` branch with the peek-sort commit, has tag
 `1.16.0-smoodle.1`, and `docs/RESUME.md` references the fork.
+
+---
+
+## 4. Rebuild vendor/librime against current homebrew deps
+
+**Status:** OPEN
+**Created:** 2026-05-05 (Phase 1 kickoff baseline diagnostic)
+**Priority:** Low — does not block fork bring-up, but blocks
+`tests/test_dict.py --use-rime-api-console` engine-mode runs.
+
+**What:** The vendored `rime_api_console` binary at
+`vendor/librime/build/bin/rime_api_console` was linked against
+`libglog.2.dylib`, which Homebrew has since superseded (current
+glog package no longer ships `.2.dylib`). All 56/56 fixture entries
+fail engine-mode test with a dyld load error.
+
+**Why it matters:** Engine-mode tests are the only way to exercise
+the algebra-derived spellings end-to-end (string-match mode skips
+20/56 algebra-tagged assertions). Without engine mode, regressions
+in algebra rules or the peek-sort patch will not be caught locally.
+
+**Concrete steps:**
+1. `cd vendor/librime/build && cmake --build .` (incremental rebuild
+   against current brew deps). If cmake cache is stale:
+   `rm -rf vendor/librime/build && cd vendor/librime && make release`.
+2. Re-run engine test:
+   `python3 tests/test_dict.py --use-rime-api-console --fixture tests/v01_fixture.yaml`
+3. Confirm 56/56 pass before any schema/dict edits.
+
+**Depends on / blocked by:** Nothing. ~5-15 min of build time.
+
+**Done when:** engine-mode test passes 56/56 against the rebuilt
+`rime_api_console`.
 
 ---
 

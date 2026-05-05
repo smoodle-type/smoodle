@@ -130,7 +130,7 @@ If 'smoodle Thai phonetic' doesn't appear in the schema switcher:
   - Verify ~/Library/Rime/ contains the three YAML files above.
   - Try the manual Deploy click; auto-restart can race on first install.
 
-Note: this build uses smoodle's patched librime (lex/librime fork,
+Note: this build uses smoodle's patched librime (LoneExile/librime fork,
 tagged 1.16.0-smoodle.1). If Squirrel was updated via Sparkle since
 your last smoodle install, the bundled librime.1.dylib in
 ${SQUIRREL_PATH}/Contents/Frameworks/ may have been overwritten; see
