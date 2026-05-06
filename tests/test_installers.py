@@ -21,7 +21,6 @@ Coverage:
   - perl timeout helper exit-code semantics
 
 Stubs (SKIPPED — depend on infra not yet in repo):
-  - Windows Weasel post-install registration verify (Lane B)
   - Telemetry opt-in payload (Phase 1 telemetry milestone)
   - Auto-deploy kill+restart against a real Squirrel (E2E only)
 
@@ -49,6 +48,8 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 INSTALL_SH = REPO_ROOT / "scripts" / "install.sh"
 INSTALL_LIBRIME_SH = REPO_ROOT / "scripts" / "install-librime-fork.sh"
 INSTALL_LINUX_SH = REPO_ROOT / "scripts" / "install-linux.sh"
+INSTALL_WINDOWS_PS1 = REPO_ROOT / "scripts" / "install-windows.ps1"
+INSTALL_LIBRIME_PS1 = REPO_ROOT / "scripts" / "install-librime-fork.ps1"
 SCHEMA_DIR = REPO_ROOT / "schema"
 SCHEMA_FILES = (
     "thai_phonetic.schema.yaml",
@@ -231,6 +232,140 @@ class InstallLinuxScriptShape(unittest.TestCase):
             self.skipTest("ran in env where fcitx5/ibus is actually running")
 
 
+class InstallWindowsPs1Shape(unittest.TestCase):
+    """Shape checks for scripts/install-windows.ps1 (Lane B).
+
+    Real PowerShell syntax validation happens when the script runs in
+    the th-dc test bed VM (pwsh isn't on the macOS dev box). These
+    are regex/grep checks that catch drift cheaply: env-override
+    declarations, the TSF defense-in-depth check, the Weasel path
+    auto-detect, and the "no admin needed" assumption (script must
+    not call any verb-RunAs path).
+    """
+
+    def test_script_exists(self):
+        self.assertTrue(INSTALL_WINDOWS_PS1.is_file(), f"{INSTALL_WINDOWS_PS1} missing")
+
+    def test_script_declares_env_overrides(self):
+        body = INSTALL_WINDOWS_PS1.read_text()
+        for var in (
+            "SMOODLE_RIME_DIR",
+            "SMOODLE_WEASEL_PATH",
+            "SMOODLE_AUTO_DEPLOY",
+            "SMOODLE_DEPLOY_TIMEOUT_SECS",
+        ):
+            self.assertIn(var, body, f"install-windows.ps1 missing override: {var}")
+
+    def test_script_lists_required_schema_files(self):
+        body = INSTALL_WINDOWS_PS1.read_text()
+        for f in (
+            "thai_phonetic.schema.yaml",
+            "thai_phonetic.dict.yaml",
+            "default.custom.yaml",
+        ):
+            self.assertIn(f, body, f"install-windows.ps1 missing schema file: {f}")
+
+    def test_script_uses_appdata_default(self):
+        body = INSTALL_WINDOWS_PS1.read_text()
+        # Schema YAMLs go to %APPDATA%\Rime\ — user-writeable, no admin.
+        self.assertIn("APPDATA", body)
+        self.assertIn("Rime", body)
+
+    def test_script_auto_detects_weasel_path(self):
+        body = INSTALL_WINDOWS_PS1.read_text()
+        # Weasel 0.17.x installs under "C:\Program Files\Rime\Weasel\";
+        # older builds under "Program Files (x86)\Rime\Weasel\". Script
+        # must try both rather than hard-code one.
+        self.assertIn("ProgramFiles", body)
+        self.assertIn("ProgramFiles(x86)", body)
+
+    def test_script_does_tsf_defense_in_depth(self):
+        body = INSTALL_WINDOWS_PS1.read_text()
+        # CFM #2 from LANE-B-WINDOWS.md — verify TSF registration after
+        # winget install. On Win 11 this auto-passes; surfaces clearly
+        # if any future Weasel installer regresses.
+        self.assertIn("Get-WinUserLanguageList", body)
+
+    def test_script_uses_weaseldeployer_for_deploy(self):
+        body = INSTALL_WINDOWS_PS1.read_text()
+        # Auto-deploy path: WeaselDeployer.exe /deploy with timeout.
+        self.assertIn("WeaselDeployer.exe", body)
+        self.assertIn("/deploy", body)
+        self.assertIn("WaitForExit", body)  # timeout handling
+
+    def test_script_runs_user_scope_not_admin(self):
+        body = INSTALL_WINDOWS_PS1.read_text()
+        # install-windows.ps1 is the user-scope half; admin elevation
+        # belongs in install-librime-fork.ps1. Drift check.
+        self.assertNotIn("RunAs", body)
+        self.assertNotIn("WindowsBuiltInRole", body)
+
+
+class InstallLibrimeForkPs1Shape(unittest.TestCase):
+    """Shape checks for scripts/install-librime-fork.ps1 (Lane B).
+
+    The script downloads a pre-built rime.dll from the LoneExile fork's
+    smoodle-build CI artifact (instead of building locally — vcpkg +
+    MSVC bootstrap is hostile to put in an end-user installer).
+    """
+
+    def test_script_exists(self):
+        self.assertTrue(INSTALL_LIBRIME_PS1.is_file(), f"{INSTALL_LIBRIME_PS1} missing")
+
+    def test_script_declares_env_overrides(self):
+        body = INSTALL_LIBRIME_PS1.read_text()
+        for var in (
+            "SMOODLE_LIBRIME_FORK_REPO",
+            "SMOODLE_LIBRIME_FORK_RUN_ID",
+            "SMOODLE_LIBRIME_VARIANT",
+            "SMOODLE_WEASEL_PATH",
+            "SMOODLE_SKIP_DOWNLOAD",
+            "SMOODLE_SKIP_SWAP",
+            "SMOODLE_NONINTERACTIVE",
+            "SMOODLE_DLL_CACHE_DIR",
+        ):
+            self.assertIn(var, body, f"install-librime-fork.ps1 missing override: {var}")
+
+    def test_script_references_fork_repo_default(self):
+        body = INSTALL_LIBRIME_PS1.read_text()
+        self.assertIn("LoneExile/librime", body)
+
+    def test_script_uses_smoodle_build_workflow(self):
+        body = INSTALL_LIBRIME_PS1.read_text()
+        # Resolves the latest successful smoodle-build run (not
+        # release-ci or any other workflow on the fork).
+        self.assertIn("smoodle-build", body)
+        self.assertIn("--status success", body)
+
+    def test_script_handles_artifact_variants(self):
+        body = INSTALL_LIBRIME_PS1.read_text()
+        # Default variant + the actual artifact name shape from upstream's
+        # windows-build.yml.
+        self.assertIn("msvc-x64", body)
+        self.assertIn("artifact-Windows-", body)
+
+    def test_script_requires_admin_for_swap(self):
+        body = INSTALL_LIBRIME_PS1.read_text()
+        # Without admin the swap should bail out cleanly with a re-launch
+        # hint — not silently fail or attempt the copy.
+        self.assertIn("WindowsBuiltInRole", body)
+        self.assertIn("Administrator", body)
+        self.assertIn("RunAs", body)
+
+    def test_script_uses_smoodle_backup_convention(self):
+        body = INSTALL_LIBRIME_PS1.read_text()
+        # Same convention as the macOS installer — only back up on first
+        # run, leave the user's original Weasel rime.dll preserved.
+        self.assertIn(".smoodle-backup", body)
+
+    def test_script_ensures_winget_prereqs(self):
+        body = INSTALL_LIBRIME_PS1.read_text()
+        # gh CLI for artifact download, 7-Zip for inner archive extract.
+        # Both auto-installed via winget if missing.
+        self.assertIn("GitHub.cli", body)
+        self.assertIn("7zip.7zip", body)
+
+
 class InstallSandboxed(unittest.TestCase):
     """End-to-end runs against a tmpdir-sandboxed Rime + fake Squirrel."""
 
@@ -360,13 +495,6 @@ class FutureLanes(unittest.TestCase):
     convert into real tests.
     """
 
-    @unittest.skip("Lane B: Windows installer not yet implemented")
-    def test_windows_weasel_post_install_registration_verified(self):
-        # When scripts/install-windows.ps1 exists, verify it invokes
-        # Weasel + checks the candidate window appears (Critical Failure
-        # Mode #2 — winget reports success but IME registration silent-fails).
-        ...
-
     @unittest.skip("Phase 1 telemetry milestone not yet implemented")
     def test_telemetry_opt_in_default_off(self):
         # When the telemetry POST client lands, verify default is OFF
@@ -402,8 +530,9 @@ def main() -> int:
     loader = unittest.TestLoader()
     suite = unittest.TestSuite()
     for cls in (InstallScriptShape, InstallLibrimeForkScriptShape,
-                InstallLinuxScriptShape, InstallSandboxed, TimeoutHelper,
-                FutureLanes):
+                InstallLinuxScriptShape, InstallWindowsPs1Shape,
+                InstallLibrimeForkPs1Shape, InstallSandboxed,
+                TimeoutHelper, FutureLanes):
         suite.addTests(loader.loadTestsFromTestCase(cls))
     runner = unittest.TextTestRunner(verbosity=2)
     result = runner.run(suite)
