@@ -285,7 +285,8 @@ separate concern.
 
 ## 6. Lane B test bed — dockur/windows on th-dc
 
-**Status:** IN-PROGRESS 2026-05-06 (kickoff)
+**Status:** IN-PROGRESS 2026-05-06 — VM deployed + reachable; awaiting
+human-eyes smoke (step 6) before flipping to ✓ DONE.
 **Created:** 2026-05-06
 **Priority:** High — unblocks Lane B installer dogfood. Without a
 real Win 11 desktop, install-windows.ps1 ships "CI-green but
@@ -320,11 +321,20 @@ don't reinstall Windows every iteration.
 3. ⏳ **TODO** — `docker --context th-dc compose pull` (~6 GB ISO).
 4. ⏳ **TODO** — `docker --context th-dc compose up -d`. Wait
    ~15-25 min for Win 11 unattended install.
-5. ⏳ **TODO** — verify access: `curl -fsSI http://th-dc:8006` +
-   RDP smoke test from Mac via Microsoft Remote Desktop.
-6. ⏳ **TODO** — first manual smoke: `winget install Rime.Weasel`
-   inside the VM, prove TSF registers, type a Latin character, then
-   uninstall. Confirms baseline before installer scripts land.
+5. ✓ **DONE 2026-05-06** — VM up + ports listening end-to-end.
+   Dockur log: `❯ Windows started successfully, visit
+   http://127.0.0.1:8006/ to view the screen...`. QEMU process alive
+   2h22m+ at last check (Win 11 unattended install is normally
+   15-25 min, so install has long since completed). Web VNC
+   http://10.159.0.63:8006 returns HTTP 200; RDP TCP 3389 open.
+   ISO download took 38m46s on first boot — subsequent restarts
+   skip this and boot from the persistent `windows-storage` volume.
+6. ⏳ **TODO** — first manual smoke: open
+   http://10.159.0.63:8006 in a browser (or RDP via Microsoft Remote
+   Desktop to th-dc:3389 user `smoodle` pass `smoodle`), run
+   `winget install Rime.Weasel` inside the VM, prove TSF registers,
+   type a Latin character, then uninstall. Confirms baseline before
+   installer scripts land. Requires human eyes on the screen.
 
 **Depends on / blocked by:** None. th-dc available + KVM-capable.
 
