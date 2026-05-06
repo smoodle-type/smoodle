@@ -8,7 +8,13 @@ For active execution plan, see the design doc at
 
 ## 1. Upstream librime PR — DictEntryIterator::Peek first-call sort
 
-**Status:** PR-READY (upgraded 2026-05-06 after CI validation)
+**Status:** DEFERRED 2026-05-06 — fork (TODO 3) absorbs the patch
+indefinitely; upstream merge is community goodwill, not a Phase 1
+gate. The CI evidence (run 25428394245 on Commit CI + run 25429514636
+on the refactored smoodle-build) is preserved for the day we revisit.
+Triggers to un-defer: (a) fork maintenance burden surfaces during
+Phase 1.5/2 plugin work, (b) another Rime schema author hits the
+same bug and asks, or (c) a quiet weekend with appetite for OSS work.
 **Created:** 2026-05-05 (eng review, /plan-eng-review)
 **Priority:** Low — Path A + LoneExile/librime fork (TODO 3, kickoff
 2026-05-05) absorbs the patch via fork. Upstream merge becomes
@@ -274,6 +280,125 @@ this and dropped the Windows ball. After the refactor,
 all OS jobs green on `smoodle-build`. ✓ Verified
 2026-05-06 via run 25429514636. Promotion to Releases remains a
 separate concern.
+
+---
+
+## 6. Lane B test bed — dockur/windows on th-dc
+
+**Status:** IN-PROGRESS 2026-05-06 (kickoff)
+**Created:** 2026-05-06
+**Priority:** High — unblocks Lane B installer dogfood. Without a
+real Win 11 desktop, install-windows.ps1 ships "CI-green but
+unverified on metal" (eng review Critical Failure Mode #2 risk).
+
+**What:** Deploy [dockur/windows](https://github.com/dockur/windows)
+on the th-dc remote docker context as the Lane B interactive test
+bed. Win 11 + KVM + RDP/web-VNC access. Persistent storage so we
+don't reinstall Windows every iteration.
+
+**Config:**
+- VM: Win 11, 16 GB RAM, 4 cores, 64 GB disk
+- Storage: docker-managed named volume `windows-storage`
+- Ports: 8006/tcp (web VNC), 3389/tcp+udp (RDP) — public on th-dc
+- Credentials: `smoodle / smoodle` (test bed only)
+- Compose file: `infra/lane-b-windows/docker-compose.yml`
+
+**Why it matters:**
+- LANE-B-WINDOWS.md Open Question 1 ("Windows machine for dogfood?")
+  becomes "yes, on th-dc." Cheaper than a Parallels VM, no macOS host
+  resources consumed, accessible from any device with RDP.
+- Same VM serves as the rehearsal stage for the future MSI installer
+  + code-signing dry runs at the pre-public-ship gate.
+- TSF registration verification (Critical Failure Mode #2) requires a
+  real Windows desktop; CI-only validation cannot prove it.
+
+**Concrete steps:**
+1. ✓ **DONE 2026-05-06** — verified th-dc capacity (64 CPUs, 189 GB
+   RAM, 600 GB free disk, /dev/kvm present, Debian 12).
+2. ⏳ **TODO** — write `infra/lane-b-windows/docker-compose.yml` +
+   small README documenting deploy + access + lifecycle.
+3. ⏳ **TODO** — `docker --context th-dc compose pull` (~6 GB ISO).
+4. ⏳ **TODO** — `docker --context th-dc compose up -d`. Wait
+   ~15-25 min for Win 11 unattended install.
+5. ⏳ **TODO** — verify access: `curl -fsSI http://th-dc:8006` +
+   RDP smoke test from Mac via Microsoft Remote Desktop.
+6. ⏳ **TODO** — first manual smoke: `winget install Rime.Weasel`
+   inside the VM, prove TSF registers, type a Latin character, then
+   uninstall. Confirms baseline before installer scripts land.
+
+**Depends on / blocked by:** None. th-dc available + KVM-capable.
+
+**Done when:** dockur/windows container is `up` on th-dc, web/RDP
+reachable, fresh Win 11 desktop visible, and a single `winget
+install Rime.Weasel` smoke succeeds.
+
+---
+
+## 7. Lane B installer scripts — install-windows.ps1 + install-librime-fork.ps1
+
+**Status:** OPEN (depends on TODO 6)
+**Created:** 2026-05-06
+**Priority:** Medium — design doc parallel lane.
+
+**What:** PowerShell parallels of macOS Lane A scripts:
+- `scripts/install-windows.ps1` — schema YAMLs to `%APPDATA%\Rime\`
+  + `WeaselDeployer.exe /deploy` with timeout + post-copy verify.
+  Mirrors `scripts/install.sh` shape including env overrides
+  (`SMOODLE_RIME_DIR`, `SMOODLE_WEASEL_PATH`, `SMOODLE_AUTO_DEPLOY`,
+  `SMOODLE_DEPLOY_TIMEOUT_SECS`).
+- `scripts/install-librime-fork.ps1` — fetch the LoneExile/librime
+  fork, build Windows DLL on a CI runner artifact (or local MSVC),
+  prompt for admin, swap `rime.dll` in
+  `C:\Program Files (x86)\Rime\Weasel\`, backup convention
+  `rime.dll.smoodle-backup`. Mirrors `install-librime-fork.sh`.
+- Critical Failure Mode #2 mitigation (~10 lines): post-winget,
+  verify `Get-WinUserLanguageList` shows Rime/Weasel TSF entry; if
+  not, error with manual fix instructions.
+
+**Concrete steps:** see `docs/LANE-B-WINDOWS.md` for full plan
+including resource paths, distribution model (zip+scripts for
+Phase 1), and effort breakdown (2-3 weeks total).
+
+**Done when:** both scripts exist, shape tests in
+`tests/test_installers.ps1` pass, and a manual run on the th-dc
+VM types `sawadee → สวัสดี` end-to-end.
+
+---
+
+## 8. Lane C installer — install-linux.sh + GHA E2E
+
+**Status:** OPEN (parallel to Lane B; no test bed dependency)
+**Created:** 2026-05-06
+**Priority:** Low — design doc stretch goal. Defer if month 1.5
+slips.
+
+**What:** Linux schema-only installer per `docs/LANE-C-LINUX.md`
+recommendation (option 3 — accept unpatched system librime,
+document the ranking limitation). Two artifacts:
+- `scripts/install-linux.sh` — detect running IM (fcitx5 vs ibus
+  via `pgrep`), copy schema YAMLs to the right per-IM dir, deploy
+  with timeout. ~80 lines bash.
+- GHA workflow: install ibus-rime via apt on `ubuntu-latest`, run
+  install-linux.sh, verify schema deployment succeeds.
+
+**Why it matters:** Linux is the smallest expected wedge audience
+for Phase 1, but the script is cheap to write (Lane A is the model)
+and zero-cost to test (free GHA runner). Better to land it than
+defer.
+
+**Concrete steps:**
+1. ⏳ **TODO** — scaffold `scripts/install-linux.sh` skeleton with
+   detection helper, env overrides, schema-copy stub.
+2. ⏳ **TODO** — add `InstallLinuxScriptShape` test class to
+   `tests/test_installers.py` (mirrors `InstallScriptShape`).
+3. ⏳ **TODO** — convert the existing FutureLanes Lane C stub
+   to a real shape test.
+4. ⏳ **TODO** — flesh out detection + schema-copy + deploy logic.
+5. ⏳ **TODO** — write `.github/workflows/install-linux-e2e.yml`
+   running on `ubuntu-latest`.
+
+**Done when:** `install-linux.sh` works on a real Ubuntu LTS box,
+GHA E2E passes, ranking-limitation note added to README.
 
 ---
 
