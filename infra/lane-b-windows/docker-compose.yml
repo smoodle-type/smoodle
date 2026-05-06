@@ -1,0 +1,49 @@
+# Lane B test bed — dockur/windows on the th-dc remote docker context.
+#
+# Win 11 KVM VM. Replaces the "need a Parallels VM" gap from
+# docs/LANE-B-WINDOWS.md Open Question 1. Used for:
+#   - manual smoke-test of install-windows.ps1 / install-librime-fork.ps1
+#   - TSF registration verification (Critical Failure Mode #2)
+#   - rehearsal stage for the future MSI + code-signing gate
+#
+# Deploy:
+#   docker --context th-dc compose -f infra/lane-b-windows/docker-compose.yml pull
+#   docker --context th-dc compose -f infra/lane-b-windows/docker-compose.yml up -d
+#
+# First boot is ~15-25 min (unattended Win 11 install). Web viewer:
+#   http://th-dc:8006   (browser-based VNC; watch the install live)
+# Microsoft Remote Desktop on Mac:
+#   th-dc:3389  user: smoodle  pass: smoodle
+#
+# Tear down (preserves disk):
+#   docker --context th-dc compose -f infra/lane-b-windows/docker-compose.yml down
+# Tear down + wipe Windows install (start fresh):
+#   docker --context th-dc compose -f infra/lane-b-windows/docker-compose.yml down -v
+
+services:
+  windows:
+    image: dockurr/windows:latest
+    container_name: smoodle-lane-b
+    environment:
+      VERSION: "11"
+      RAM_SIZE: "16G"
+      CPU_CORES: "4"
+      DISK_SIZE: "64G"
+      USERNAME: "smoodle"
+      PASSWORD: "smoodle"
+    devices:
+      - /dev/kvm
+      - /dev/net/tun
+    cap_add:
+      - NET_ADMIN
+    ports:
+      - "8006:8006"
+      - "3389:3389/tcp"
+      - "3389:3389/udp"
+    volumes:
+      - windows-storage:/storage
+    restart: unless-stopped
+    stop_grace_period: 2m
+
+volumes:
+  windows-storage:
