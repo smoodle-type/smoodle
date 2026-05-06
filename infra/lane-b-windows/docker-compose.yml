@@ -42,6 +42,11 @@ services:
       - "3389:3389/udp"
     volumes:
       - windows-storage:/storage
+      # Bind mount for the rsync dev loop.
+      # Files dropped here on th-dc appear inside the VM at
+      # \\host.lan\Data (and via the "Shared" desktop shortcut that
+      # dockur preinstalls). See README.md > "Dev loop".
+      - /root/smoodle-shared:/data
     restart: unless-stopped
     stop_grace_period: 2m
 

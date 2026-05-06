@@ -70,6 +70,55 @@ docker --context th-dc run --rm --network host alpine \
 installer leaves artifacts and you want to re-test from a clean
 Windows desktop.
 
+## Dev loop (rsync to the VM via the Shared folder)
+
+Iteration model: **edit on Mac → rsync to th-dc → run inside the VM**.
+No git push needed during dogfood, no auth setup inside the VM.
+
+```
+   Mac (you edit)             th-dc (transit)              VM (you run)
+   /smoodle/  ──rsync──>  /root/smoodle-shared/  ──bind──> \\host.lan\Data
+                                                            (Shared desktop icon)
+```
+
+The compose file binds `/root/smoodle-shared` on th-dc to `/data`
+inside the container. dockur exposes `/data` as the SMB share
+`\\host.lan\Data`, and the unattended Win 11 install drops a
+`Shared` shortcut on the desktop pointing at it.
+
+### Steps
+
+1. Edit smoodle locally on the Mac.
+2. Sync to th-dc:
+   ```bash
+   ./scripts/dev-sync-windows.sh
+   # honours env overrides:
+   #   SMOODLE_TH_DC_HOST     (default: th-dc)
+   #   SMOODLE_TH_DC_SHARE    (default: /root/smoodle-shared)
+   #   SMOODLE_RSYNC_DRY_RUN  (1 = list, no copy)
+   ```
+3. Inside the VM (RDP or web VNC), click the **Shared** desktop
+   shortcut, or in PowerShell:
+   ```powershell
+   cd \\host.lan\Data\
+   powershell -ExecutionPolicy Bypass -File .\scripts\install-windows.ps1
+   # then for the patched DLL (admin required):
+   Start-Process powershell -Verb RunAs -ArgumentList `
+     '-NoProfile -ExecutionPolicy Bypass -File "\\host.lan\Data\scripts\install-librime-fork.ps1"'
+   ```
+
+The share is read/write — anything the VM produces (logs, screenshots
+via the snipping tool dropped into Shared) is visible on th-dc and
+can be `scp`'d back to the Mac.
+
+### Why not git clone inside the VM?
+
+The repo is private. Git clone into the VM would require either
+auth credentials inside the VM (avoidable security surface) or a
+public repo (premature). The rsync loop is also faster — no fetch,
+no checkout, just delta-copy. Save git push for durability and
+release tags, not for the inner dev loop.
+
 ## Smoke checklist (after first boot)
 
 1. Web viewer `http://th-dc:8006` shows Win 11 desktop.
