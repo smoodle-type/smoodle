@@ -48,6 +48,7 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 INSTALL_SH = REPO_ROOT / "scripts" / "install.sh"
+INSTALL_LIBRIME_SH = REPO_ROOT / "scripts" / "install-librime-fork.sh"
 SCHEMA_DIR = REPO_ROOT / "schema"
 SCHEMA_FILES = (
     "thai_phonetic.schema.yaml",
@@ -95,6 +96,58 @@ class InstallScriptShape(unittest.TestCase):
             "SMOODLE_DEPLOY_TIMEOUT_SECS",
         ):
             self.assertIn(var, body, f"install.sh missing env override: {var}")
+
+
+class InstallLibrimeForkScriptShape(unittest.TestCase):
+    """Shape and syntax checks for scripts/install-librime-fork.sh.
+
+    The script builds the smoodle-patched librime from the LoneExile fork
+    and swaps it into Squirrel's Frameworks/. The actual build+swap
+    requires sudo + ~5-15 min of make time, so end-to-end coverage stays
+    in FutureLanes (E2E only). Shape checks catch drift cheaply.
+    """
+
+    def test_script_exists_and_executable(self):
+        self.assertTrue(INSTALL_LIBRIME_SH.is_file(), f"{INSTALL_LIBRIME_SH} missing")
+        self.assertTrue(os.access(INSTALL_LIBRIME_SH, os.X_OK))
+
+    def test_script_syntax_valid(self):
+        result = subprocess.run(
+            ["bash", "-n", str(INSTALL_LIBRIME_SH)], capture_output=True, text=True
+        )
+        self.assertEqual(result.returncode, 0, msg=result.stderr)
+
+    def test_script_declares_env_overrides(self):
+        body = INSTALL_LIBRIME_SH.read_text()
+        for var in (
+            "SMOODLE_LIBRIME_FORK_URL",
+            "SMOODLE_LIBRIME_FORK_TAG",
+            "SMOODLE_SQUIRREL_PATH",
+            "SMOODLE_SKIP_BUILD",
+            "SMOODLE_SKIP_SWAP",
+            "SMOODLE_FORCE_REBUILD",
+            "SMOODLE_NONINTERACTIVE",
+        ):
+            self.assertIn(var, body, f"install-librime-fork.sh missing override: {var}")
+
+    def test_script_references_fork_and_tag(self):
+        body = INSTALL_LIBRIME_SH.read_text()
+        self.assertIn("LoneExile/librime", body)
+        self.assertIn("1.16.0-smoodle.1", body)
+
+    def test_script_lists_required_brew_deps(self):
+        body = INSTALL_LIBRIME_SH.read_text()
+        # glog matters specifically — it was the dep that bit us when brew
+        # bumped past v2 and broke the existing rime_api_console binary.
+        for dep in ("cmake", "boost", "leveldb", "marisa", "yaml-cpp",
+                    "opencc", "googletest", "pkg-config", "ninja", "glog"):
+            self.assertIn(dep, body, f"BREW_DEPS missing: {dep}")
+
+    def test_script_backs_up_before_swap(self):
+        body = INSTALL_LIBRIME_SH.read_text()
+        # The .smoodle-backup convention is documented in RESUME.md and
+        # avoids clobbering the upstream universal dylib on first install.
+        self.assertIn(".smoodle-backup", body)
 
 
 class InstallSandboxed(unittest.TestCase):
@@ -252,6 +305,16 @@ class FutureLanes(unittest.TestCase):
         # exercise this on a macos-14 GitHub runner.
         ...
 
+    @unittest.skip("E2E only: needs sudo + ~5-15min make + real Squirrel.app")
+    def test_install_librime_fork_end_to_end(self):
+        # Full flow: clone (or reuse) vendor/librime, checkout fork tag,
+        # make release, back up the upstream librime.1.dylib, swap in
+        # the patched build/lib/librime.1.16.0.dylib, then verify
+        # Squirrel picks up the new dylib (file size, dyld load check,
+        # tests/test_dict.py engine-mode 56/56). Manual dogfood for
+        # Phase 1; macos-14 CI runner for Lane E.
+        ...
+
 
 def main() -> int:
     if not INSTALL_SH.is_file():
@@ -264,7 +327,8 @@ def main() -> int:
 
     loader = unittest.TestLoader()
     suite = unittest.TestSuite()
-    for cls in (InstallScriptShape, InstallSandboxed, TimeoutHelper, FutureLanes):
+    for cls in (InstallScriptShape, InstallLibrimeForkScriptShape,
+                InstallSandboxed, TimeoutHelper, FutureLanes):
         suite.addTests(loader.loadTestsFromTestCase(cls))
     runner = unittest.TextTestRunner(verbosity=2)
     result = runner.run(suite)

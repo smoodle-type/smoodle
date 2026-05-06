@@ -122,12 +122,22 @@ versioned librime distribution.
 6. ✓ **DONE 2026-05-05** — docs/RESUME.md rewired to reference the
    fork tag as primary source-of-truth. Loose patch retained as
    historical fallback for ~1 release cycle.
-7. **NEXT** — write `scripts/install-librime-fork.sh` (separate from
-   `install.sh` to keep schema-copy fast/sudoless): clone fork at
-   tag, build, back up Squirrel's bundled dylib, swap in the patched
-   one. Requires sudo for the swap (Squirrel is in
-   `/Library/Input Methods/`). Estimated ~50-80 lines + 2-3 new
-   tests in `tests/test_installers.py`.
+7. ✓ **DONE 2026-05-06** — `scripts/install-librime-fork.sh` (169
+   lines) clones-or-uses-existing `vendor/librime/`, ensures the
+   `smoodle` remote + fork tag are present, builds via `make
+   release`, prompts for sudo, backs up the bundled
+   `librime.1.dylib` to `librime.1.dylib.smoodle-backup` (only on
+   first run), and copies the patched 2.5MB arm64 dylib into
+   Squirrel's `Frameworks/`. Env overrides cover all the moving
+   parts (FORK_URL, FORK_TAG, SQUIRREL_PATH, SKIP_BUILD, SKIP_SWAP,
+   FORCE_REBUILD, NONINTERACTIVE). Six new shape tests in
+   `tests/test_installers.py` (InstallLibrimeForkScriptShape) +
+   one E2E stub in FutureLanes. Test suite: 17 active pass + 5
+   skipped stubs.
+
+   Universal binary (arm64 + x86_64) deferred to pre-public-ship
+   gate per design doc — Phase 1 dogfood is arm64-only on the
+   user's Apple Silicon machine.
 
 **CI matrix (deferred):** Once Lane B kicks off, add
 `.github/workflows/librime-build.yml` that builds dylib/.dll/.so
