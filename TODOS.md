@@ -8,15 +8,32 @@ For active execution plan, see the design doc at
 
 ## 1. Upstream librime PR — DictEntryIterator::Peek first-call sort
 
-**Status:** OPEN
+**Status:** PR-READY (upgraded 2026-05-06 after CI validation)
 **Created:** 2026-05-05 (eng review, /plan-eng-review)
 **Priority:** Low — Path A + LoneExile/librime fork (TODO 3, kickoff
 2026-05-05) absorbs the patch via fork. Upstream merge becomes
 optional / community-goodwill / fork-retirement trigger; not gating
 any Phase 1 milestone.
 
-**What:** Submit the contents of `vendor/librime-1.16.0-peek-sort.patch`
-to upstream rime/librime on GitHub.
+**Validation evidence (2026-05-06):** the patch + test fix together
+pass upstream's full CI matrix on the LoneExile/librime fork — 10/10
+jobs green: lint + macos-15 + macos-15-intel + linux gcc + linux
+clang + docker + 4 windows variants (mingw + clang-x64 + msvc-x64 +
+msvc-x86). See run
+https://github.com/LoneExile/librime/actions/runs/25428394245 .
+This is exactly the cross-platform evidence the upstream PR review
+will ask for.
+
+**What:** Submit two commits as a single upstream PR:
+- `a75b6a48` (`fix(dict): sort DictEntryIterator chunks on first Peek`)
+- `cf00ee70` (`test(dict): update PredictiveLookup expectation for the peek-sort fix`)
+
+The test-fix commit is required because `test/dictionary_test.cc`
+was previously asserting the buggy behavior (咋/za winning on
+alphabetical syllable-id sort regardless of weight). With the
+peek-sort fix, the test fixture's higher-weighted 则 (ze, 28270)
+correctly takes position #1 over 砸 (za, 6923). Without the
+companion test fix, upstream CI fails on every platform.
 
 **Why it matters:** If upstream merges, smoodle can drop the
 LoneExile/librime fork (TODO 3) and ship against system librime
@@ -118,12 +135,20 @@ versioned librime distribution.
    to LoneExile/librime alongside the branch.
 5. ⏳ **IN-PROGRESS 2026-05-06** — CI matrix kicked off via
    `LoneExile/librime/.github/workflows/smoodle-build.yml` (commit
-   `d0692a4c` on `1.16.0-smoodle` branch). First run:
-   https://github.com/LoneExile/librime/actions/runs/25425316371
-   - macOS arm64: canonical, must-pass
-   - Windows x64: `continue-on-error: true` — first run failed at
-     `build.bat thirdparty`; Lane B kickoff will debug
-   - Linux x64: `continue-on-error: true` — needs verification
+   `d0692a4c` + test-fix `cf00ee70` on `1.16.0-smoodle` branch).
+   - macOS arm64: ✅ canonical, green (3m58s)
+   - Linux x64: ✅ green (6m0s)
+   - Windows x64: ❌ fails at `build.bat thirdparty` direct invoke
+     — but **upstream's `windows-build.yml` builds the same source
+     cleanly across 4 variants** (mingw + clang-x64 + msvc-x64 +
+     msvc-x86). The gap is setup (vcpkg bootstrap, boost paths)
+     that upstream's workflow handles.
+   - **Discovery 2026-05-06:** the right refactor is to make
+     `smoodle-build.yml` delegate to upstream's `linux-build.yml`,
+     `macos-build.yml`, `windows-build.yml` via `workflow_call`
+     (same pattern `release-ci.yml` uses). Inherits all upstream's
+     setup work; our YAML drops to ~30 lines of three job stubs.
+     See TODO 5.
    Promotion to GitHub Releases (gated on `github.repository ==`)
    stays a manual step until per-OS distribution models settle.
 6. ✓ **DONE 2026-05-05** — docs/RESUME.md rewired to reference the
@@ -206,6 +231,47 @@ in algebra rules or the peek-sort patch will not be caught locally.
 
 **Done when:** engine-mode test passes 56/56 against the rebuilt
 `rime_api_console`.
+
+---
+
+## 5. Refactor smoodle-build.yml to use workflow_call
+
+**Status:** NEXT (next-session focus per `docs/CI-REFACTOR-PROMPT.md`)
+**Created:** 2026-05-06 (Phase 1 CI kickoff discovery)
+**Priority:** Medium — unblocks Windows in our `smoodle-build.yml`
+matrix. macOS + Linux already green; this closes the remaining gap.
+
+**What:** Rewrite
+`LoneExile/librime/.github/workflows/smoodle-build.yml` so each job
+is a `workflow_call` into upstream's existing build workflows
+instead of inlining `make release` / `build.bat`. Pattern reference
+is upstream's `release-ci.yml`:
+```yaml
+linux:
+  uses: ./.github/workflows/linux-build.yml
+macos:
+  uses: ./.github/workflows/macos-build.yml
+  with:
+    rime_plugins: hchunhui/librime-lua lotem/librime-octagram rime/librime-predict
+windows:
+  uses: ./.github/workflows/windows-build.yml
+  with:
+    rime_plugins: hchunhui/librime-lua lotem/librime-octagram rime/librime-predict
+```
+
+**Why it matters:** upstream's per-OS build YAMLs already handle
+vcpkg bootstrap on Windows, brew deps on macOS, apt deps on Linux,
+and per-architecture flags. Our inlined version reinvents the wheel
+and drops the Windows ball. After refactor, `smoodle-build.yml`
+shrinks to ~30 lines (3 job stubs) and Windows joins macOS + Linux
+on the green matrix.
+
+**Concrete steps:** see `docs/CI-REFACTOR-PROMPT.md` for the full
+self-contained prompt that walks through the refactor.
+
+**Done when:** `gh run list -R LoneExile/librime --limit 1` shows
+all three OS jobs green on `smoodle-build`. Promotion to Releases
+remains a separate concern (TODO 3 step 5 closure).
 
 ---
 
