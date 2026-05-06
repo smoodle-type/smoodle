@@ -4,9 +4,11 @@ Phase 1 cross-platform parallel lane for shipping the smoodle Thai
 phonetic IME to Windows users via [Weasel](https://github.com/rime/weasel),
 the official Rime client for Windows.
 
-**Status:** unblocked 2026-05-06 (Phase 0 closed). CI matrix kickoff
-committed at LoneExile/librime `d0692a4c` — Windows lane is
-`continue-on-error: true` until this plan's build chain stabilises.
+**Status:** unblocked 2026-05-06 (Phase 0 closed). Test bed running
+on th-dc (dockur/windows, 16 GB RAM, Win 11) — see
+`infra/lane-b-windows/`. Weasel 0.17.4 host install verified live;
+TSF auto-registers (CFM #2 below). Next step: write the two
+PowerShell installer scripts (TODO 7 in TODOS.md).
 
 ## Install model (mirrors Lane A / macOS)
 
@@ -88,22 +90,32 @@ code-signing cert procurement at the pre-public-ship gate (per design doc).
 
 ### #2 — winget reports Weasel install success, IME doesn't register
 
-`winget install Rime.Weasel` returns 0, but Weasel doesn't actually
-register itself with Windows TSF (Text Services Framework) until first
-launch + activation. Without explicit verification, the installer
-claims success and the user can't type Thai.
+**Empirically does NOT reproduce on Win 11 (verified 2026-05-06 on
+the th-dc test bed with Weasel 0.17.4).** `winget install
+Rime.Weasel` returns 0 and Weasel auto-registers with Windows TSF
+during the MSI bootstrapper run — `Chinese (Simplified, Mainland
+China) — Weasel` shows in the Win+Space layout switcher immediately,
+no manual activation. Likely fixed in Weasel 0.17.x's installer.
 
-**Mitigation** (~10 lines of PowerShell):
+The original concern was that older Weasel builds (~0.14, ~0.15)
+required a first launch + activation before TSF picked them up, and
+some users on legacy Win 10 reportedly still hit this. So:
+
+- **Phase 1 (Win 11 wedge):** skip the retry/activate dance.
+- **Defense-in-depth:** after winget completes, do a single
+  `Get-WinUserLanguageList` check and error clearly if it fails.
+  No retry loop, no manual-fix flow — just a clean failure that
+  surfaces the regression if Weasel ever ships an installer that
+  silently breaks TSF auto-registration.
+
 ```powershell
-# After winget completes:
-Start-Process "$env:ProgramFiles(x86)\Rime\Weasel\WeaselServer.exe"
-Start-Sleep 2
+# Defense-in-depth verify (~5 lines, no retry):
 $registered = Get-WinUserLanguageList | ? {
   $_.InputMethodTips -match 'Rime|Weasel'
 }
 if (-not $registered) {
   Write-Error "Weasel installed but not registered with TSF."
-  Write-Host "Manual fix: Settings → Time & language → Language → Add → Rime"
+  Write-Host "Open Settings → Time & language → Language → Add → Rime."
   exit 1
 }
 ```
@@ -155,10 +167,10 @@ All three depend on a green Windows job in `LoneExile/librime`'s
 
 ## Open questions
 
-1. **Windows machine for dogfood verification?** CI can build the
-   artifacts, but you need a real Windows box (or Parallels VM) to
-   verify the installer end-to-end. Without one, Lane B ships
-   "CI-green but unverified on metal."
+1. ~~**Windows machine for dogfood verification?**~~ ✓ RESOLVED
+   2026-05-06 — dockur/windows on th-dc. See
+   `infra/lane-b-windows/README.md`. Web VNC + RDP, persistent
+   `windows-storage` volume, accessible from any device.
 2. **Signed MSI now or post-validation?** MSI build is doable in week
    1; signing requires a $200/yr Sectigo cert with 1-2 week lead.
    Design doc defers signing to pre-public-ship — recommend the same

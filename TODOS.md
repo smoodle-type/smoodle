@@ -285,8 +285,15 @@ separate concern.
 
 ## 6. Lane B test bed — dockur/windows on th-dc
 
-**Status:** IN-PROGRESS 2026-05-06 — VM deployed + reachable; awaiting
-human-eyes smoke (step 6) before flipping to ✓ DONE.
+**Status:** ✓ CLOSED 2026-05-06 — Win 11 desktop reachable via web VNC
++ RDP, `winget install Rime.Weasel` succeeds, Weasel registers as a
+TSF input method ("Chinese (Simplified, Mainland China) — Weasel"
+shows in Win+Space switcher), candidate window pops on input. Lane
+B substrate verified end-to-end. **Side-finding:** Critical Failure
+Mode #2 (winget reports success but Weasel doesn't TSF-register) did
+NOT reproduce on Win 11 — saves ~10 lines of post-winget verify
+PowerShell from LANE-B-WINDOWS.md. Keep the mitigation in the doc
+for older Win 10 builds; skip it for the Phase 1 Win 11 wedge.
 **Created:** 2026-05-06
 **Priority:** High — unblocks Lane B installer dogfood. Without a
 real Win 11 desktop, install-windows.ps1 ships "CI-green but
@@ -329,12 +336,20 @@ don't reinstall Windows every iteration.
    http://10.159.0.63:8006 returns HTTP 200; RDP TCP 3389 open.
    ISO download took 38m46s on first boot — subsequent restarts
    skip this and boot from the persistent `windows-storage` volume.
-6. ⏳ **TODO** — first manual smoke: open
-   http://10.159.0.63:8006 in a browser (or RDP via Microsoft Remote
-   Desktop to th-dc:3389 user `smoodle` pass `smoodle`), run
-   `winget install Rime.Weasel` inside the VM, prove TSF registers,
-   type a Latin character, then uninstall. Confirms baseline before
-   installer scripts land. Requires human eyes on the screen.
+6. ✓ **DONE 2026-05-06** — manual smoke green:
+   - `winget install Rime.Weasel` returned `Successfully installed`
+     for Weasel 0.17.4 (downloaded weasel-0.17.4.0-installer.exe via
+     Rime's GitHub release; msstore source agreement accepted).
+   - Win+Space layout switcher shows `Chinese (Simplified, Mainland
+     China) — Weasel` alongside the default `English (US)`. **TSF
+     registration is automatic on Win 11** — Critical Failure Mode #2
+     from LANE-B-WINDOWS.md does NOT reproduce here.
+   - Weasel candidate window pops on input: typed `no` →
+     `弄 / 農 / 儂 / 濃 / 膿`. Default Mandarin pinyin schema loads,
+     composes, and ranks correctly. Confirms librime is running,
+     Weasel's TSF interceptor is active, and the Rime data dir is
+     readable — the exact substrate `install-windows.ps1` will write
+     `thai_phonetic.{schema,dict}.yaml` into.
 
 **Depends on / blocked by:** None. th-dc available + KVM-capable.
 
@@ -346,9 +361,14 @@ install Rime.Weasel` smoke succeeds.
 
 ## 7. Lane B installer scripts — install-windows.ps1 + install-librime-fork.ps1
 
-**Status:** OPEN (depends on TODO 6)
+**Status:** OPEN — unblocked 2026-05-06 (TODO 6 ✓ CLOSED).
 **Created:** 2026-05-06
 **Priority:** Medium — design doc parallel lane.
+
+**Test bed:** dockur/windows on th-dc; access via
+http://10.159.0.63:8006 (web VNC) or `mstsc /v:th-dc` (RDP) with
+`smoodle / smoodle`. Weasel 0.17.4 installs cleanly via winget;
+TSF auto-registers on Win 11 (no CFM #2 mitigation needed for Win 11).
 
 **What:** PowerShell parallels of macOS Lane A scripts:
 - `scripts/install-windows.ps1` — schema YAMLs to `%APPDATA%\Rime\`
@@ -361,9 +381,12 @@ install Rime.Weasel` smoke succeeds.
   prompt for admin, swap `rime.dll` in
   `C:\Program Files (x86)\Rime\Weasel\`, backup convention
   `rime.dll.smoodle-backup`. Mirrors `install-librime-fork.sh`.
-- Critical Failure Mode #2 mitigation (~10 lines): post-winget,
-  verify `Get-WinUserLanguageList` shows Rime/Weasel TSF entry; if
-  not, error with manual fix instructions.
+- Critical Failure Mode #2 mitigation: NOT needed for Win 11
+  (verified 2026-05-06 on the test bed — TSF registers automatically
+  via the Weasel installer's MSI bootstrapper). Keep the
+  `Get-WinUserLanguageList` post-winget verify only as a
+  defense-in-depth check that errors clearly if it ever fails;
+  no retry loop required.
 
 **Concrete steps:** see `docs/LANE-B-WINDOWS.md` for full plan
 including resource paths, distribution model (zip+scripts for
