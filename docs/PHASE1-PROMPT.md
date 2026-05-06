@@ -25,7 +25,7 @@ reviewed (office-hours + plan-eng-review, 2026-05-05). This session is
    Contains: phase structure, Decision Gate signals, Open Questions
    with deadlines, Distribution Plan, Test Coverage Plan, Failure
    Modes, Worktree Parallelization, NOT-in-scope, Premises P1-P5.
-   Status: `APPROVED-PENDING-PHASE-0`.
+   Status: `APPROVED` (Phase 0 closed 2026-05-06 — see below).
 
 2. **Test plan (eng-review output):**
    `~/.gstack/projects/smoodle/lex-main-eng-review-test-plan-20260505-145430.md`
@@ -153,28 +153,39 @@ After OQ3+OQ4 decided in day 1:
 Launch A + B + D in parallel via Task tool with `isolation: "worktree"`.
 C is independent and can run alongside. E waits for A+B+C to merge.
 
-## Hard precondition: Phase 0 (the named-user assignment)
+## Phase 0 — CLOSED 2026-05-06 (self-only dogfood)
 
-Status is `APPROVED-PENDING-PHASE-0`. Within 7 days, find one Thai
-language learner besides yourself. Watch them try smoodle on macOS
-for 15 minutes. Don't help, don't explain. Capture:
-- The first thing they tried to type (was it what you predicted?)
-- Where they got stuck
-- What they said out loud
-- What surprised you
+**Outcome:** Phase 0 closed without surfacing a non-founder Thai
+learner. The wedge narrows from "Thai language learners (broad
+segment)" to **"founder + diaspora-Thai friends as they surface"** —
+explicitly accommodated by the design doc as a valid smaller wedge.
 
-User self-identified as Thai learner #1 (heritage Thai person typing
-Thai phonetically, dogfooding v0.0.6 daily). Phase 0 specifically
-wants **user #2** — a non-founder brain confronting the product.
+**Status flipped:** `APPROVED-PENDING-PHASE-0` → `APPROVED`.
+Lane B (Windows) and Lane C (Linux) are unblocked for build investment.
 
-If you cannot find one in 7 days: document that fact. The wedge
-narrows from "Thai learners" to "me + maybe diaspora Thais." Both
-are valid, just smaller.
+**Decision Gate signal targets adjust accordingly:**
+- Activity-ping target: revise from "≥10 active users on ≥2 platforms"
+  to "founder dogfooding daily + 1-3 named friends post-Phase-1.5
+  whenever they surface." Treat as qualitative, not quantitative.
+- Engagement signal: ≥1 unsolicited bug report or feature request
+  from a non-founder during Phase 1.5 (was: ≥3).
+- Qualitative: ≥1 named non-founder converts to "uses this daily"
+  voluntarily within Phase 1.5 (was: ≥5).
 
-Engineering work can technically begin without Phase 0 (the OQ3+OQ4
-decision and Lane A scaffolding are wedge-agnostic), but the doc's
-status flips to `APPROVED` only after Phase 0 produces evidence.
-Until then, don't invest in Lane B or Lane C until user #2 is found.
+**Phase 0 protocol stays alive informally:** if a non-founder Thai
+speaker / learner / heritage person surfaces during dogfood (language
+exchange, diaspora friend, demo at a meetup), capture a 15-minute
+observation session per the original protocol — first thing they
+tried to type, where they got stuck, what they said out loud, what
+surprised you — and append to a "Phase 0 evidence" section in this
+file. The dogfood data point is more valuable than waiting for a
+second user before shipping.
+
+**Original assignment (kept for context):** within 7 days, find one
+Thai language learner besides yourself, watch them try smoodle on
+macOS for 15 minutes, don't help, capture the four observations
+above. Founder self-identified as Thai learner #1 (heritage Thai,
+dogfooding v0.0.6 daily on the patched librime).
 
 ## NOT in scope (Phase 1)
 
@@ -212,9 +223,10 @@ OQ3+OQ4 are RESOLVED (Path A + fork). Lane A first concrete steps:
 4. Stand up `tests/test_installers.py` skeleton (per D5). Stub cases
    covering: detection (Squirrel present/absent), schema copy
    idempotency, deploy timeout handling.
-5. Once user #2 found (Phase 0 unblocks Lane B/C): propose
-   launching Lane B + Lane D in parallel worktrees via Task tool.
-   At that point CI matrix for the fork becomes Phase 1 critical-path.
+5. Lane B + Lane D ready to launch in parallel worktrees via the
+   Task tool whenever user pulls the trigger (Phase 0 closed 2026-05-06,
+   no longer gating). At that point CI matrix for the fork (TODO 3
+   step 5) becomes Phase 1 critical-path.
 
 ## Source of truth precedence
 
