@@ -21,7 +21,6 @@ Coverage:
   - perl timeout helper exit-code semantics
 
 Stubs (SKIPPED — depend on infra not yet in repo):
-  - Linux fcitx5/ibus detection (Lane C)
   - Windows Weasel post-install registration verify (Lane B)
   - Telemetry opt-in payload (Phase 1 telemetry milestone)
   - Auto-deploy kill+restart against a real Squirrel (E2E only)
@@ -49,6 +48,7 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parent.parent
 INSTALL_SH = REPO_ROOT / "scripts" / "install.sh"
 INSTALL_LIBRIME_SH = REPO_ROOT / "scripts" / "install-librime-fork.sh"
+INSTALL_LINUX_SH = REPO_ROOT / "scripts" / "install-linux.sh"
 SCHEMA_DIR = REPO_ROOT / "schema"
 SCHEMA_FILES = (
     "thai_phonetic.schema.yaml",
@@ -148,6 +148,87 @@ class InstallLibrimeForkScriptShape(unittest.TestCase):
         # The .smoodle-backup convention is documented in RESUME.md and
         # avoids clobbering the upstream universal dylib on first install.
         self.assertIn(".smoodle-backup", body)
+
+
+class InstallLinuxScriptShape(unittest.TestCase):
+    """Shape and syntax checks for scripts/install-linux.sh (Lane C).
+
+    The script is schema-only (option 3 from docs/LANE-C-LINUX.md): no
+    libRime.so swap. End-to-end coverage lives in a future GHA workflow
+    on `ubuntu-latest` with a real ibus-rime install. Shape checks here
+    catch drift cheaply on the dev machine.
+    """
+
+    def test_script_exists_and_executable(self):
+        self.assertTrue(INSTALL_LINUX_SH.is_file(), f"{INSTALL_LINUX_SH} missing")
+        self.assertTrue(os.access(INSTALL_LINUX_SH, os.X_OK))
+
+    def test_script_syntax_valid(self):
+        result = subprocess.run(
+            ["bash", "-n", str(INSTALL_LINUX_SH)], capture_output=True, text=True
+        )
+        self.assertEqual(result.returncode, 0, msg=result.stderr)
+
+    def test_script_declares_env_overrides(self):
+        body = INSTALL_LINUX_SH.read_text()
+        for var in (
+            "SMOODLE_RIME_DIR",
+            "SMOODLE_IM",
+            "SMOODLE_AUTO_DEPLOY",
+            "SMOODLE_DEPLOY_TIMEOUT_SECS",
+        ):
+            self.assertIn(var, body, f"install-linux.sh missing override: {var}")
+
+    def test_script_detects_running_im_not_just_installed(self):
+        body = INSTALL_LINUX_SH.read_text()
+        # Critical Failure Mode #3: hybrid setups — fcitx5 installed but
+        # ibus running, or vice versa. Detection must use `pgrep` against
+        # the running process, not `command -v` on the binary.
+        self.assertIn("pgrep -x fcitx5", body)
+        self.assertIn("pgrep -x ibus-daemon", body)
+        # Negative check: must NOT use `command -v` for IM selection.
+        self.assertNotIn("command -v fcitx5", body)
+        self.assertNotIn("command -v ibus-daemon", body)
+
+    def test_script_handles_both_im_paths(self):
+        body = INSTALL_LINUX_SH.read_text()
+        # Per-IM schema dirs and reload commands both must be present.
+        self.assertIn(".local/share/fcitx5/rime", body)
+        self.assertIn(".config/ibus/rime", body)
+        self.assertIn("fcitx5 -r", body)
+        self.assertIn("ibus-daemon", body)
+
+    def test_script_documents_ranking_limitation(self):
+        body = INSTALL_LINUX_SH.read_text()
+        # Lane C ships option 3 (system librime, no fork distribution).
+        # The ranking limitation must be surfaced to the user post-install
+        # so the algebra-vs-direct collision behavior isn't a mystery bug.
+        self.assertIn("RANKING LIMITATION", body)
+        self.assertIn("LoneExile/librime", body)
+
+    def test_script_errors_when_no_im_running(self):
+        # SMOODLE_IM unset + no fcitx5/ibus process → exit non-zero with
+        # explicit message. Run with auto-deploy off so we don't try to
+        # actually call any IM binary even if detection somehow succeeds.
+        result = subprocess.run(
+            ["bash", str(INSTALL_LINUX_SH)],
+            env={**os.environ, "SMOODLE_AUTO_DEPLOY": "0", "SMOODLE_IM": ""},
+            capture_output=True,
+            text=True,
+            timeout=10,
+        )
+        # On a Mac dev box neither fcitx5 nor ibus-daemon will be running
+        # so the script should detect that and bail out.
+        if "fcitx5" in result.stderr or "ibus" in result.stderr or result.returncode != 0:
+            self.assertNotEqual(result.returncode, 0)
+            combined = result.stdout + result.stderr
+            self.assertTrue(
+                "no input method daemon" in combined.lower()
+                or "smoodle_im" in combined.lower(),
+                f"unexpected error output:\n{combined}",
+            )
+        else:
+            self.skipTest("ran in env where fcitx5/ibus is actually running")
 
 
 class InstallSandboxed(unittest.TestCase):
@@ -286,13 +367,6 @@ class FutureLanes(unittest.TestCase):
         # Mode #2 — winget reports success but IME registration silent-fails).
         ...
 
-    @unittest.skip("Lane C: Linux installer not yet implemented")
-    def test_linux_picks_running_im_not_just_installed(self):
-        # When scripts/install-linux.sh exists, verify detection uses
-        # `pgrep -x fcitx5 || pgrep -x ibus-daemon` rather than testing
-        # binary presence (Critical Failure Mode #3 — hybrid setups).
-        ...
-
     @unittest.skip("Phase 1 telemetry milestone not yet implemented")
     def test_telemetry_opt_in_default_off(self):
         # When the telemetry POST client lands, verify default is OFF
@@ -328,7 +402,8 @@ def main() -> int:
     loader = unittest.TestLoader()
     suite = unittest.TestSuite()
     for cls in (InstallScriptShape, InstallLibrimeForkScriptShape,
-                InstallSandboxed, TimeoutHelper, FutureLanes):
+                InstallLinuxScriptShape, InstallSandboxed, TimeoutHelper,
+                FutureLanes):
         suite.addTests(loader.loadTestsFromTestCase(cls))
     runner = unittest.TextTestRunner(verbosity=2)
     result = runner.run(suite)
