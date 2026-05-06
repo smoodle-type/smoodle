@@ -84,8 +84,10 @@ else
     git -C "${LIBRIME_DIR}" fetch smoodle "refs/tags/${FORK_TAG}:refs/tags/${FORK_TAG}"
   fi
   # Don't auto-checkout — preserves user's working state. Surface the gap.
+  # Note: dereference the tag with ^{commit} so annotated tags (which have
+  # their own object SHA) compare against the commit they point to.
   current="$(git -C "${LIBRIME_DIR}" describe --always --dirty 2>/dev/null || echo unknown)"
-  expected="$(git -C "${LIBRIME_DIR}" rev-parse "refs/tags/${FORK_TAG}" 2>/dev/null || echo unknown)"
+  expected="$(git -C "${LIBRIME_DIR}" rev-parse "refs/tags/${FORK_TAG}^{commit}" 2>/dev/null || echo unknown)"
   head_sha="$(git -C "${LIBRIME_DIR}" rev-parse HEAD 2>/dev/null || echo unknown)"
   if [ "${head_sha}" != "${expected}" ]; then
     echo "  ⚠ vendor/librime/ HEAD is ${current}, not tag ${FORK_TAG}."
