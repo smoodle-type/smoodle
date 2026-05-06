@@ -133,22 +133,21 @@ versioned librime distribution.
    `a75b6a48 fix(dict): sort DictEntryIterator chunks on first Peek`.
 4. ✓ **DONE 2026-05-05** — annotated tag `1.16.0-smoodle.1` pushed
    to LoneExile/librime alongside the branch.
-5. ⏳ **IN-PROGRESS 2026-05-06** — CI matrix kicked off via
-   `LoneExile/librime/.github/workflows/smoodle-build.yml` (commit
-   `d0692a4c` + test-fix `cf00ee70` on `1.16.0-smoodle` branch).
-   - macOS arm64: ✅ canonical, green (3m58s)
-   - Linux x64: ✅ green (6m0s)
-   - Windows x64: ❌ fails at `build.bat thirdparty` direct invoke
-     — but **upstream's `windows-build.yml` builds the same source
-     cleanly across 4 variants** (mingw + clang-x64 + msvc-x64 +
-     msvc-x86). The gap is setup (vcpkg bootstrap, boost paths)
-     that upstream's workflow handles.
-   - **Discovery 2026-05-06:** the right refactor is to make
-     `smoodle-build.yml` delegate to upstream's `linux-build.yml`,
-     `macos-build.yml`, `windows-build.yml` via `workflow_call`
-     (same pattern `release-ci.yml` uses). Inherits all upstream's
-     setup work; our YAML drops to ~30 lines of three job stubs.
-     See TODO 5.
+5. ✓ **DONE 2026-05-06** — CI matrix green across all 8 jobs after
+   the workflow_call refactor. `smoodle-build.yml` now delegates to
+   upstream's `linux-build.yml`, `macos-build.yml`,
+   `windows-build.yml` via `workflow_call` (commit `69fc2399`,
+   pattern matches upstream's `release-ci.yml`). Run
+   https://github.com/LoneExile/librime/actions/runs/25429514636
+   completed-success in 7m6s with no `continue-on-error` masking:
+   - linux / build (gcc): ✅
+   - linux / build (clang): ✅
+   - macos / build (macos-15): ✅ (universal arm64+x86_64)
+   - macos / build (macos-15-intel): ✅
+   - windows / build (msvc, x64): ✅
+   - windows / build (msvc, x86, x64_x86): ✅
+   - windows / build (clang, x64): ✅
+   - windows / build-mingw: ✅
    Promotion to GitHub Releases (gated on `github.repository ==`)
    stays a manual step until per-OS distribution models settle.
 6. ✓ **DONE 2026-05-05** — docs/RESUME.md rewired to reference the
@@ -236,42 +235,45 @@ in algebra rules or the peek-sort patch will not be caught locally.
 
 ## 5. Refactor smoodle-build.yml to use workflow_call
 
-**Status:** NEXT (next-session focus per `docs/CI-REFACTOR-PROMPT.md`)
+**Status:** ✓ CLOSED 2026-05-06 — refactor landed at LoneExile/librime
+commit `69fc2399`. `smoodle-build.yml` shrank from 119 lines (3
+inlined jobs duplicating checkout / dep install / build / artifact
+upload) to 20 lines (3 `workflow_call` stubs). Run
+https://github.com/LoneExile/librime/actions/runs/25429514636
+completed-success in 7m6s with all 8 matrix jobs green and no
+`continue-on-error` masking. See TODO 3 step 5 for the per-job
+breakdown. `docs/CI-REFACTOR-PROMPT.md` retained as historical
+reference for the discovery → refactor flow.
 **Created:** 2026-05-06 (Phase 1 CI kickoff discovery)
-**Priority:** Medium — unblocks Windows in our `smoodle-build.yml`
-matrix. macOS + Linux already green; this closes the remaining gap.
+**Priority:** Medium — unblocked Windows in our `smoodle-build.yml`
+matrix. macOS + Linux were already green; this closed the remaining gap.
 
-**What:** Rewrite
+**What:** Rewrote
 `LoneExile/librime/.github/workflows/smoodle-build.yml` so each job
 is a `workflow_call` into upstream's existing build workflows
 instead of inlining `make release` / `build.bat`. Pattern reference
-is upstream's `release-ci.yml`:
+was upstream's `release-ci.yml`:
 ```yaml
-linux:
-  uses: ./.github/workflows/linux-build.yml
 macos:
   uses: ./.github/workflows/macos-build.yml
-  with:
-    rime_plugins: hchunhui/librime-lua lotem/librime-octagram rime/librime-predict
+linux:
+  uses: ./.github/workflows/linux-build.yml
 windows:
   uses: ./.github/workflows/windows-build.yml
-  with:
-    rime_plugins: hchunhui/librime-lua lotem/librime-octagram rime/librime-predict
 ```
+No `rime_plugins` parameter — Phase 1 dogfood is dict-only; lua /
+octagram / predict plugins land in Phase 1.5.
 
 **Why it matters:** upstream's per-OS build YAMLs already handle
 vcpkg bootstrap on Windows, brew deps on macOS, apt deps on Linux,
-and per-architecture flags. Our inlined version reinvents the wheel
-and drops the Windows ball. After refactor, `smoodle-build.yml`
-shrinks to ~30 lines (3 job stubs) and Windows joins macOS + Linux
-on the green matrix.
-
-**Concrete steps:** see `docs/CI-REFACTOR-PROMPT.md` for the full
-self-contained prompt that walks through the refactor.
+and per-architecture flags. The previous inlined version reinvented
+this and dropped the Windows ball. After the refactor,
+`smoodle-build.yml` is 20 lines and the matrix is fully green.
 
 **Done when:** `gh run list -R LoneExile/librime --limit 1` shows
-all three OS jobs green on `smoodle-build`. Promotion to Releases
-remains a separate concern (TODO 3 step 5 closure).
+all OS jobs green on `smoodle-build`. ✓ Verified
+2026-05-06 via run 25429514636. Promotion to Releases remains a
+separate concern.
 
 ---
 
