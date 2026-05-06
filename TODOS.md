@@ -116,9 +116,16 @@ versioned librime distribution.
    `a75b6a48 fix(dict): sort DictEntryIterator chunks on first Peek`.
 4. ✓ **DONE 2026-05-05** — annotated tag `1.16.0-smoodle.1` pushed
    to LoneExile/librime alongside the branch.
-5. **PENDING (deferred)** — per-OS dylib CI matrix. Phase 1 macOS-only
-   dogfood builds locally from the tag. Lane B (Windows) kickoff is
-   the trigger to set up `.github/workflows/librime-build.yml`.
+5. ⏳ **IN-PROGRESS 2026-05-06** — CI matrix kicked off via
+   `LoneExile/librime/.github/workflows/smoodle-build.yml` (commit
+   `d0692a4c` on `1.16.0-smoodle` branch). First run:
+   https://github.com/LoneExile/librime/actions/runs/25425316371
+   - macOS arm64: canonical, must-pass
+   - Windows x64: `continue-on-error: true` — first run failed at
+     `build.bat thirdparty`; Lane B kickoff will debug
+   - Linux x64: `continue-on-error: true` — needs verification
+   Promotion to GitHub Releases (gated on `github.repository ==`)
+   stays a manual step until per-OS distribution models settle.
 6. ✓ **DONE 2026-05-05** — docs/RESUME.md rewired to reference the
    fork tag as primary source-of-truth. Loose patch retained as
    historical fallback for ~1 release cycle.
