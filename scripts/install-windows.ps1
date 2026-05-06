@@ -1,0 +1,210 @@
+<#
+.SYNOPSIS
+    smoodle Windows installer (Lane B) — schema YAMLs + Weasel auto-deploy.
+
+.DESCRIPTION
+    Copies smoodle's three schema YAMLs into %APPDATA%\Rime\, attempts
+    auto-deploy via WeaselDeployer.exe /deploy with a 10s timeout, falls
+    back to manual Deploy instructions on failure. Mirrors scripts/install.sh
+    on macOS.
+
+    Runs in user scope — no admin / UAC required (everything writes under
+    %APPDATA%\Rime\, which is user-writeable). Pair with
+    install-librime-fork.ps1 to swap the patched librime DLL — that
+    script DOES require admin.
+
+    Pre-flight checks:
+      1. Weasel install dir exists (default: C:\Program Files\Rime\Weasel\;
+         falls back to C:\Program Files (x86)\Rime\Weasel\).
+      2. Weasel TSF registration is present (defense-in-depth, errors if
+         winget reported success but Weasel didn't auto-register; CFM #2
+         from docs/LANE-B-WINDOWS.md).
+
+    Env overrides (for tests + dogfood path tweaks):
+      SMOODLE_RIME_DIR              schema destination dir
+      SMOODLE_WEASEL_PATH           Weasel install dir
+      SMOODLE_AUTO_DEPLOY           "0" to skip auto-deploy
+      SMOODLE_DEPLOY_TIMEOUT_SECS   timeout for WeaselDeployer (default 10s)
+
+.EXAMPLE
+    PS> powershell -ExecutionPolicy Bypass -File .\scripts\install-windows.ps1
+
+.NOTES
+    Win 11 default ExecutionPolicy is Restricted for current user. Either
+    invoke via -ExecutionPolicy Bypass each run, or set once:
+        Set-ExecutionPolicy -Scope CurrentUser RemoteSigned
+#>
+
+[CmdletBinding()]
+param()
+
+$ErrorActionPreference = 'Stop'
+
+$ScriptDir  = Split-Path -Parent $MyInvocation.MyCommand.Path
+$SmoodleDir = (Resolve-Path (Join-Path $ScriptDir '..')).Path
+
+# ---------------------------------------------------------------------------
+# Path overrides (env or sensible default).
+# ---------------------------------------------------------------------------
+$RimeDir = if ($env:SMOODLE_RIME_DIR) { $env:SMOODLE_RIME_DIR } `
+           else { Join-Path $env:APPDATA 'Rime' }
+
+# Weasel install dir: 0.17.x defaults to "C:\Program Files\Rime\Weasel\"
+# (64-bit). Older builds and 32-bit users may have it under
+# "Program Files (x86)". Auto-detect, then env override wins.
+$WeaselPath = $env:SMOODLE_WEASEL_PATH
+if (-not $WeaselPath) {
+    $candidates = @(
+        (Join-Path $env:ProgramFiles        'Rime\Weasel'),
+        (Join-Path ${env:ProgramFiles(x86)} 'Rime\Weasel')
+    )
+    $WeaselPath = $candidates | Where-Object { Test-Path $_ } | Select-Object -First 1
+    if (-not $WeaselPath) { $WeaselPath = $candidates[0] }   # for the error msg
+}
+
+$DeployTimeoutSecs = if ($env:SMOODLE_DEPLOY_TIMEOUT_SECS) {
+    [int]$env:SMOODLE_DEPLOY_TIMEOUT_SECS
+} else { 10 }
+
+$AutoDeploy = if ($env:SMOODLE_AUTO_DEPLOY -eq '0') { $false } else { $true }
+
+$SchemaFiles = @(
+    'thai_phonetic.schema.yaml',
+    'thai_phonetic.dict.yaml',
+    'default.custom.yaml'
+)
+
+Write-Host 'smoodle installer (Windows / Lane B)'
+Write-Host '===================================='
+Write-Host "  source:      $SmoodleDir\schema\"
+Write-Host "  destination: $RimeDir\"
+Write-Host ''
+
+# ---------------------------------------------------------------------------
+# Pre-flight #1: Weasel host present.
+# ---------------------------------------------------------------------------
+if (-not (Test-Path $WeaselPath)) {
+    Write-Error "Weasel is not installed at $WeaselPath."
+    Write-Host  'Install it first:'
+    Write-Host  '    winget install Rime.Weasel'
+    exit 1
+}
+
+# ---------------------------------------------------------------------------
+# Pre-flight #2: TSF registration (CFM #2 defense-in-depth — see
+# docs/LANE-B-WINDOWS.md). On Win 11 with Weasel 0.17.x this auto-registers
+# via MSI bootstrap; check anyway so a future regression surfaces clearly.
+# ---------------------------------------------------------------------------
+$registered = Get-WinUserLanguageList | Where-Object {
+    $_.InputMethodTips -match 'Rime|Weasel'
+}
+if (-not $registered) {
+    Write-Error 'Weasel binary present but not registered with Windows TSF.'
+    Write-Host  'Open Settings -> Time & language -> Language -> Add -> Rime.'
+    Write-Host  'Then re-run this installer.'
+    exit 1
+}
+
+# ---------------------------------------------------------------------------
+# Copy schema YAMLs (idempotent, with timestamped backup).
+# ---------------------------------------------------------------------------
+if (-not (Test-Path $RimeDir)) {
+    New-Item -ItemType Directory -Path $RimeDir -Force | Out-Null
+}
+
+foreach ($f in $SchemaFiles) {
+    $src = Join-Path $SmoodleDir "schema\$f"
+    $dst = Join-Path $RimeDir $f
+
+    if (-not (Test-Path $src)) {
+        Write-Error "missing source file: $src"
+        exit 1
+    }
+
+    if (Test-Path $dst) {
+        $srcHash = (Get-FileHash -Algorithm SHA256 $src).Hash
+        $dstHash = (Get-FileHash -Algorithm SHA256 $dst).Hash
+        if ($srcHash -ne $dstHash) {
+            $stamp  = Get-Date -Format 'yyyyMMdd-HHmmss'
+            $backup = "$dst.bak.$stamp"
+            Write-Host "  backing up existing $dst -> $backup"
+            Move-Item -Path $dst -Destination $backup -Force
+        }
+    }
+
+    Copy-Item -Path $src -Destination $dst -Force
+    Write-Host "  installed $f"
+}
+
+# ---------------------------------------------------------------------------
+# Post-copy verification.
+# ---------------------------------------------------------------------------
+foreach ($f in $SchemaFiles) {
+    $dst = Join-Path $RimeDir $f
+    if (-not (Test-Path $dst)) {
+        Write-Error "post-copy verification failed: $dst missing."
+        exit 1
+    }
+}
+
+# ---------------------------------------------------------------------------
+# Auto-deploy via WeaselDeployer.exe /deploy (timeout-bounded).
+# ---------------------------------------------------------------------------
+Write-Host ''
+
+if (-not $AutoDeploy) {
+    Write-Host "Auto-deploy skipped (SMOODLE_AUTO_DEPLOY=$($env:SMOODLE_AUTO_DEPLOY))."
+    Write-Host 'Right-click Weasel tray icon -> Deploy.'
+    exit 0
+}
+
+Write-Host "Attempting auto-deploy via WeaselDeployer.exe /deploy..."
+
+$deployerExe = Join-Path $WeaselPath 'WeaselDeployer.exe'
+$autoDeployOk = $false
+
+if (Test-Path $deployerExe) {
+    try {
+        $proc = Start-Process -FilePath $deployerExe -ArgumentList '/deploy' `
+                              -PassThru -NoNewWindow
+        if ($proc.WaitForExit($DeployTimeoutSecs * 1000)) {
+            if ($proc.ExitCode -eq 0) { $autoDeployOk = $true }
+        } else {
+            try { $proc.Kill() } catch {}
+        }
+    } catch {
+        # Fall through to manual fallback.
+    }
+}
+
+if ($autoDeployOk) {
+    Write-Host '  [OK] WeaselDeployer succeeded; schemas compiled.'
+} else {
+    Write-Host "  [WARN] Auto-deploy failed or timed out after ${DeployTimeoutSecs}s."
+    Write-Host '    Manual fallback:'
+    Write-Host '      Right-click Weasel tray icon -> Deploy.'
+}
+
+# ---------------------------------------------------------------------------
+# Test instructions.
+# ---------------------------------------------------------------------------
+@"
+
+Files installed. To verify:
+  1. Right-click Weasel tray icon -> Deploy (if auto-deploy did not run).
+  2. Press Win+Space, switch to 'smoodle Thai phonetic' (or 'Weasel'
+     and switch schema via Ctrl+`).
+  3. Open Notepad and type 'sawadee'.
+     Expect candidate window with: สวัสดี
+
+If 'smoodle Thai phonetic' does not appear in the schema switcher:
+  - Verify $RimeDir contains the three YAML files above.
+  - Right-click Weasel tray icon -> Settings -> Schema list -> add it.
+  - Check Weasel's deployment log via the tray icon -> Show logs.
+
+Note: this installs the schema YAMLs only. To get the patched librime
+that fixes the algebra-vs-direct ranking on first lookup, also run:
+  powershell -ExecutionPolicy Bypass -File .\scripts\install-librime-fork.ps1
+That script requires admin (writes to Program Files) — re-launch from
+an elevated PowerShell if it errors.
+"@
