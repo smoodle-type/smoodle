@@ -18,6 +18,9 @@ build/
 vendor/*
 !vendor/*.patch
 !vendor/README.md
+!vendor/windows/
+vendor/windows/*
+!vendor/windows/rime.dll
 
 # LLM model files (v0.2+, downloaded on first launch)
 models/

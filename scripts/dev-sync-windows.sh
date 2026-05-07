@@ -32,7 +32,7 @@ echo "smoodle → ${TH_DC_HOST}:${TH_DC_SHARE}/"
 
 rsync -avz --delete "${dry_flag[@]}" \
   --exclude='.git/' \
-  --exclude='vendor/' \
+  --exclude='vendor/librime/' \
   --exclude='__pycache__/' \
   --exclude='.omc/' \
   --exclude='build.log' \

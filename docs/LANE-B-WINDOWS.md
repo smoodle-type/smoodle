@@ -120,13 +120,32 @@ if (-not $registered) {
 }
 ```
 
-### Auto-deploy CLI hangs (mirrors macOS Critical Failure Mode #3)
+### Auto-deploy CLI hangs / times out (mirrors macOS Critical Failure Mode #3)
 
-`WeaselDeployer.exe /deploy` can hang indefinitely if the host process
-isn't running.
+`WeaselDeployer.exe /deploy` is a GUI app with two known failure modes:
 
-**Mitigation:** wrap with `Wait-Process -Timeout 10` or
-`Start-Process ... -PassThru | Wait-Process -Timeout 10`.
+1. **Headless context (SSH / Session 0):** silently exits with no output or
+   effect. The installer detects this via exit-code and prints a fallback.
+2. **First-install timeout:** compiling `thai_phonetic.dict.yaml` (1.1 MB)
+   takes 30-60s on first run. The default timeout was 10s (too short) —
+   raised to 60s in the hardening pass (2026-05-07).
+
+**Mitigation:** wrap with `Start-Process ... -PassThru` +
+`$proc.WaitForExit(60 * 1000)`. On timeout: kill the process and print:
+
+```
+[WARN] Auto-deploy failed or timed out after 60s.
+  This is normal on first install (Thai dict is large).
+  Manual fix: look for the Weasel icon in your taskbar.
+  If missing: Start > Weasel Server > open it.
+  Then: right-click the Weasel tray icon > Deploy.
+  Wait for the "Under maintenance" notification to clear (~30s).
+```
+
+If the Weasel tray icon is missing entirely, launch `WeaselServer.exe`
+from `C:\Program Files\Rime\weasel-{version}\` (or search Start menu for
+"Weasel Server"). The tray icon appears within a few seconds; the "Under
+maintenance" balloon clears when compilation finishes.
 
 ## Test surface
 

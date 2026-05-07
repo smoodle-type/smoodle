@@ -13,16 +13,18 @@
     user's machine and ~30 min of build time.
 
     Steps:
-      1. Verify gh CLI + 7-Zip available; offer to winget install if not.
-      2. Resolve target run id (latest successful smoodle-build by
+      1. Check vendor/windows/rime.dll in the repo (or share mount for the
+         dev loop). If found, use it directly  -  no gh/7-Zip needed.
+      2. Fallback: verify gh CLI + 7-Zip available; offer to winget install.
+      3. Resolve target run id (latest successful smoodle-build by
          default; SMOODLE_LIBRIME_FORK_RUN_ID overrides).
-      3. gh run download the requested variant artifact.
-      4. Extract the inner rime-*.7z to locate dist/lib/rime.dll.
-      5. Verify admin elevation (writing into Program Files\Rime\Weasel\
+      4. gh run download the requested variant artifact.
+      5. Extract the inner rime-*.7z to locate dist/lib/rime.dll.
+      6. Verify admin elevation (writing into Program Files\Rime\Weasel\
          requires it). Bail with a copy-pasteable re-launch line if not.
-      6. Back up the existing rime.dll to rime.dll.smoodle-backup
+      7. Back up the existing rime.dll to rime.dll.smoodle-backup
          (only on first run; preserves Weasel's original).
-      7. Swap in the patched DLL.
+      8. Swap in the patched DLL.
 
     Env overrides:
       SMOODLE_LIBRIME_FORK_REPO     gh repo  (default: LoneExile/librime)
@@ -51,6 +53,8 @@
 param()
 
 $ErrorActionPreference = 'Stop'
+
+$ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 
 # ---------------------------------------------------------------------------
 # Config (env or default).
@@ -88,12 +92,36 @@ $WeaselDll  = Join-Path $WeaselPath 'rime.dll'
 $BackupDll  = "$WeaselDll.smoodle-backup"
 $ArtifactName = "artifact-Windows-$Variant"
 
+# ---------------------------------------------------------------------------
+# Vendored DLL resolution (checked before any gh/7-Zip work).
+# Priority: share mount (dev loop) > repo path (git clone) > CI download.
+# The DLL ships in vendor/windows/rime.dll; users who git-clone the repo
+# get it without any network fetch during install.
+# ---------------------------------------------------------------------------
+$VendoredDll = $null
+if (-not $SkipDownload) {
+    $shareDll = '\\host.lan\Data\vendor\windows\rime.dll'
+    $repoDll  = Join-Path $ScriptDir '..\vendor\windows\rime.dll'
+    # Normalize the repo path without throwing on missing file.
+    try { $repoDll = (Resolve-Path $repoDll -ErrorAction Stop).Path } catch { $repoDll = $null }
+    if (Test-Path $shareDll) {
+        $VendoredDll = $shareDll
+    } elseif ($repoDll -and (Test-Path $repoDll)) {
+        $VendoredDll = $repoDll
+    }
+}
+
 Write-Host 'smoodle librime fork installer (Windows)'
 Write-Host '========================================'
 Write-Host "  fork repo:   $ForkRepo"
 Write-Host "  variant:     $Variant"
 Write-Host "  Weasel path: $WeaselPath"
 Write-Host "  cache dir:   $CacheDir"
+if ($VendoredDll) {
+    Write-Host "  source dll:  $VendoredDll (vendored)"
+} else {
+    Write-Host "  source dll:  CI artifact download"
+}
 Write-Host ''
 
 # ---------------------------------------------------------------------------
@@ -127,15 +155,17 @@ function Ensure-WingetTool {
     exit 1
 }
 
-if (-not $SkipDownload) {
-    $null = Ensure-WingetTool 'gh' 'GitHub.cli' 'GitHub CLI'
+$SevenZipExe = $null
+if (-not $VendoredDll) {
+    if (-not $SkipDownload) {
+        $null = Ensure-WingetTool 'gh' 'GitHub.cli' 'GitHub CLI'
+    }
+    $SevenZipExe = Ensure-WingetTool '7z' '7zip.7zip' '7-Zip' @(
+        "$env:ProgramFiles\7-Zip\7z.exe",
+        "${env:ProgramFiles(x86)}\7-Zip\7z.exe"
+    )
+    Write-Host "  [OK] 7-Zip at $SevenZipExe"
 }
-
-$SevenZipExe = Ensure-WingetTool '7z' '7zip.7zip' '7-Zip' @(
-    "$env:ProgramFiles\7-Zip\7z.exe",
-    "${env:ProgramFiles(x86)}\7-Zip\7z.exe"
-)
-Write-Host "  [OK] 7-Zip at $SevenZipExe"
 
 # ---------------------------------------------------------------------------
 # Pre-flight: admin elevation (only required if we're going to swap).
@@ -170,27 +200,7 @@ if (-not $SkipSwap) {
 }
 
 # ---------------------------------------------------------------------------
-# Resolve the target CI run.
-# ---------------------------------------------------------------------------
-$RunId = $RunIdOverride
-if (-not $RunId -and -not $SkipDownload) {
-    Write-Host "Resolving latest successful smoodle-build run on $ForkRepo..."
-    $json = & gh run list -R $ForkRepo --workflow smoodle-build --status success --limit 1 --json databaseId,headSha 2>&1
-    if ($LASTEXITCODE -ne 0) {
-        Write-Error "gh run list failed: $json"
-        exit 1
-    }
-    $runs = $json | ConvertFrom-Json
-    if (-not $runs -or $runs.Count -eq 0) {
-        Write-Error 'No successful smoodle-build run found on the fork.'
-        exit 1
-    }
-    $RunId = $runs[0].databaseId
-    Write-Host "  -> run $RunId (head $($runs[0].headSha.Substring(0,8)))"
-}
-
-# ---------------------------------------------------------------------------
-# Download + extract.
+# Resolve DLL source: vendored > cached > CI download.
 # ---------------------------------------------------------------------------
 if (-not (Test-Path $CacheDir)) {
     New-Item -ItemType Directory -Path $CacheDir -Force | Out-Null
@@ -198,13 +208,36 @@ if (-not (Test-Path $CacheDir)) {
 
 $DllOut = Join-Path $CacheDir 'rime.dll'
 
-if ($SkipDownload) {
+if ($VendoredDll) {
+    # Vendored path: no download or extraction needed.
+    $DllOut = $VendoredDll
+    $sizeKb = [math]::Round((Get-Item $DllOut).Length / 1KB, 0)
+    Write-Host "  [OK] using vendored DLL ($sizeKb KB) from $DllOut"
+} elseif ($SkipDownload) {
     if (-not (Test-Path $DllOut)) {
         Write-Error "SMOODLE_SKIP_DOWNLOAD=1 but $DllOut does not exist. Run once without skip to populate cache."
         exit 1
     }
     Write-Host "  [SKIP] download (using cached $DllOut)"
 } else {
+    # CI download fallback (gh + 7-Zip).
+    $RunId = $RunIdOverride
+    if (-not $RunId) {
+        Write-Host "Resolving latest successful smoodle-build run on $ForkRepo..."
+        $json = & gh run list -R $ForkRepo --workflow smoodle-build --status success --limit 1 --json databaseId,headSha 2>&1
+        if ($LASTEXITCODE -ne 0) {
+            Write-Error "gh run list failed: $json"
+            exit 1
+        }
+        $runs = $json | ConvertFrom-Json
+        if (-not $runs -or $runs.Count -eq 0) {
+            Write-Error 'No successful smoodle-build run found on the fork.'
+            exit 1
+        }
+        $RunId = $runs[0].databaseId
+        Write-Host "  -> run $RunId (head $($runs[0].headSha.Substring(0,8)))"
+    }
+
     $stagingDir = Join-Path $CacheDir "staging-$RunId"
     if (Test-Path $stagingDir) { Remove-Item -Recurse -Force $stagingDir }
     New-Item -ItemType Directory -Path $stagingDir -Force | Out-Null
@@ -270,7 +303,7 @@ Write-Host ''
 Write-Host 'Next: copy the patched rime.dll into Weasel''s install dir.'
 Write-Host "  source: $DllOut"
 Write-Host "  target: $WeaselDll"
-if (-not $NonInteractive) {
+if (-not $NonInteractive -and -not [System.Console]::IsInputRedirected) {
     $resp = Read-Host 'Proceed? [y/N]'
     if ($resp -notmatch '^(y|yes)$') {
         Write-Host 'Aborted by user. Re-run with SMOODLE_NONINTERACTIVE=1 to skip prompt.'
@@ -286,18 +319,54 @@ if (-not (Test-Path $BackupDll)) {
     Write-Host "Existing backup at $BackupDll  -  leaving in place."
 }
 
+# Stop WeaselServer (and any lingering WeaselDeployer) so they release the
+# DLL file lock before we overwrite. Wait for actual process exit rather
+# than using a fixed sleep.
+$weaselServerExe = Join-Path $WeaselPath 'WeaselServer.exe'
+foreach ($procName in @('WeaselServer', 'WeaselDeployer')) {
+    $p = Get-Process -Name $procName -ErrorAction SilentlyContinue
+    if ($p) {
+        Write-Host "Stopping $procName to release DLL file lock..."
+        Stop-Process -Name $procName -Force -ErrorAction SilentlyContinue
+        try { $p | Wait-Process -Timeout 10 -ErrorAction SilentlyContinue } catch {}
+    }
+}
+Start-Sleep -Seconds 2
+
 Write-Host 'Copying patched DLL...'
-Copy-Item -Path $DllOut -Destination $WeaselDll -Force
+$copyOk = $false
+for ($attempt = 1; $attempt -le 5; $attempt++) {
+    try {
+        Copy-Item -Path $DllOut -Destination $WeaselDll -Force
+        $copyOk = $true
+        break
+    } catch {
+        if ($attempt -lt 5) {
+            Write-Host "  (attempt $attempt failed; retrying in 2s...)"
+            Start-Sleep -Seconds 2
+        }
+    }
+}
+if (-not $copyOk) {
+    Write-Error "Could not copy rime.dll after 5 attempts. Is another process holding it open?"
+    exit 1
+}
 $newSizeKb = [math]::Round((Get-Item $WeaselDll).Length / 1KB, 0)
 Write-Host "  [OK] Weasel's rime.dll is now $newSizeKb KB."
 
+# Restart WeaselServer.
+if (Test-Path $weaselServerExe) {
+    Write-Host 'Restarting WeaselServer...'
+    Start-Process $weaselServerExe
+    Write-Host '  [OK] WeaselServer restarted with patched DLL.'
+}
+
 @"
 
-Done. Restart Weasel to pick up the new DLL:
-  Right-click Weasel tray icon -> Quit
-  Then re-launch:  & '$WeaselPath\WeaselServer.exe'
+Done. Patched DLL installed and WeaselServer restarted.
+If the tray icon is missing: Start > Weasel Server > open it.
 
-Or via PowerShell (admin):
+Or restart manually via PowerShell (admin):
   Stop-Process -Name WeaselServer -Force -ErrorAction SilentlyContinue
   Start-Process '$WeaselPath\WeaselServer.exe'
 

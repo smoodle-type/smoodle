@@ -312,6 +312,37 @@ class InstallWindowsPs1Shape(unittest.TestCase):
         # of installing somewhere they didn't ask for.
         self.assertIn("SMOODLE_WEASEL_PATH", body)
 
+    def test_script_touches_schema_timestamps_after_copy(self):
+        body = INSTALL_WINDOWS_PS1.read_text()
+        # rsync preserves Mac source timestamps; Copy-Item also preserves
+        # them; schema files older than the Weasel build dir cause
+        # WeaselDeployer to skip recompilation silently. Fix: explicitly
+        # set LastWriteTime to now after copying.
+        self.assertIn("LastWriteTime", body)
+        self.assertIn("Get-Date", body)
+
+    def test_script_clears_build_dir_when_schemas_changed(self):
+        body = INSTALL_WINDOWS_PS1.read_text()
+        # When schema content changes we also clear the compiled
+        # thai_phonetic.* tables so WeaselDeployer is forced into a full
+        # rebuild rather than skipping on a stale binary.
+        self.assertIn("thai_phonetic.*", body)
+        self.assertIn("schemasChanged", body)
+
+    def test_script_default_deploy_timeout_is_60s(self):
+        body = INSTALL_WINDOWS_PS1.read_text()
+        # 10s was not enough for first compile of the 1.1 MB dict;
+        # 60s is the new safe default.
+        self.assertIn("} else { 60 }", body)
+        self.assertNotIn("} else { 10 }", body)
+
+    def test_script_warn_message_includes_tray_fallback(self):
+        body = INSTALL_WINDOWS_PS1.read_text()
+        # The WARN message must guide the user to the Weasel tray icon
+        # so they can Deploy manually without reading docs.
+        self.assertIn("Weasel tray icon", body)
+        self.assertIn("Under maintenance", body)
+
 
 class InstallLibrimeForkPs1Shape(unittest.TestCase):
     """Shape checks for scripts/install-librime-fork.ps1 (Lane B).
@@ -376,6 +407,31 @@ class InstallLibrimeForkPs1Shape(unittest.TestCase):
         # Both auto-installed via winget if missing.
         self.assertIn("GitHub.cli", body)
         self.assertIn("7zip.7zip", body)
+
+    def test_script_checks_vendored_dll_in_repo(self):
+        body = INSTALL_LIBRIME_PS1.read_text()
+        # vendor/windows/rime.dll ships in the repo so git-clone users
+        # get the DLL with no network fetch during install.
+        # The script uses Join-Path so forward-slash form appears in doc;
+        # the executable path uses backslash form.
+        self.assertTrue(
+            r"vendor\windows\rime.dll" in body or "vendor/windows/rime.dll" in body,
+            "install-librime-fork.ps1 missing vendor/windows/rime.dll path",
+        )
+
+    def test_script_checks_vendored_dll_on_share(self):
+        body = INSTALL_LIBRIME_PS1.read_text()
+        # Dev loop: share mount is checked first so dogfood iterations
+        # pick up an updated DLL from \\host.lan\Data without re-cloning.
+        self.assertIn(r"\\host.lan\Data\vendor\windows\rime.dll", body)
+
+    def test_script_skips_gh_7zip_when_vendored(self):
+        body = INSTALL_LIBRIME_PS1.read_text()
+        # When a vendored DLL is found, gh CLI and 7-Zip installs must be
+        # guarded so they do not block non-interactive dogfood installs.
+        self.assertIn("VendoredDll", body)
+        # The guard must gate the Ensure-WingetTool calls for both tools.
+        self.assertIn("-not $VendoredDll", body)
 
 
 class InstallSandboxed(unittest.TestCase):

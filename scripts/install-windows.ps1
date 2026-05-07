@@ -4,7 +4,7 @@
 
 .DESCRIPTION
     Copies smoodle's three schema YAMLs into %APPDATA%\Rime\, attempts
-    auto-deploy via WeaselDeployer.exe /deploy with a 10s timeout, falls
+    auto-deploy via WeaselDeployer.exe /deploy with a 60s timeout, falls
     back to manual Deploy instructions on failure. Mirrors scripts/install.sh
     on macOS.
 
@@ -27,7 +27,7 @@
       SMOODLE_RIME_DIR              schema destination dir
       SMOODLE_WEASEL_PATH           Weasel install dir
       SMOODLE_AUTO_DEPLOY           "0" to skip auto-deploy
-      SMOODLE_DEPLOY_TIMEOUT_SECS   timeout for WeaselDeployer (default 10s)
+      SMOODLE_DEPLOY_TIMEOUT_SECS   timeout for WeaselDeployer (default 60s)
 
 .EXAMPLE
     PS> powershell -ExecutionPolicy Bypass -File .\scripts\install-windows.ps1
@@ -77,7 +77,7 @@ if (-not $WeaselPath) {
 
 $DeployTimeoutSecs = if ($env:SMOODLE_DEPLOY_TIMEOUT_SECS) {
     [int]$env:SMOODLE_DEPLOY_TIMEOUT_SECS
-} else { 10 }
+} else { 60 }
 
 $AutoDeploy = if ($env:SMOODLE_AUTO_DEPLOY -eq '0') { $false } else { $true }
 
@@ -142,6 +142,8 @@ if (-not (Test-Path $RimeDir)) {
     New-Item -ItemType Directory -Path $RimeDir -Force | Out-Null
 }
 
+$schemasChanged = $false
+
 foreach ($f in $SchemaFiles) {
     $src = Join-Path $SmoodleDir "schema\$f"
     $dst = Join-Path $RimeDir $f
@@ -159,11 +161,31 @@ foreach ($f in $SchemaFiles) {
             $backup = "$dst.bak.$stamp"
             Write-Host "  backing up existing $dst -> $backup"
             Move-Item -Path $dst -Destination $backup -Force
+            $schemasChanged = $true
         }
+    } else {
+        $schemasChanged = $true
     }
 
     Copy-Item -Path $src -Destination $dst -Force
     Write-Host "  installed $f"
+}
+
+# Touch all schema timestamps to now so WeaselDeployer always sees them as
+# newer than its last build  -  rsync preserves Mac source timestamps which
+# can be older than the Weasel build dir, causing WeaselDeployer to skip
+# recompilation silently.
+$now = Get-Date
+Get-ChildItem "$RimeDir\*.yaml" | ForEach-Object { $_.LastWriteTime = $now }
+
+# Clear cached compiled tables when schema content changed so WeaselDeployer
+# is forced into a full rebuild rather than skipping on a stale table.
+if ($schemasChanged) {
+    $buildDir = Join-Path $RimeDir 'build'
+    if (Test-Path $buildDir) {
+        Remove-Item "$buildDir\thai_phonetic.*" -Force -ErrorAction SilentlyContinue
+        Write-Host "  cleared build/thai_phonetic.* (schema changed; forcing recompile)"
+    }
 }
 
 # ---------------------------------------------------------------------------
@@ -211,8 +233,11 @@ if ($autoDeployOk) {
     Write-Host '  [OK] WeaselDeployer succeeded; schemas compiled.'
 } else {
     Write-Host "  [WARN] Auto-deploy failed or timed out after ${DeployTimeoutSecs}s."
-    Write-Host '    Manual fallback:'
-    Write-Host '      Right-click Weasel tray icon -> Deploy.'
+    Write-Host '    This is normal on first install (Thai dict is large).'
+    Write-Host '    Manual fix: look for the Weasel icon in your taskbar.'
+    Write-Host '    If missing: Start > Weasel Server > open it.'
+    Write-Host '    Then: right-click the Weasel tray icon > Deploy.'
+    Write-Host '    Wait for the "Under maintenance" notification to clear (~30s).'
 }
 
 # ---------------------------------------------------------------------------
