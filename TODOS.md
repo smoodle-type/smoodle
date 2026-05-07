@@ -442,7 +442,10 @@ the th-dc VM types `sawadee → สวัสดี`. ✓ Verified 2026-05-07.
 
 ## 8. Lane C installer — install-linux.sh + GHA E2E
 
-**Status:** OPEN (parallel to Lane B; no test bed dependency)
+**Status:** ✓ CLOSED 2026-05-07 — `install-linux.sh` implemented + GHA E2E green.
+Run 25480673681 (`install-linux e2e` / ubuntu-latest / ibus) completed success in 5m54s.
+All 5 steps pass: checkout → ibus-rime apt install → installer → schema file presence → content grep.
+Commit `ac46abc` on `LoneExile/smoodle` main.
 **Created:** 2026-05-06
 **Priority:** Low — design doc stretch goal. Defer if month 1.5
 slips.
@@ -462,18 +465,19 @@ and zero-cost to test (free GHA runner). Better to land it than
 defer.
 
 **Concrete steps:**
-1. ⏳ **TODO** — scaffold `scripts/install-linux.sh` skeleton with
-   detection helper, env overrides, schema-copy stub.
-2. ⏳ **TODO** — add `InstallLinuxScriptShape` test class to
-   `tests/test_installers.py` (mirrors `InstallScriptShape`).
-3. ⏳ **TODO** — convert the existing FutureLanes Lane C stub
-   to a real shape test.
-4. ⏳ **TODO** — flesh out detection + schema-copy + deploy logic.
-5. ⏳ **TODO** — write `.github/workflows/install-linux-e2e.yml`
-   running on `ubuntu-latest`.
+1. ✓ **DONE** — `scripts/install-linux.sh` (177 lines): IM detection via
+   pgrep (fcitx5 / ibus), env overrides, schema copy + backup,
+   post-copy verify, auto-deploy with timeout, ranking limitation note.
+2. ✓ **DONE** — `InstallLinuxScriptShape` class in `tests/test_installers.py`
+   (7 shape tests: exists+executable, syntax, env overrides, pgrep detection,
+   both IM paths, ranking-limitation note, missing-IM error).
+3. ✓ **DONE** — FutureLanes Lane C stub converted (now a real shape test).
+4. ✓ **DONE** — detection + schema-copy + deploy logic fully implemented.
+5. ✓ **DONE 2026-05-07** — `.github/workflows/install-linux-e2e.yml`
+   written and green. GHA run 25480673681, 5m54s, ubuntu-latest / ibus.
 
 **Done when:** `install-linux.sh` works on a real Ubuntu LTS box,
-GHA E2E passes, ranking-limitation note added to README.
+GHA E2E passes, ranking-limitation note added to README. ✓ Verified 2026-05-07.
 
 ---
 
