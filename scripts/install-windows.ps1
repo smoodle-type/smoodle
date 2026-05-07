@@ -95,8 +95,16 @@ if (-not (Test-Path $WeaselPath)) {
     }
 
     Write-Host "Weasel not found at $WeaselPath; installing via winget..."
-    Write-Host '(UAC prompt may appear — this is the only admin step in this script.)'
-    & winget install --id Rime.Weasel --silent --accept-source-agreements --accept-package-agreements
+    Write-Host '(Weasel installer UI will appear — click through Next/Install/Finish.)'
+    Write-Host '(UAC prompt may appear first — this is the only admin step in this script.)'
+    # NOTE: deliberately NOT using --silent. Weasel ships an
+    # Inno Setup installer that hangs forever on `--silent` (the
+    # silent-mode handshake is incomplete; winget shows a spinner
+    # that never finishes). Empirically verified 2026-05-07 on the
+    # th-dc test bed. --interactive lets the user click through;
+    # the package + source agreement flags still skip winget's own
+    # confirmations.
+    & winget install --id Rime.Weasel --interactive --accept-source-agreements --accept-package-agreements
     if ($LASTEXITCODE -ne 0) {
         Write-Error "winget install Rime.Weasel failed (exit $LASTEXITCODE)."
         Write-Host  'Try manually:  winget install Rime.Weasel'
