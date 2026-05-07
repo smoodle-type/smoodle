@@ -280,7 +280,10 @@ class InstallWindowsPs1Shape(unittest.TestCase):
         self.assertIn("ProgramFiles", body)
         self.assertIn("ProgramFiles(x86)", body)
         self.assertIn("weasel-*", body)
-        self.assertIn("Find-WeaselPath", body)
+        # Inline detection (not a named function) — required because PowerShell 5.1
+        # executes top-to-bottom; calling a function defined later in the same script
+        # raises CommandNotFoundException.
+        self.assertNotIn("Find-WeaselPath", body)
 
     def test_script_does_tsf_defense_in_depth(self):
         body = INSTALL_WINDOWS_PS1.read_text()

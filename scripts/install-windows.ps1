@@ -52,33 +52,27 @@ $SmoodleDir = (Resolve-Path (Join-Path $ScriptDir '..')).Path
 $RimeDir = if ($env:SMOODLE_RIME_DIR) { $env:SMOODLE_RIME_DIR } `
            else { Join-Path $env:APPDATA 'Rime' }
 
-# Weasel install dir — env override wins; otherwise probe via Find-WeaselPath.
+# Weasel install dir — env override wins; otherwise probe the filesystem.
+# winget (Rime.Weasel) installs to a VERSIONED subdirectory — discovered
+# 2026-05-07 on the th-dc test bed: C:\Program Files\Rime\weasel-0.17.4\
+# NOT the unversioned \Rime\Weasel\ we originally assumed (registry
+# InstallLocation blank; not on PATH; only Get-ChildItem found it).
+# PowerShell 5.1 requires inline code here — calling a function defined
+# later in the same script fails with CommandNotFoundException.
 $WeaselPath = $env:SMOODLE_WEASEL_PATH
-if (-not $WeaselPath) { $WeaselPath = Find-WeaselPath }
-
-# Probe all known Weasel install locations.
-# winget (Rime.Weasel) installs to a VERSIONED subdirectory:
-#   C:\Program Files\Rime\weasel-0.17.4\    ← actual path on th-dc test bed
-# NOT the unversioned path we originally assumed:
-#   C:\Program Files\Rime\Weasel\
-# Discovered 2026-05-07 via Get-ChildItem scan.
-function Find-WeaselPath {
-    $parents = @(
+if (-not $WeaselPath) {
+    foreach ($parent in @(
         (Join-Path $env:ProgramFiles        'Rime'),
         (Join-Path ${env:ProgramFiles(x86)} 'Rime')
-    )
-    foreach ($parent in $parents) {
+    )) {
         if (-not (Test-Path $parent)) { continue }
-        # Unversioned path (manual installs or future canonical path).
         $plain = Join-Path $parent 'Weasel'
-        if (Test-Path $plain) { return $plain }
-        # Versioned path — pick the newest (e.g. weasel-0.17.4).
-        $versioned = Get-ChildItem $parent -Directory -Filter 'weasel-*' -ErrorAction SilentlyContinue |
-                     Sort-Object Name -Descending |
-                     Select-Object -First 1
-        if ($versioned) { return $versioned.FullName }
+        if (Test-Path $plain) { $WeaselPath = $plain; break }
+        $versioned = Get-ChildItem $parent -Directory -Filter 'weasel-*' `
+                     -ErrorAction SilentlyContinue |
+                     Sort-Object Name -Descending | Select-Object -First 1
+        if ($versioned) { $WeaselPath = $versioned.FullName; break }
     }
-    return $null
 }
 
 $DeployTimeoutSecs = if ($env:SMOODLE_DEPLOY_TIMEOUT_SECS) {
