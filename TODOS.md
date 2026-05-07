@@ -431,12 +431,12 @@ the th-dc VM types `sawadee → สวัสดี`. ✓ Verified 2026-05-07.
    dogfood (Weasel tray is visible) but blocks full automation.
 
 **Next hardening steps (before sharing with diaspora-Thai friends):**
-- Fix schema timestamp issue in install-windows.ps1 (touch files + clear
-  build dir before WeaselDeployer so deploy always fires) — 30 min
-- Decide rime.dll distribution: pre-extract to vendor/windows/ in repo
-  (simplest) vs fix gh+7zip dependency chain — 1-2 hrs
-- Add a note in README that user must click "Deploy" from Weasel tray
-  if WeaselDeployer auto-deploy timed out — 5 min
+- Fix schema timestamp issue in install-windows.ps1  ✓ DONE 2026-05-07
+  (touch LastWriteTime + clear build/thai_phonetic.* — commit 1b6504c)
+- Decide rime.dll distribution: vendor/windows/rime.dll  ✓ DONE 2026-05-07
+  (vendor/windows/rime.dll added to repo, BSD-3 — commit 1b6504c)
+- Add WARN note for manual Deploy  ✓ DONE 2026-05-07
+  (LANE-B-WINDOWS.md + expanded WARN message — commit 1b6504c)
 
 ---
 

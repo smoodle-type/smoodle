@@ -1,0 +1,47 @@
+name: install-linux e2e
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - scripts/install-linux.sh
+      - schema/**
+      - .github/workflows/install-linux-e2e.yml
+  pull_request:
+    paths:
+      - scripts/install-linux.sh
+      - schema/**
+      - .github/workflows/install-linux-e2e.yml
+
+jobs:
+  install-linux:
+    name: Lane C schema install (ubuntu-latest / ibus)
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install ibus-rime
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y ibus-rime
+
+      # SMOODLE_IM=ibus bypasses pgrep -x ibus-daemon (daemon won't be running
+      # in the GHA runner).  SMOODLE_AUTO_DEPLOY=0 skips ibus-daemon -drxR
+      # restart (no display in CI).
+      - name: Run installer
+        run: SMOODLE_AUTO_DEPLOY=0 SMOODLE_IM=ibus bash scripts/install-linux.sh
+
+      # Note: fcitx5 path (~/.local/share/fcitx5/rime/) is not tested here;
+      # it would require the fcitx5-rime apt package + a different dest dir.
+      - name: Verify schema files installed
+        run: |
+          for f in thai_phonetic.schema.yaml thai_phonetic.dict.yaml default.custom.yaml; do
+            test -f "$HOME/.config/ibus/rime/$f" || (echo "MISSING: $f" && exit 1)
+          done
+          echo "All schema files installed."
+
+      - name: Verify file content
+        run: |
+          grep -q "thai_phonetic" "$HOME/.config/ibus/rime/thai_phonetic.schema.yaml"
+          grep -q "thai_phonetic" "$HOME/.config/ibus/rime/thai_phonetic.dict.yaml"
