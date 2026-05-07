@@ -8,10 +8,13 @@
     back to manual Deploy instructions on failure. Mirrors scripts/install.sh
     on macOS.
 
-    Runs in user scope — no admin / UAC required (everything writes under
-    %APPDATA%\Rime\, which is user-writeable). Pair with
-    install-librime-fork.ps1 to swap the patched librime DLL — that
-    script DOES require admin.
+    Runs in user scope. Schema YAMLs go to %APPDATA%\Rime\ (user-writeable,
+    no admin). The only admin trigger is the one-time `winget install
+    Rime.Weasel` if Weasel isn't already on the box — winget pops UAC for
+    the MSI bootstrap, you click Yes once, done. After Weasel is installed,
+    re-runs of this script are no-UAC. Pair with install-librime-fork.ps1
+    to swap the patched librime DLL — that script DOES require admin
+    elevation up front.
 
     Pre-flight checks:
       1. Weasel install dir exists (default: C:\Program Files\Rime\Weasel\;
@@ -81,13 +84,37 @@ Write-Host "  destination: $RimeDir\"
 Write-Host ''
 
 # ---------------------------------------------------------------------------
-# Pre-flight #1: Weasel host present.
+# Pre-flight #1: Weasel host present (auto-install via winget if missing).
+# Skip auto-install when SMOODLE_WEASEL_PATH is explicitly set — caller
+# is asserting a non-default path and we should respect that.
 # ---------------------------------------------------------------------------
 if (-not (Test-Path $WeaselPath)) {
-    Write-Error "Weasel is not installed at $WeaselPath."
-    Write-Host  'Install it first:'
-    Write-Host  '    winget install Rime.Weasel'
-    exit 1
+    if ($env:SMOODLE_WEASEL_PATH) {
+        Write-Error "Weasel is not installed at $WeaselPath (SMOODLE_WEASEL_PATH override)."
+        exit 1
+    }
+
+    Write-Host "Weasel not found at $WeaselPath; installing via winget..."
+    Write-Host '(UAC prompt may appear — this is the only admin step in this script.)'
+    & winget install --id Rime.Weasel --silent --accept-source-agreements --accept-package-agreements
+    if ($LASTEXITCODE -ne 0) {
+        Write-Error "winget install Rime.Weasel failed (exit $LASTEXITCODE)."
+        Write-Host  'Try manually:  winget install Rime.Weasel'
+        exit 1
+    }
+
+    # Re-probe install paths after winget completes.
+    $candidates = @(
+        (Join-Path $env:ProgramFiles        'Rime\Weasel'),
+        (Join-Path ${env:ProgramFiles(x86)} 'Rime\Weasel')
+    )
+    $WeaselPath = $candidates | Where-Object { Test-Path $_ } | Select-Object -First 1
+    if (-not $WeaselPath) {
+        Write-Error 'Weasel installed but not found at expected paths. Inspected:'
+        $candidates | ForEach-Object { Write-Host "  $_" }
+        exit 1
+    }
+    Write-Host "  [OK] Weasel installed at $WeaselPath"
 }
 
 # ---------------------------------------------------------------------------

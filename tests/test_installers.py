@@ -296,9 +296,22 @@ class InstallWindowsPs1Shape(unittest.TestCase):
     def test_script_runs_user_scope_not_admin(self):
         body = INSTALL_WINDOWS_PS1.read_text()
         # install-windows.ps1 is the user-scope half; admin elevation
-        # belongs in install-librime-fork.ps1. Drift check.
+        # belongs in install-librime-fork.ps1. Drift check. (winget
+        # itself can pop UAC for Weasel install — that's expected and
+        # one-time, not a script-driven elevation.)
         self.assertNotIn("RunAs", body)
         self.assertNotIn("WindowsBuiltInRole", body)
+
+    def test_script_auto_installs_weasel_via_winget(self):
+        body = INSTALL_WINDOWS_PS1.read_text()
+        # Auto-install on missing prereq is the boil-the-lake UX —
+        # one command and the user has a working IME.
+        self.assertIn("winget install", body)
+        self.assertIn("Rime.Weasel", body)
+        # Skip auto-install when SMOODLE_WEASEL_PATH is overridden:
+        # that's the user asserting a known path; respect it instead
+        # of installing somewhere they didn't ask for.
+        self.assertIn("SMOODLE_WEASEL_PATH", body)
 
 
 class InstallLibrimeForkPs1Shape(unittest.TestCase):
