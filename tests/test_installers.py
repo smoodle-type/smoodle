@@ -50,6 +50,7 @@ INSTALL_LIBRIME_SH = REPO_ROOT / "scripts" / "install-librime-fork.sh"
 INSTALL_LINUX_SH = REPO_ROOT / "scripts" / "install-linux.sh"
 INSTALL_WINDOWS_PS1 = REPO_ROOT / "scripts" / "install-windows.ps1"
 INSTALL_LIBRIME_PS1 = REPO_ROOT / "scripts" / "install-librime-fork.ps1"
+BUILD_MACOS_DMG_SH = REPO_ROOT / "scripts" / "build-macos-dmg.sh"
 SCHEMA_DIR = REPO_ROOT / "schema"
 SCHEMA_FILES = (
     "thai_phonetic.schema.yaml",
@@ -595,6 +596,49 @@ class FutureLanes(unittest.TestCase):
         ...
 
 
+class BuildMacosDmgScriptShape(unittest.TestCase):
+    """Shape checks for scripts/build-macos-dmg.sh (Lane A DMG builder)."""
+
+    def test_script_exists_and_executable(self):
+        self.assertTrue(BUILD_MACOS_DMG_SH.is_file(), f"{BUILD_MACOS_DMG_SH} missing")
+        self.assertTrue(os.access(BUILD_MACOS_DMG_SH, os.X_OK))
+
+    def test_script_syntax_valid(self):
+        result = subprocess.run(
+            ["bash", "-n", str(BUILD_MACOS_DMG_SH)], capture_output=True, text=True
+        )
+        self.assertEqual(result.returncode, 0, msg=result.stderr)
+
+    def test_script_derives_version_from_git(self):
+        body = BUILD_MACOS_DMG_SH.read_text()
+        self.assertIn("git", body)
+        self.assertIn("describe", body)
+
+    def test_script_bundles_schema_files(self):
+        body = BUILD_MACOS_DMG_SH.read_text()
+        for f in ("thai_phonetic.schema.yaml", "thai_phonetic.dict.yaml", "default.custom.yaml"):
+            self.assertIn(f, body, f"build-macos-dmg.sh does not bundle: {f}")
+
+    def test_script_bundles_installer_scripts(self):
+        body = BUILD_MACOS_DMG_SH.read_text()
+        self.assertIn("install.sh", body)
+        self.assertIn("install-librime-fork.sh", body)
+
+    def test_script_generates_installer_command(self):
+        body = BUILD_MACOS_DMG_SH.read_text()
+        self.assertIn("Install Smoodle.command", body)
+
+    def test_script_creates_dmg_via_hdiutil(self):
+        body = BUILD_MACOS_DMG_SH.read_text()
+        self.assertIn("hdiutil", body)
+        self.assertIn("UDZO", body)
+
+    def test_script_outputs_to_dist(self):
+        body = BUILD_MACOS_DMG_SH.read_text()
+        self.assertIn("dist/", body)
+        self.assertIn("macOS.dmg", body)
+
+
 def main() -> int:
     if not INSTALL_SH.is_file():
         print(f"FAIL  install.sh missing at {INSTALL_SH}", file=sys.stderr)
@@ -608,8 +652,8 @@ def main() -> int:
     suite = unittest.TestSuite()
     for cls in (InstallScriptShape, InstallLibrimeForkScriptShape,
                 InstallLinuxScriptShape, InstallWindowsPs1Shape,
-                InstallLibrimeForkPs1Shape, InstallSandboxed,
-                TimeoutHelper, FutureLanes):
+                InstallLibrimeForkPs1Shape, BuildMacosDmgScriptShape,
+                InstallSandboxed, TimeoutHelper, FutureLanes):
         suite.addTests(loader.loadTestsFromTestCase(cls))
     runner = unittest.TextTestRunner(verbosity=2)
     result = runner.run(suite)

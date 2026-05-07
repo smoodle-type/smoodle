@@ -12,6 +12,7 @@
 
 # Build artifacts (v0.2+)
 build/
+dist/
 *.dylib
 *.o
 # Vendor source trees are gitignored, but patches against them live here
