@@ -52,17 +52,33 @@ $SmoodleDir = (Resolve-Path (Join-Path $ScriptDir '..')).Path
 $RimeDir = if ($env:SMOODLE_RIME_DIR) { $env:SMOODLE_RIME_DIR } `
            else { Join-Path $env:APPDATA 'Rime' }
 
-# Weasel install dir: 0.17.x defaults to "C:\Program Files\Rime\Weasel\"
-# (64-bit). Older builds and 32-bit users may have it under
-# "Program Files (x86)". Auto-detect, then env override wins.
+# Weasel install dir — env override wins; otherwise probe via Find-WeaselPath.
 $WeaselPath = $env:SMOODLE_WEASEL_PATH
-if (-not $WeaselPath) {
-    $candidates = @(
-        (Join-Path $env:ProgramFiles        'Rime\Weasel'),
-        (Join-Path ${env:ProgramFiles(x86)} 'Rime\Weasel')
+if (-not $WeaselPath) { $WeaselPath = Find-WeaselPath }
+
+# Probe all known Weasel install locations.
+# winget (Rime.Weasel) installs to a VERSIONED subdirectory:
+#   C:\Program Files\Rime\weasel-0.17.4\    ← actual path on th-dc test bed
+# NOT the unversioned path we originally assumed:
+#   C:\Program Files\Rime\Weasel\
+# Discovered 2026-05-07 via Get-ChildItem scan.
+function Find-WeaselPath {
+    $parents = @(
+        (Join-Path $env:ProgramFiles        'Rime'),
+        (Join-Path ${env:ProgramFiles(x86)} 'Rime')
     )
-    $WeaselPath = $candidates | Where-Object { Test-Path $_ } | Select-Object -First 1
-    if (-not $WeaselPath) { $WeaselPath = $candidates[0] }   # for the error msg
+    foreach ($parent in $parents) {
+        if (-not (Test-Path $parent)) { continue }
+        # Unversioned path (manual installs or future canonical path).
+        $plain = Join-Path $parent 'Weasel'
+        if (Test-Path $plain) { return $plain }
+        # Versioned path — pick the newest (e.g. weasel-0.17.4).
+        $versioned = Get-ChildItem $parent -Directory -Filter 'weasel-*' -ErrorAction SilentlyContinue |
+                     Sort-Object Name -Descending |
+                     Select-Object -First 1
+        if ($versioned) { return $versioned.FullName }
+    }
+    return $null
 }
 
 $DeployTimeoutSecs = if ($env:SMOODLE_DEPLOY_TIMEOUT_SECS) {
@@ -94,7 +110,7 @@ if (-not (Test-Path $WeaselPath)) {
         exit 1
     }
 
-    Write-Host "Weasel not found at $WeaselPath; installing via winget..."
+    Write-Host 'Weasel not found under C:\Program Files\Rime\ or C:\Program Files (x86)\Rime\; installing via winget...'
     Write-Host '(Weasel installer UI will appear — click through Next/Install/Finish.)'
     Write-Host '(UAC prompt may appear first — this is the only admin step in this script.)'
     # NOTE: deliberately NOT using --silent. Weasel ships an

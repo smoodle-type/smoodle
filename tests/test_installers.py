@@ -273,11 +273,14 @@ class InstallWindowsPs1Shape(unittest.TestCase):
 
     def test_script_auto_detects_weasel_path(self):
         body = INSTALL_WINDOWS_PS1.read_text()
-        # Weasel 0.17.x installs under "C:\Program Files\Rime\Weasel\";
-        # older builds under "Program Files (x86)\Rime\Weasel\". Script
-        # must try both rather than hard-code one.
+        # winget (Rime.Weasel) installs to a versioned subdir discovered
+        # 2026-05-07: C:\Program Files\Rime\weasel-0.17.4\ NOT the
+        # unversioned \Rime\Weasel\ we originally assumed. Script must
+        # scan weasel-* subdirs under both Program Files parents.
         self.assertIn("ProgramFiles", body)
         self.assertIn("ProgramFiles(x86)", body)
+        self.assertIn("weasel-*", body)
+        self.assertIn("Find-WeaselPath", body)
 
     def test_script_does_tsf_defense_in_depth(self):
         body = INSTALL_WINDOWS_PS1.read_text()

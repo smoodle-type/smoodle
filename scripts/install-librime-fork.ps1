@@ -64,16 +64,29 @@ $NonInteractive = ($env:SMOODLE_NONINTERACTIVE -eq '1')
 $CacheDir      = if ($env:SMOODLE_DLL_CACHE_DIR) { $env:SMOODLE_DLL_CACHE_DIR } `
                  else { Join-Path $env:LOCALAPPDATA 'smoodle\librime' }
 
-# Resolve Weasel install dir (same logic as install-windows.ps1).
-$WeaselPath = $env:SMOODLE_WEASEL_PATH
-if (-not $WeaselPath) {
-    $candidates = @(
-        (Join-Path $env:ProgramFiles        'Rime\Weasel'),
-        (Join-Path ${env:ProgramFiles(x86)} 'Rime\Weasel')
+# Weasel install dir — same detection logic as install-windows.ps1.
+# winget installs to a versioned subdir (e.g. C:\Program Files\Rime\weasel-0.17.4\)
+# not the unversioned \Rime\Weasel\ we originally assumed. Probes parent dirs and
+# picks the newest weasel-* subdirectory. SMOODLE_WEASEL_PATH env override wins.
+function Find-WeaselPath {
+    $parents = @(
+        (Join-Path $env:ProgramFiles        'Rime'),
+        (Join-Path ${env:ProgramFiles(x86)} 'Rime')
     )
-    $WeaselPath = $candidates | Where-Object { Test-Path $_ } | Select-Object -First 1
-    if (-not $WeaselPath) { $WeaselPath = $candidates[0] }
+    foreach ($parent in $parents) {
+        if (-not (Test-Path $parent)) { continue }
+        $plain = Join-Path $parent 'Weasel'
+        if (Test-Path $plain) { return $plain }
+        $versioned = Get-ChildItem $parent -Directory -Filter 'weasel-*' -ErrorAction SilentlyContinue |
+                     Sort-Object Name -Descending |
+                     Select-Object -First 1
+        if ($versioned) { return $versioned.FullName }
+    }
+    return $null
 }
+
+$WeaselPath = $env:SMOODLE_WEASEL_PATH
+if (-not $WeaselPath) { $WeaselPath = Find-WeaselPath }
 
 $WeaselDll  = Join-Path $WeaselPath 'rime.dll'
 $BackupDll  = "$WeaselDll.smoodle-backup"
