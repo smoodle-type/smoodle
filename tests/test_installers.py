@@ -285,7 +285,7 @@ class InstallWindowsPs1Shape(unittest.TestCase):
         # raises CommandNotFoundException.
         self.assertNotIn("Find-WeaselPath", body)
 
-def test_script_uses_weaseldeployer_for_deploy(self):
+    def test_script_uses_weaseldeployer_for_deploy(self):
         body = INSTALL_WINDOWS_PS1.read_text()
         # Auto-deploy path: WeaselDeployer.exe /deploy with timeout.
         self.assertIn("WeaselDeployer.exe", body)
