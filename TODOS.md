@@ -361,7 +361,10 @@ install Rime.Weasel` smoke succeeds.
 
 ## 7. Lane B installer scripts — install-windows.ps1 + install-librime-fork.ps1
 
-**Status:** OPEN — unblocked 2026-05-06 (TODO 6 ✓ CLOSED).
+**Status:** ✓ CLOSED 2026-05-07 — end-to-end smoke green on the th-dc
+dockur/windows VM. `sawatd` → สวัสดี candidate #1 with the patched
+librime DLL + smoodle Thai phonetic schema compiled. See discoveries
+below for follow-up hardening before sharing with dogfood users.
 **Created:** 2026-05-06
 **Priority:** Medium — design doc parallel lane.
 
@@ -392,9 +395,48 @@ TSF auto-registers on Win 11 (no CFM #2 mitigation needed for Win 11).
 including resource paths, distribution model (zip+scripts for
 Phase 1), and effort breakdown (2-3 weeks total).
 
-**Done when:** both scripts exist, shape tests in
-`tests/test_installers.ps1` pass, and a manual run on the th-dc
-VM types `sawadee → สวัสดี` end-to-end.
+**Done when:** both scripts exist, shape tests pass, manual run on
+the th-dc VM types `sawadee → สวัสดี`. ✓ Verified 2026-05-07.
+
+**Discoveries during smoke (hardening needed before wide dogfood):**
+
+1. **Weasel installs to versioned subdir** — `C:\Program Files\Rime\weasel-0.17.4\`
+   not `\Rime\Weasel\`. Fixed in install-windows.ps1 + install-librime-fork.ps1
+   via `weasel-*` glob detection. ✓ Landed.
+
+2. **Em-dashes + Thai chars in .ps1 files cause PS5.1 parse errors** —
+   PowerShell 5.1 reads .ps1 files as Windows-1252 by default; UTF-8
+   em-dash bytes (E2 80 **94**) contain 0x94 which is `"` in Windows-1252,
+   breaking string parsing. Fixed by replacing all `—` with ` - ` and
+   Thai `สวัสดี` with `sawatdee` in .ps1 files. ✓ Landed.
+
+3. **install-librime-fork.ps1 still requires gh CLI + 7-Zip** — the Ensure-
+   WingetTool winget installs hang or block in non-interactive SSH sessions.
+   Current workaround: manually extract rime.dll from the CI artifact and
+   place it at `\\host.lan\Data\vendor\rime.dll`, then copy-swap directly.
+   To fix properly: either pre-install gh+7zip in the compose, or repackage
+   the CI artifact as a plain zip (see TODO 5 variant), or ship rime.dll
+   directly in the repo under `vendor/windows/` (acceptable — BSD-3 license).
+
+4. **Schema timestamp issue** — rsync preserves Mac timestamps, which can
+   be older than Weasel's last build. WeaselDeployer skips recompile when
+   schema files appear older than the last build. Fixed by touching schema
+   files and clearing `build/` before running deployer. Need to add this
+   to install-windows.ps1's WeaselDeployer step.
+
+5. **WeaselDeployer can't run from SSH** — headless SSH session has no
+   display; GUI apps including WeaselDeployer.exe and WeaselServer.exe
+   won't stay alive across SSH session boundary. User must click
+   "Deploy" from the tray icon manually. This is acceptable for Phase 1
+   dogfood (Weasel tray is visible) but blocks full automation.
+
+**Next hardening steps (before sharing with diaspora-Thai friends):**
+- Fix schema timestamp issue in install-windows.ps1 (touch files + clear
+  build dir before WeaselDeployer so deploy always fires) — 30 min
+- Decide rime.dll distribution: pre-extract to vendor/windows/ in repo
+  (simplest) vs fix gh+7zip dependency chain — 1-2 hrs
+- Add a note in README that user must click "Deploy" from Weasel tray
+  if WeaselDeployer auto-deploy timed out — 5 min
 
 ---
 
