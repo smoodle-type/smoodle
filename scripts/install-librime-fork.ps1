@@ -64,7 +64,7 @@ $NonInteractive = ($env:SMOODLE_NONINTERACTIVE -eq '1')
 $CacheDir      = if ($env:SMOODLE_DLL_CACHE_DIR) { $env:SMOODLE_DLL_CACHE_DIR } `
                  else { Join-Path $env:LOCALAPPDATA 'smoodle\librime' }
 
-# Weasel install dir — same detection logic as install-windows.ps1.
+# Weasel install dir  -  same detection logic as install-windows.ps1.
 # winget installs to a versioned subdir (e.g. C:\Program Files\Rime\weasel-0.17.4\)
 # not the unversioned \Rime\Weasel\ we originally assumed. Probes parent dirs and
 # picks the newest weasel-* subdirectory. SMOODLE_WEASEL_PATH env override wins.
@@ -117,7 +117,7 @@ function Ensure-WingetTool {
         Write-Error "$DisplayName install via winget failed (exit $LASTEXITCODE)."
         exit 1
     }
-    # winget doesn't refresh PATH for the current session — re-probe known dirs.
+    # winget doesn't refresh PATH for the current session  -  re-probe known dirs.
     foreach ($p in $ExtraPaths) {
         if (Test-Path $p) { return $p }
     }
@@ -283,7 +283,7 @@ if (-not (Test-Path $BackupDll)) {
     Write-Host "Backing up original $WeaselDll -> $BackupDll..."
     Copy-Item -Path $WeaselDll -Destination $BackupDll -Force
 } else {
-    Write-Host "Existing backup at $BackupDll — leaving in place."
+    Write-Host "Existing backup at $BackupDll  -  leaving in place."
 }
 
 Write-Host 'Copying patched DLL...'
@@ -303,7 +303,7 @@ Or via PowerShell (admin):
 
 Verify:
   Type 'sawadee' in Notepad with smoodle Thai phonetic active.
-  Expect candidate window with: สวัสดี
+  Expect candidate window with: sawatdee
 
 Note: a Weasel update via winget upgrade may overwrite this patched
 DLL. Re-run this script to reapply. The artifact at $DllOut is

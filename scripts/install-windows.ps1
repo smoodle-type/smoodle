@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    smoodle Windows installer (Lane B) — schema YAMLs + Weasel auto-deploy.
+    smoodle Windows installer (Lane B)  -  schema YAMLs + Weasel auto-deploy.
 
 .DESCRIPTION
     Copies smoodle's three schema YAMLs into %APPDATA%\Rime\, attempts
@@ -10,10 +10,10 @@
 
     Runs in user scope. Schema YAMLs go to %APPDATA%\Rime\ (user-writeable,
     no admin). The only admin trigger is the one-time `winget install
-    Rime.Weasel` if Weasel isn't already on the box — winget pops UAC for
+    Rime.Weasel` if Weasel isn't already on the box  -  winget pops UAC for
     the MSI bootstrap, you click Yes once, done. After Weasel is installed,
     re-runs of this script are no-UAC. Pair with install-librime-fork.ps1
-    to swap the patched librime DLL — that script DOES require admin
+    to swap the patched librime DLL  -  that script DOES require admin
     elevation up front.
 
     Pre-flight checks:
@@ -52,12 +52,12 @@ $SmoodleDir = (Resolve-Path (Join-Path $ScriptDir '..')).Path
 $RimeDir = if ($env:SMOODLE_RIME_DIR) { $env:SMOODLE_RIME_DIR } `
            else { Join-Path $env:APPDATA 'Rime' }
 
-# Weasel install dir — env override wins; otherwise probe the filesystem.
-# winget (Rime.Weasel) installs to a VERSIONED subdirectory — discovered
+# Weasel install dir  -  env override wins; otherwise probe the filesystem.
+# winget (Rime.Weasel) installs to a VERSIONED subdirectory  -  discovered
 # 2026-05-07 on the th-dc test bed: C:\Program Files\Rime\weasel-0.17.4\
 # NOT the unversioned \Rime\Weasel\ we originally assumed (registry
 # InstallLocation blank; not on PATH; only Get-ChildItem found it).
-# PowerShell 5.1 requires inline code here — calling a function defined
+# PowerShell 5.1 requires inline code here  -  calling a function defined
 # later in the same script fails with CommandNotFoundException.
 $WeaselPath = $env:SMOODLE_WEASEL_PATH
 if (-not $WeaselPath) {
@@ -95,7 +95,7 @@ Write-Host ''
 
 # ---------------------------------------------------------------------------
 # Pre-flight #1: Weasel host present (auto-install via winget if missing).
-# Skip auto-install when SMOODLE_WEASEL_PATH is explicitly set — caller
+# Skip auto-install when SMOODLE_WEASEL_PATH is explicitly set  -  caller
 # is asserting a non-default path and we should respect that.
 # ---------------------------------------------------------------------------
 if (-not (Test-Path $WeaselPath)) {
@@ -105,8 +105,8 @@ if (-not (Test-Path $WeaselPath)) {
     }
 
     Write-Host 'Weasel not found under C:\Program Files\Rime\ or C:\Program Files (x86)\Rime\; installing via winget...'
-    Write-Host '(Weasel installer UI will appear — click through Next/Install/Finish.)'
-    Write-Host '(UAC prompt may appear first — this is the only admin step in this script.)'
+    Write-Host '(Weasel installer UI will appear  -  click through Next/Install/Finish.)'
+    Write-Host '(UAC prompt may appear first  -  this is the only admin step in this script.)'
     # NOTE: deliberately NOT using --silent. Weasel ships an
     # Inno Setup installer that hangs forever on `--silent` (the
     # silent-mode handshake is incomplete; winget shows a spinner
@@ -225,7 +225,7 @@ Files installed. To verify:
   2. Press Win+Space, switch to 'smoodle Thai phonetic' (or 'Weasel'
      and switch schema via Ctrl+`).
   3. Open Notepad and type 'sawadee'.
-     Expect candidate window with: สวัสดี
+     Expect candidate window with: sawatdee
 
 If 'smoodle Thai phonetic' does not appear in the schema switcher:
   - Verify $RimeDir contains the three YAML files above.
@@ -235,6 +235,6 @@ If 'smoodle Thai phonetic' does not appear in the schema switcher:
 Note: this installs the schema YAMLs only. To get the patched librime
 that fixes the algebra-vs-direct ranking on first lookup, also run:
   powershell -ExecutionPolicy Bypass -File .\scripts\install-librime-fork.ps1
-That script requires admin (writes to Program Files) — re-launch from
+That script requires admin (writes to Program Files)  -  re-launch from
 an elevated PowerShell if it errors.
 "@
