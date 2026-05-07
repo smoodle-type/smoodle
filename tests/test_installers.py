@@ -123,6 +123,8 @@ class InstallLibrimeForkScriptShape(unittest.TestCase):
         for var in (
             "SMOODLE_LIBRIME_FORK_URL",
             "SMOODLE_LIBRIME_FORK_TAG",
+            "SMOODLE_RELEASE_URL",
+            "SMOODLE_SKIP_DOWNLOAD",
             "SMOODLE_SQUIRREL_PATH",
             "SMOODLE_SKIP_BUILD",
             "SMOODLE_SKIP_SWAP",
@@ -143,6 +145,13 @@ class InstallLibrimeForkScriptShape(unittest.TestCase):
         for dep in ("cmake", "boost", "leveldb", "marisa", "yaml-cpp",
                     "opencc", "googletest", "pkg-config", "ninja", "glog"):
             self.assertIn(dep, body, f"BREW_DEPS missing: {dep}")
+
+    def test_script_downloads_prebuilt_dylib_by_default(self):
+        body = INSTALL_LIBRIME_SH.read_text()
+        # Default path: curl from GitHub Releases, no Xcode required.
+        self.assertIn("releases/download", body)
+        self.assertIn("macOS-universal.dylib", body)
+        self.assertIn("curl", body)
 
     def test_script_backs_up_before_swap(self):
         body = INSTALL_LIBRIME_SH.read_text()
