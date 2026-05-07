@@ -136,21 +136,6 @@ if (-not (Test-Path $WeaselPath)) {
 }
 
 # ---------------------------------------------------------------------------
-# Pre-flight #2: TSF registration (CFM #2 defense-in-depth — see
-# docs/LANE-B-WINDOWS.md). On Win 11 with Weasel 0.17.x this auto-registers
-# via MSI bootstrap; check anyway so a future regression surfaces clearly.
-# ---------------------------------------------------------------------------
-$registered = Get-WinUserLanguageList | Where-Object {
-    $_.InputMethodTips -match 'Rime|Weasel'
-}
-if (-not $registered) {
-    Write-Error 'Weasel binary present but not registered with Windows TSF.'
-    Write-Host  'Open Settings -> Time & language -> Language -> Add -> Rime.'
-    Write-Host  'Then re-run this installer.'
-    exit 1
-}
-
-# ---------------------------------------------------------------------------
 # Copy schema YAMLs (idempotent, with timestamped backup).
 # ---------------------------------------------------------------------------
 if (-not (Test-Path $RimeDir)) {

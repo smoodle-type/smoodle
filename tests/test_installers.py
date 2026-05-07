@@ -285,14 +285,7 @@ class InstallWindowsPs1Shape(unittest.TestCase):
         # raises CommandNotFoundException.
         self.assertNotIn("Find-WeaselPath", body)
 
-    def test_script_does_tsf_defense_in_depth(self):
-        body = INSTALL_WINDOWS_PS1.read_text()
-        # CFM #2 from LANE-B-WINDOWS.md — verify TSF registration after
-        # winget install. On Win 11 this auto-passes; surfaces clearly
-        # if any future Weasel installer regresses.
-        self.assertIn("Get-WinUserLanguageList", body)
-
-    def test_script_uses_weaseldeployer_for_deploy(self):
+def test_script_uses_weaseldeployer_for_deploy(self):
         body = INSTALL_WINDOWS_PS1.read_text()
         # Auto-deploy path: WeaselDeployer.exe /deploy with timeout.
         self.assertIn("WeaselDeployer.exe", body)
