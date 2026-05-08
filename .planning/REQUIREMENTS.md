@@ -129,57 +129,57 @@ Explicitly excluded from Phase 1 finish. Documented to prevent scope creep mid-p
 
 ## Traceability
 
-Empty until roadmapper runs; populated when ROADMAP.md lands.
+All 41 v1 REQ-IDs mapped to phases by ROADMAP.md (2026-05-08).
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| LINT-01 | TBD | Pending |
-| LINT-02 | TBD | Pending |
-| LINT-03 | TBD | Pending |
-| LINT-04 | TBD | Pending |
-| E2EMAC-01 | TBD | Pending |
-| E2EMAC-02 | TBD | Pending |
-| E2EMAC-03 | TBD | Pending |
-| E2EMAC-04 | TBD | Pending |
-| E2EMAC-05 | TBD | Pending |
-| E2EWIN-01 | TBD | Pending |
-| E2EWIN-02 | TBD | Pending |
-| E2EWIN-03 | TBD | Pending |
-| E2EWIN-04 | TBD | Pending |
-| E2EWIN-05 | TBD | Pending |
-| TELEM-01 | TBD | Pending |
-| TELEM-02 | TBD | Pending |
-| TELEM-03 | TBD | Pending |
-| TELEM-04 | TBD | Pending |
-| TELEM-05 | TBD | Pending |
-| TELEM-06 | TBD | Pending |
-| TELEM-07 | TBD | Pending |
-| TELEM-08 | TBD | Pending |
-| TELEM-09 | TBD | Pending |
-| HARDEN-01 | TBD | Pending |
-| HARDEN-02 | TBD | Pending |
-| HARDEN-03 | TBD | Pending |
-| HARDEN-04 | TBD | Pending |
-| HARDEN-05 | TBD | Pending |
-| HARDEN-06 | TBD | Pending |
-| HARDEN-07 | TBD | Pending |
-| DOCS-01 | TBD | Pending |
-| DOCS-02 | TBD | Pending |
-| DOCS-03 | TBD | Pending |
-| DOCS-04 | TBD | Pending |
-| DOCS-05 | TBD | Pending |
-| DOCS-06 | TBD | Pending |
-| DOCS-07 | TBD | Pending |
-| GATE-01 | TBD | Pending |
-| GATE-02 | TBD | Pending |
-| GATE-03 | TBD | Pending |
-| GATE-04 | TBD | Pending |
+| LINT-01 | Phase 1 | Pending |
+| LINT-02 | Phase 1 | Pending |
+| LINT-03 | Phase 1 | Pending |
+| LINT-04 | Phase 1 | Pending |
+| E2EMAC-01 | Phase 2 | Pending |
+| E2EMAC-02 | Phase 2 | Pending |
+| E2EMAC-03 | Phase 2 | Pending |
+| E2EMAC-04 | Phase 2 | Pending |
+| E2EMAC-05 | Phase 2 | Pending |
+| E2EWIN-01 | Phase 3 | Pending |
+| E2EWIN-02 | Phase 3 | Pending |
+| E2EWIN-03 | Phase 3 | Pending |
+| E2EWIN-04 | Phase 3 | Pending |
+| E2EWIN-05 | Phase 3 | Pending |
+| TELEM-01 | Phase 4 | Pending |
+| TELEM-02 | Phase 4 | Pending |
+| TELEM-03 | Phase 4 | Pending |
+| TELEM-04 | Phase 4 | Pending |
+| TELEM-05 | Phase 4 | Pending |
+| TELEM-06 | Phase 4 | Pending |
+| TELEM-07 | Phase 4 | Pending |
+| TELEM-08 | Phase 4 | Pending |
+| TELEM-09 | Phase 4 | Pending |
+| HARDEN-01 | Phase 5 | Pending |
+| HARDEN-02 | Phase 5 | Pending |
+| HARDEN-03 | Phase 5 | Pending |
+| HARDEN-04 | Phase 5 | Pending |
+| HARDEN-05 | Phase 5 | Pending |
+| HARDEN-06 | Phase 5 | Pending |
+| HARDEN-07 | Phase 5 | Pending |
+| DOCS-01 | Phase 6 | Pending |
+| DOCS-02 | Phase 6 | Pending |
+| DOCS-03 | Phase 6 | Pending |
+| DOCS-04 | Phase 6 | Pending |
+| DOCS-05 | Phase 6 | Pending |
+| DOCS-06 | Phase 6 | Pending |
+| DOCS-07 | Phase 6 | Pending |
+| GATE-01 | Phase 7 | Pending |
+| GATE-02 | Phase 7 | Pending |
+| GATE-03 | Phase 7 | Pending |
+| GATE-04 | Phase 7 | Pending |
 
 **Coverage:**
 - v1 requirements: 41 total
-- Mapped to phases: 0 (pending roadmapper)
-- Unmapped: 41 ⚠️ (will be 0 after roadmap creation)
+- Mapped to phases: 41 ✓
+- Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-05-08*
-*Last updated: 2026-05-08 after initial definition (imported from PHASE1-PROMPT.md + research SUMMARY.md)*
+*Last updated: 2026-05-08 — traceability populated from ROADMAP.md (7 phases, 41/41 mapped).*
