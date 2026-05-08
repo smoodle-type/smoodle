@@ -1,14 +1,14 @@
 <#
 .SYNOPSIS
     smoodle: install the patched librime DLL fetched from the
-    LoneExile/librime fork's smoodle-build CI artifact.
+    smoodle-type/librime fork's smoodle-build CI artifact.
 
 .DESCRIPTION
     Lane B parallel of scripts/install-librime-fork.sh on macOS, but
     distribution model is "download pre-built artifact" rather than
     "build from source." Reasons: vcpkg + MSVC bootstrap is hostile
     to embed in an end-user installer, and the smoodle-build CI on
-    LoneExile/librime already produces validated x64 / x86 / clang /
+    smoodle-type/librime already produces validated x64 / x86 / clang /
     mingw artifacts on every push. Saves ~3-5 GB of dev tooling on the
     user's machine and ~30 min of build time.
 
@@ -27,7 +27,7 @@
       8. Swap in the patched DLL.
 
     Env overrides:
-      SMOODLE_LIBRIME_FORK_REPO     gh repo  (default: LoneExile/librime)
+      SMOODLE_LIBRIME_FORK_REPO     gh repo  (default: smoodle-type/librime)
       SMOODLE_LIBRIME_FORK_RUN_ID   specific run id (default: latest success)
       SMOODLE_LIBRIME_VARIANT       msvc-x64 / msvc-x86 / clang-x64 / mingw
                                      (default: msvc-x64)
@@ -45,7 +45,7 @@
 .NOTES
     Why not build from source? Phase 1 dogfood ships a known-good
     DLL that already passes upstream's CI matrix. If a user wants to
-    build locally, point them at vendor/librime + LoneExile/librime
+    build locally, point them at vendor/librime + smoodle-type/librime
     smoodle-build.yml. That's a developer concern, not an installer one.
 #>
 
@@ -59,7 +59,7 @@ $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 # ---------------------------------------------------------------------------
 # Config (env or default).
 # ---------------------------------------------------------------------------
-$ForkRepo     = if ($env:SMOODLE_LIBRIME_FORK_REPO)   { $env:SMOODLE_LIBRIME_FORK_REPO }   else { 'LoneExile/librime' }
+$ForkRepo     = if ($env:SMOODLE_LIBRIME_FORK_REPO)   { $env:SMOODLE_LIBRIME_FORK_REPO }   else { 'smoodle-type/librime' }
 $RunIdOverride = $env:SMOODLE_LIBRIME_FORK_RUN_ID
 $Variant       = if ($env:SMOODLE_LIBRIME_VARIANT)    { $env:SMOODLE_LIBRIME_VARIANT }    else { 'msvc-x64' }
 $SkipDownload  = ($env:SMOODLE_SKIP_DOWNLOAD -eq '1')

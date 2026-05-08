@@ -121,7 +121,7 @@ Uninstall
 Note: Squirrel's built-in auto-updater can overwrite the patched librime.
 If Thai input stops working after a Squirrel update, re-run "Install Smoodle.command".
 
-Source: https://github.com/LoneExile/smoodle
+Source: https://github.com/smoodle-type/smoodle
 README
 echo "✓ README.txt generated"
 
@@ -150,4 +150,4 @@ echo "  size:   ${size_kb} KB"
 echo "  sha256: ${sha256}"
 echo
 echo "To upload to GitHub Releases:"
-echo "  gh release upload v${VERSION} \"${OUT_DMG}\" -R LoneExile/smoodle"
+echo "  gh release upload v${VERSION} \"${OUT_DMG}\" -R smoodle-type/smoodle"

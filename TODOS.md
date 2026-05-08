@@ -16,7 +16,7 @@ Triggers to un-defer: (a) fork maintenance burden surfaces during
 Phase 1.5/2 plugin work, (b) another Rime schema author hits the
 same bug and asks, or (c) a quiet weekend with appetite for OSS work.
 **Created:** 2026-05-05 (eng review, /plan-eng-review)
-**Priority:** Low — Path A + LoneExile/librime fork (TODO 3, kickoff
+**Priority:** Low — Path A + smoodle-type/librime fork (TODO 3, kickoff
 2026-05-05) absorbs the patch via fork. Upstream merge becomes
 optional / community-goodwill / fork-retirement trigger; not gating
 any Phase 1 milestone.

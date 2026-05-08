@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # smoodle: install the patched librime fork into Squirrel.app
 #
-# Downloads a pre-built universal macOS dylib from the LoneExile/librime
+# Downloads a pre-built universal macOS dylib from the smoodle-type/librime
 # GitHub Release for the smoodle fork tag, then swaps it into Squirrel.app's
 # Frameworks/ dir.  No Xcode or brew deps required for the download path.
 #
@@ -20,7 +20,7 @@
 #                               Releases asset for SMOODLE_LIBRIME_FORK_TAG)
 #   SMOODLE_SKIP_DOWNLOAD     — "1" to skip download and build from source
 #   SMOODLE_LIBRIME_FORK_URL  — git URL for source builds
-#                               (default: https://github.com/LoneExile/librime.git)
+#                               (default: https://github.com/smoodle-type/librime.git)
 #   SMOODLE_SQUIRREL_PATH     — default: /Library/Input Methods/Squirrel.app
 #   SMOODLE_SKIP_BUILD        — "1" to skip make (use dylib from download or
 #                               a prior build)
@@ -33,7 +33,7 @@ set -euo pipefail
 REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 LIBRIME_DIR="${REPO_DIR}/vendor/librime"
 FORK_TAG="${SMOODLE_LIBRIME_FORK_TAG:-1.16.0-smoodle.1}"
-FORK_URL="${SMOODLE_LIBRIME_FORK_URL:-https://github.com/LoneExile/librime.git}"
+FORK_URL="${SMOODLE_LIBRIME_FORK_URL:-https://github.com/smoodle-type/librime.git}"
 SQUIRREL_PATH="${SMOODLE_SQUIRREL_PATH:-/Library/Input Methods/Squirrel.app}"
 SQUIRREL_DYLIB_DIR="${SQUIRREL_PATH}/Contents/Frameworks"
 SQUIRREL_DYLIB="${SQUIRREL_DYLIB_DIR}/librime.1.dylib"
@@ -41,7 +41,7 @@ BACKUP_DYLIB="${SQUIRREL_DYLIB}.smoodle-backup"
 BUILT_DYLIB="${LIBRIME_DIR}/build/lib/librime.1.16.0.dylib"
 
 _ASSET_NAME="librime-${FORK_TAG}-macOS-universal.dylib"
-RELEASE_URL="${SMOODLE_RELEASE_URL:-https://github.com/LoneExile/librime/releases/download/${FORK_TAG}/${_ASSET_NAME}}"
+RELEASE_URL="${SMOODLE_RELEASE_URL:-https://github.com/smoodle-type/librime/releases/download/${FORK_TAG}/${_ASSET_NAME}}"
 SKIP_DOWNLOAD="${SMOODLE_SKIP_DOWNLOAD:-0}"
 SKIP_BUILD="${SMOODLE_SKIP_BUILD:-0}"
 SKIP_SWAP="${SMOODLE_SKIP_SWAP:-0}"

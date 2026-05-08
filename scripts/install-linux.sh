@@ -9,7 +9,7 @@
 # This installer does NOT swap libRime.so. Linux uses the distro's
 # system librime (apt/pacman), which lacks the
 # DictEntryIterator::Peek first-call sort fix shipped on macOS via
-# the LoneExile/librime fork. See "Ranking limitation" in the
+# the smoodle-type/librime fork. See "Ranking limitation" in the
 # trailing test instructions.
 #
 # Usage: ./scripts/install-linux.sh
@@ -170,7 +170,7 @@ Workaround: type the input, press space (or arrow-down) to commit,
 retype — second lookup ranks correctly.
 
 This is fixed in smoodle's macOS build via a librime fork
-(LoneExile/librime, tag 1.16.0-smoodle.1). Distributing a forked
+(smoodle-type/librime, tag 1.16.0-smoodle.1). Distributing a forked
 librime on Linux is out of scope for Phase 1; revisited if Linux
 dogfood signal materialises.
 ================================================================

@@ -103,7 +103,7 @@ class InstallScriptShape(unittest.TestCase):
 class InstallLibrimeForkScriptShape(unittest.TestCase):
     """Shape and syntax checks for scripts/install-librime-fork.sh.
 
-    The script builds the smoodle-patched librime from the LoneExile fork
+    The script builds the smoodle-patched librime from the smoodle-type fork
     and swaps it into Squirrel's Frameworks/. The actual build+swap
     requires sudo + ~5-15 min of make time, so end-to-end coverage stays
     in FutureLanes (E2E only). Shape checks catch drift cheaply.
@@ -136,7 +136,7 @@ class InstallLibrimeForkScriptShape(unittest.TestCase):
 
     def test_script_references_fork_and_tag(self):
         body = INSTALL_LIBRIME_SH.read_text()
-        self.assertIn("LoneExile/librime", body)
+        self.assertIn("smoodle-type/librime", body)
         self.assertIn("1.16.0-smoodle.1", body)
 
     def test_script_lists_required_brew_deps(self):
@@ -215,7 +215,7 @@ class InstallLinuxScriptShape(unittest.TestCase):
         # The ranking limitation must be surfaced to the user post-install
         # so the algebra-vs-direct collision behavior isn't a mystery bug.
         self.assertIn("RANKING LIMITATION", body)
-        self.assertIn("LoneExile/librime", body)
+        self.assertIn("smoodle-type/librime", body)
 
     def test_script_errors_when_no_im_running(self):
         # SMOODLE_IM unset + no fcitx5/ibus process → exit non-zero with
@@ -357,7 +357,7 @@ class InstallWindowsPs1Shape(unittest.TestCase):
 class InstallLibrimeForkPs1Shape(unittest.TestCase):
     """Shape checks for scripts/install-librime-fork.ps1 (Lane B).
 
-    The script downloads a pre-built rime.dll from the LoneExile fork's
+    The script downloads a pre-built rime.dll from the smoodle-type fork's
     smoodle-build CI artifact (instead of building locally — vcpkg +
     MSVC bootstrap is hostile to put in an end-user installer).
     """
@@ -381,7 +381,7 @@ class InstallLibrimeForkPs1Shape(unittest.TestCase):
 
     def test_script_references_fork_repo_default(self):
         body = INSTALL_LIBRIME_PS1.read_text()
-        self.assertIn("LoneExile/librime", body)
+        self.assertIn("smoodle-type/librime", body)
 
     def test_script_uses_smoodle_build_workflow(self):
         body = INSTALL_LIBRIME_PS1.read_text()
