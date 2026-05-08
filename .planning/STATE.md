@@ -1,7 +1,7 @@
 # Project State: Smoodle Phase 1 Finish
 
 **Last updated:** 2026-05-08
-**Status:** READY-TO-START
+**Status:** READY-TO-EXECUTE (Phase 1 planned)
 **Mode:** yolo
 
 ## Project Reference
@@ -23,17 +23,18 @@
 
 ## Current Position
 
-**Phase:** none-yet (roadmap just created)
-**Plan:** none-yet
-**Status:** READY-TO-START
-**Next action:** `/gsd-plan-phase 1` — break Phase 1 (Lane F: Lint & CI Fast Path) into plans.
+**Phase:** 1 (Lane F: Lint & CI Fast Path)
+**Plans:** 2 plans in 2 waves (01-01 schema-lint+yamllint Wave 1, 01-02 ci.yml+ps1-ASCII Wave 2)
+**Status:** READY-TO-EXECUTE
+**Next action:** `/gsd-execute-phase 1` — Wave 1 runs autonomous; Wave 2 has a `checkpoint:human-verify` task that requires manually pushing 3 smoke-test PRs (README-only green, schema-break red, ps1-non-ASCII red).
 
 ```
-Roadmap progress: [□□□□□□□] 0/7 phases complete
+Roadmap progress: [▣□□□□□□] 0/7 phases complete (Phase 1 planned, not yet executed)
                    ^
-                   currently at Phase 1 entry (not started)
+                   currently at Phase 1 entry — plans landed 2026-05-08
 
 Coverage: 41/41 requirements mapped ✓
+Phase 1 plan coverage: 4/4 LINT REQ-IDs (LINT-01,02 in 01-01; LINT-03,04 in 01-02) ✓
 ```
 
 ## Performance Metrics

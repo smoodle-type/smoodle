@@ -37,7 +37,18 @@ Wrap Phase 1 of Smoodle: ship the Lane E (mac+win E2E), schema lint, opt-in tele
   2. `.yamllint` config exists at repo root; `yamllint schema/*.yaml schema/default.custom.yaml` exits 0 on the v0.0.6 baseline.
   3. `.github/workflows/ci.yml` is green on a fresh PR that touches only `README.md`; same workflow fails red on a PR that introduces a schema regression or a non-ASCII byte in a `.ps1` file.
   4. `bash -n scripts/install*.sh` and `pwsh -NoProfile -c "[scriptblock]::Create((Get-Content -Raw scripts/install-windows.ps1))"` both run as gated steps inside `ci.yml` and surface syntax errors.
-**Plans**: TBD
+**Plans**: 2 plans (2 waves)
+
+  **Wave 1 (autonomous):**
+  - [ ] 01-01-PLAN.md — Schema lint validator + .yamllint config + 4 broken-schema fixtures (LINT-01, LINT-02)
+
+  **Wave 2** *(blocked on Wave 1 completion; autonomous: no — checkpoint:human-verify)*:
+  - [ ] 01-02-PLAN.md — ci.yml ubuntu-latest fast path + tests/test_powershell_ascii.py + 3 smoke-test PRs (LINT-03, LINT-04)
+
+  **Cross-cutting constraints** (apply to both plans):
+  - CP-5 boundary: schema lint validates STRUCTURE only (key allowlist, malformed weights, import_preset, algebra rule shape) — NOT regex semantics. Engine-mode test (`test_dict.py --use-rime-api-console`) is the regex oracle.
+  - Two-tier CI: `ci.yml` is ubuntu-latest only. NOT a 3-OS matrix on every PR.
+  - Tests use Python `unittest` (matches `tests/test_installers.py`), NOT pytest.
 
 ### Phase 2: macOS E2E (Lane E1)
 **Goal**: A regression in `scripts/install.sh` or `scripts/install-librime-fork.sh` is caught automatically by GHA before reaching the founder's dogfood machine, on a `macos-15` runner with explicit GUI-step gating so passing CI does not falsely imply the `osascript`/Accessibility flow works.
