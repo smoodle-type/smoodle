@@ -1,7 +1,7 @@
 # Project State: Smoodle Phase 1 Finish
 
-**Last updated:** 2026-05-08
-**Status:** READY-TO-EXECUTE (Phase 1 planned)
+**Last updated:** 2026-05-09
+**Status:** EXECUTING-PHASE-1 (Wave 2 ready)
 **Mode:** yolo
 
 ## Project Reference
@@ -24,9 +24,9 @@
 ## Current Position
 
 **Phase:** 1 (Lane F: Lint & CI Fast Path)
-**Plans:** 2 plans in 2 waves (01-01 schema-lint+yamllint Wave 1, 01-02 ci.yml+ps1-ASCII Wave 2)
-**Status:** READY-TO-EXECUTE
-**Next action:** `/gsd-execute-phase 1` — Wave 1 runs autonomous; Wave 2 has a `checkpoint:human-verify` task that requires manually pushing 3 smoke-test PRs (README-only green, schema-break red, ps1-non-ASCII red).
+**Plans:** 2 plans in 2 waves (01-01 schema-lint+yamllint Wave 1 COMPLETE, 01-02 ci.yml+ps1-ASCII Wave 2)
+**Status:** 01-01 complete; 01-02 next (Wave 2)
+**Next action:** `/gsd-execute-phase 1` Wave 2 — 01-02-PLAN.md: ci.yml ubuntu-latest fast path + tests/test_powershell_ascii.py + 3 smoke-test PRs (LINT-03, LINT-04). Wave 2 has a `checkpoint:human-verify` task.
 
 ```
 Roadmap progress: [▣□□□□□□] 0/7 phases complete (Phase 1 planned, not yet executed)

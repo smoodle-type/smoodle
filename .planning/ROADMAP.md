@@ -40,7 +40,7 @@ Wrap Phase 1 of Smoodle: ship the Lane E (mac+win E2E), schema lint, opt-in tele
 **Plans**: 2 plans (2 waves)
 
   **Wave 1 (autonomous):**
-  - [ ] 01-01-PLAN.md — Schema lint validator + .yamllint config + 4 broken-schema fixtures (LINT-01, LINT-02)
+  - [x] 01-01-PLAN.md — Schema lint validator + .yamllint config + 4 broken-schema fixtures (LINT-01, LINT-02)
 
   **Wave 2** *(blocked on Wave 1 completion; autonomous: no — checkpoint:human-verify)*:
   - [ ] 01-02-PLAN.md — ci.yml ubuntu-latest fast path + tests/test_powershell_ascii.py + 3 smoke-test PRs (LINT-03, LINT-04)
@@ -128,7 +128,7 @@ Wrap Phase 1 of Smoodle: ship the Lane E (mac+win E2E), schema lint, opt-in tele
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Lint & CI Fast Path | 0/? | Not started | - |
+| 1. Lint & CI Fast Path | 1/2 | In progress | - |
 | 2. macOS E2E | 0/? | Not started | - |
 | 3. Windows E2E | 0/? | Not started | - |
 | 4. Telemetry | 0/? | Not started | - |
