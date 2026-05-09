@@ -263,3 +263,4 @@ that fixes the algebra-vs-direct ranking on first lookup, also run:
 That script requires admin (writes to Program Files)  -  re-launch from
 an elevated PowerShell if it errors.
 "@
+# em-dash test —
