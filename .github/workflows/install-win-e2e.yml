@@ -1,0 +1,191 @@
+name: install-win e2e
+
+# Lane E2 - Windows E2E. Two-tier CI: this is the SLOW path (~3-7 min), opt-in.
+# Phase 1 ci.yml (ubuntu-only, ~20s) gates every PR; this gates installer changes.
+# Locked decisions (Plan 03-01): windows-latest runner, paths-filter,
+# workflow_dispatch, weekly cron Mon 08:00 UTC. Clean-slate per CP-4.
+# GUI gate via SMOODLE_AUTO_DEPLOY=0. Authenticode regression guard via
+# Pester driver.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - scripts/install*.ps1
+      - schema/**
+      - .github/workflows/install-win-e2e.yml
+  pull_request:
+    paths:
+      - scripts/install*.ps1
+      - schema/**
+      - .github/workflows/install-win-e2e.yml
+  workflow_dispatch:
+  schedule:
+    # Monday 08:00 UTC (offset +1h from Phase 2's mac cron at 07:00 UTC) -
+    # spreads cron load across the GHA org to reduce flake correlation
+    # if the hosted-runner pool wobbles at the top of the hour.
+    - cron: '0 8 * * 1'
+
+jobs:
+  install-win:
+    name: Lane E2 Windows E2E (windows-latest)
+    runs-on: windows-latest
+    timeout-minutes: 30
+
+    # All steps default to PowerShell 5.1 on windows-latest. Pester 5.x is
+    # preinstalled on the actions/runner-images windows-latest images
+    # (verified 2026-04 via runner-images repo). No module install needed.
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Show runner identity
+        # Sanity: confirm we are on windows-latest + which Win release the
+        # runner image is currently pinned to (windows-2022 vs windows-2025
+        # transition is in flight; the weekly cron surfaces image upgrades
+        # before users hit them).
+        shell: pwsh
+        run: |
+          [Environment]::OSVersion
+          $PSVersionTable
+          Import-Module Pester -MinimumVersion 5.0.0
+          (Get-Module Pester).Version
+
+      - name: Clean-slate %APPDATA%\Rime + %LOCALAPPDATA%\Rime (CP-4 prevention)
+        # PITFALLS CP-4 names %APPDATA%\Rime\ caching across jobs as the
+        # canonical Win false-confidence vector for E2E. -ErrorAction
+        # SilentlyContinue is safe on the very first job (clean runner)
+        # where the dirs do not exist; the Pester driver's Clean-slate
+        # Describe block re-asserts EMPTINESS before install-windows.ps1
+        # runs (idempotency belt-and-suspenders).
+        shell: pwsh
+        run: |
+          Remove-Item -Recurse -Force -ErrorAction SilentlyContinue $env:APPDATA\Rime, "$env:LOCALAPPDATA\Rime"
+          Write-Host "Clean-slate Remove-Item completed (errors silently ignored if dirs absent on first job)"
+
+      - name: Install Weasel via winget (with 5-min timeout cap)
+        # winget Rime.Weasel ships an Inno Setup installer. install-windows.ps1's
+        # own winget call uses --interactive (lines 110-122) which is impossible
+        # on github-hosted (no desktop session). For CI we use --silent and
+        # accept the documented hang risk, capped by Start-Process -Wait
+        # at 300s. If winget hangs, kill it RED rather than letting the GHA
+        # runner sit at the 6-hour default timeout.
+        # EQUIVALENT-RISK CALL-OUT: this is the Win analog of Phase 2's
+        # Homebrew --no-quarantine d4ba9db incident. If winget hangs / package
+        # name drifts at execute time, escalate to gsd-checker - do NOT silently
+        # mask with `|| true`.
+        shell: pwsh
+        run: |
+          $proc = Start-Process -FilePath winget `
+                                -ArgumentList 'install','--id','Rime.Weasel',
+                                              '--silent','--accept-source-agreements',
+                                              '--accept-package-agreements' `
+                                -PassThru -NoNewWindow
+          if (-not $proc.WaitForExit(300 * 1000)) {
+              try { $proc.Kill() } catch {}
+              Write-Error "ERROR: winget install Rime.Weasel hung past 300s timeout. PITFALLS-style external regression suspected (Inno Setup --silent handshake or package name drift). Escalate to gsd-checker."
+              exit 1
+          }
+          if ($proc.ExitCode -ne 0) {
+              Write-Error "ERROR: winget install Rime.Weasel exited non-zero ($($proc.ExitCode)). Check whether Rime.Weasel package id is still valid (Win equivalent of Phase 2's Homebrew --no-quarantine deprecation incident)."
+              exit 1
+          }
+          Write-Host "winget install Rime.Weasel succeeded ($($proc.ExitCode))"
+
+      - name: Resolve Weasel install path (versioned subdir)
+        # winget installs Rime.Weasel to a VERSIONED subdir (e.g.
+        # C:\Program Files\Rime\weasel-0.17.4\) NOT the unversioned
+        # \Rime\Weasel\. Mirror install-windows.ps1's probe logic and
+        # export SMOODLE_WEASEL_PATH so the driver and install-windows.ps1
+        # both consume the same path.
+        shell: pwsh
+        run: |
+          $WeaselPath = $null
+          foreach ($parent in @(
+              (Join-Path $env:ProgramFiles        'Rime'),
+              (Join-Path ${env:ProgramFiles(x86)} 'Rime')
+          )) {
+              if (-not (Test-Path $parent)) { continue }
+              $plain = Join-Path $parent 'Weasel'
+              if (Test-Path $plain) { $WeaselPath = $plain; break }
+              $versioned = Get-ChildItem $parent -Directory -Filter 'weasel-*' -ErrorAction SilentlyContinue |
+                           Sort-Object Name -Descending | Select-Object -First 1
+              if ($versioned) { $WeaselPath = $versioned.FullName; break }
+          }
+          if (-not $WeaselPath) {
+              Write-Error "ERROR: Weasel install path not found after winget install."
+              exit 1
+          }
+          Write-Host "Resolved Weasel install path: $WeaselPath"
+          # Export to subsequent steps via $env:GITHUB_ENV.
+          "SMOODLE_WEASEL_PATH=$WeaselPath" | Out-File -Encoding utf8 -Append $env:GITHUB_ENV
+          # Also confirm rime.dll exists at the resolved path (Pester driver
+          # asserts this in Describe 4; this is a fail-fast check before
+          # the driver runs).
+          $WeaselDll = Join-Path $WeaselPath 'rime.dll'
+          if (-not (Test-Path $WeaselDll)) {
+              Write-Error "ERROR: rime.dll not found at $WeaselDll after winget install."
+              exit 1
+          }
+          Write-Host "rime.dll present at $WeaselDll"
+
+      - name: Run Pester E2E driver (E2EWIN-01, E2EWIN-04, E2EWIN-05)
+        # Driver runs install-windows.ps1 internally with SMOODLE_AUTO_DEPLOY=0
+        # + SMOODLE_NONINTERACTIVE=1, then asserts:
+        # - Clean-slate idempotency (Describe 1)
+        # - Schema files installed + dict.yaml SHA match (Describe 2)
+        # - GUI-skip 'manual deploy required' token (Describe 3)
+        # - Authenticode NotSigned regression guard (Describe 4)
+        shell: pwsh
+        run: |
+          Import-Module Pester -MinimumVersion 5.0.0
+          $config = New-PesterConfiguration
+          $config.Run.Path = 'tests/test_install_e2e_win.ps1'
+          $config.Output.Verbosity = 'Detailed'
+          $config.Run.Exit = $true
+          $config.Run.PassThru = $true
+          $result = Invoke-Pester -Configuration $config
+          if ($result.Result -ne 'Passed') {
+              Write-Error "ERROR: Pester driver reported $($result.FailedCount) failures."
+              exit 1
+          }
+          Write-Host "Pester driver: all $($result.PassedCount) tests passed"
+
+      - name: Assert manual-deploy token surfaced (CP-4 belt-and-suspenders)
+        # Re-run install-windows.ps1 capturing stdout, then grep for the
+        # 'Auto-deploy skipped' marker. Mirrors Phase 2 Plan 02-01's
+        # belt-and-suspenders 'Assert GUI-gate skip log line was emitted'
+        # step ([smoodle-e2e] no-GUI-session, skipped osascript step).
+        # Drift in install-windows.ps1 wording surfaces here as a red CI
+        # step, not silent skip. The driver itself emits the verbatim
+        # 'manual deploy required' token (D5 seam); install-windows.ps1
+        # emits 'Auto-deploy skipped' (asserted here for defense-in-depth).
+        shell: pwsh
+        env:
+          SMOODLE_AUTO_DEPLOY: "0"
+          SMOODLE_NONINTERACTIVE: "1"
+        run: |
+          $out = & powershell -NoProfile -ExecutionPolicy Bypass -File scripts/install-windows.ps1 2>&1 | Out-String
+          Write-Host $out
+          if ($out -notmatch 'Auto-deploy skipped') {
+              Write-Error "ERROR: 'Auto-deploy skipped' marker missing - SMOODLE_AUTO_DEPLOY=0 env-override regressed in install-windows.ps1"
+              exit 1
+          }
+          Write-Host "[OK] 'Auto-deploy skipped' marker present (CP-4 invariant: WeaselDeployer never invoked)"
+
+      - name: Verify dict.yaml SHA in destination matches repo source
+        # ROADMAP SC #1 - independent re-check (driver also does this; this
+        # step exists so the workflow log line is unambiguous on the green
+        # run). Mirrors Phase 2 Plan 02-01's last step.
+        shell: pwsh
+        run: |
+          $src = (Get-FileHash -Algorithm SHA256 (Join-Path 'schema' 'thai_phonetic.dict.yaml')).Hash
+          $dst = (Get-FileHash -Algorithm SHA256 (Join-Path $env:APPDATA 'Rime' 'thai_phonetic.dict.yaml')).Hash
+          Write-Host "src=$src"
+          Write-Host "dst=$dst"
+          if ($src -ne $dst) {
+              Write-Error "ERROR: dict.yaml SHA mismatch between schema/ source and %APPDATA%\Rime\ destination"
+              exit 1
+          }
+          Write-Host "[OK] dict.yaml SHA match"
