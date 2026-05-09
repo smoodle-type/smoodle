@@ -1,7 +1,7 @@
 # Project State: Smoodle Phase 1 Finish
 
 **Last updated:** 2026-05-09
-**Status:** PHASE-1-EXECUTED (awaiting goal verification)
+**Status:** PHASE-1-COMPLETE (verifier verdict: PASS, 100% goal achievement)
 **Mode:** yolo
 
 ## Project Reference
@@ -23,18 +23,18 @@
 
 ## Current Position
 
-**Phase:** 1 (Lane F: Lint & CI Fast Path)
-**Plans:** 2 of 2 complete (01-01 + 01-02 both shipped). Smoke-test gate cleared 2026-05-09: 4 GHA runs (push-to-main + 3 smoke PRs) all matched expectations in ≤21s each.
-**Status:** Phase 1 executed; awaiting goal verification by `gsd-verifier` (4 ROADMAP success criteria).
-**Next action:** `gsd-verifier` over Phase 1 ROADMAP success criteria → VERIFICATION.md → `/gsd-transition` → Phase 2/3/4 (parallelizable).
+**Phase:** 1 → COMPLETE (Lane F shipped; verifier verdict PASS 2026-05-09)
+**Plans:** 2 of 2 complete. Smoke-test gate cleared with 4 GHA runs in ≤21s each.
+**Verification:** `.planning/phases/01-lint-and-ci-fast-path/01-VERIFICATION.md` — 4/4 success criteria met, 4/4 LINT REQ-IDs verified, all locked decisions (CP-5, two-tier CI, unittest, byte-level ASCII) honored.
+**Next action:** `/gsd-plan-phase 2` (or 3 or 4) — Phases 2 / 3 / 4 are parallelizable. Recommended start: Phase 2 (macOS E2E, ~2-3 days) since you're on a Mac and SHA verify needs the librime fork sidecar.
 
 ```
-Roadmap progress: [▣□□□□□□] 0/7 phases complete (Phase 1 executed, awaiting verification)
+Roadmap progress: [■□□□□□□] 1/7 phases complete (Phase 1 PASS 2026-05-09)
                    ^
-                   Phase 1 plans complete 2026-05-09; goal-verify pending
+                   Phase 2/3/4 unblocked; parallelizable
 
 Coverage: 41/41 requirements mapped ✓
-Phase 1 LINT REQ-IDs (4/4): LINT-01,02 (Plan 01-01) + LINT-03,04 (Plan 01-02) — all shipped & smoke-tested in CI ✓
+Phase 1 LINT REQ-IDs (4/4): LINT-01,02 (Plan 01-01) + LINT-03,04 (Plan 01-02) — verifier PASS ✓
 ```
 
 ## Performance Metrics
