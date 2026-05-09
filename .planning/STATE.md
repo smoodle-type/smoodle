@@ -1,7 +1,7 @@
 # Project State: Smoodle Phase 1 Finish
 
 **Last updated:** 2026-05-09
-**Status:** EXECUTING-PHASE-1 (Wave 2 — awaiting smoke-test PR verification)
+**Status:** PHASE-1-EXECUTED (awaiting goal verification)
 **Mode:** yolo
 
 ## Project Reference
@@ -24,17 +24,17 @@
 ## Current Position
 
 **Phase:** 1 (Lane F: Lint & CI Fast Path)
-**Plans:** 2 plans in 2 waves (01-01 schema-lint+yamllint Wave 1 COMPLETE, 01-02 ci.yml+ps1-ASCII Wave 2 Tasks 1+2 COMPLETE)
-**Status:** 01-02 Tasks 1+2 committed; awaiting smoke-test PR verification (Task 3 checkpoint:human-verify)
-**Next action:** Human operator pushes 3 smoke-test PRs (ci-smoke-readme GREEN, ci-smoke-schema-break RED, ci-smoke-ps1-nonascii RED) and replies "approved" to trigger continuation agent for final SUMMARY.md + plan close.
+**Plans:** 2 of 2 complete (01-01 + 01-02 both shipped). Smoke-test gate cleared 2026-05-09: 4 GHA runs (push-to-main + 3 smoke PRs) all matched expectations in ≤21s each.
+**Status:** Phase 1 executed; awaiting goal verification by `gsd-verifier` (4 ROADMAP success criteria).
+**Next action:** `gsd-verifier` over Phase 1 ROADMAP success criteria → VERIFICATION.md → `/gsd-transition` → Phase 2/3/4 (parallelizable).
 
 ```
-Roadmap progress: [▣□□□□□□] 0/7 phases complete (Phase 1 planned, not yet executed)
+Roadmap progress: [▣□□□□□□] 0/7 phases complete (Phase 1 executed, awaiting verification)
                    ^
-                   currently at Phase 1 entry — plans landed 2026-05-08
+                   Phase 1 plans complete 2026-05-09; goal-verify pending
 
 Coverage: 41/41 requirements mapped ✓
-Phase 1 plan coverage: 4/4 LINT REQ-IDs (LINT-01,02 in 01-01; LINT-03,04 in 01-02) ✓
+Phase 1 LINT REQ-IDs (4/4): LINT-01,02 (Plan 01-01) + LINT-03,04 (Plan 01-02) — all shipped & smoke-tested in CI ✓
 ```
 
 ## Performance Metrics

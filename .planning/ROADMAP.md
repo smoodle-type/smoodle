@@ -42,8 +42,8 @@ Wrap Phase 1 of Smoodle: ship the Lane E (mac+win E2E), schema lint, opt-in tele
   **Wave 1 (autonomous):**
   - [x] 01-01-PLAN.md — Schema lint validator + .yamllint config + 4 broken-schema fixtures (LINT-01, LINT-02)
 
-  **Wave 2** *(blocked on Wave 1 completion; autonomous: no — checkpoint:human-verify)*:
-  - [ ] 01-02-PLAN.md — ci.yml ubuntu-latest fast path + tests/test_powershell_ascii.py + 3 smoke-test PRs (LINT-03, LINT-04)
+  **Wave 2** *(autonomous: no — checkpoint:human-verify; gate cleared 2026-05-09: 4 GHA runs matched expectations in ≤21s each)*:
+  - [x] 01-02-PLAN.md — ci.yml ubuntu-latest fast path + tests/test_powershell_ascii.py + 3 smoke-test PRs (LINT-03, LINT-04)
 
   **Cross-cutting constraints** (apply to both plans):
   - CP-5 boundary: schema lint validates STRUCTURE only (key allowlist, malformed weights, import_preset, algebra rule shape) — NOT regex semantics. Engine-mode test (`test_dict.py --use-rime-api-console`) is the regex oracle.
@@ -128,7 +128,7 @@ Wrap Phase 1 of Smoodle: ship the Lane E (mac+win E2E), schema lint, opt-in tele
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Lint & CI Fast Path | 1/2 | In progress — 01-02 Tasks 1+2 committed; awaiting smoke-test PR verify | - |
+| 1. Lint & CI Fast Path | 2/2 | Plans complete; awaiting goal verification | - |
 | 2. macOS E2E | 0/? | Not started | - |
 | 3. Windows E2E | 0/? | Not started | - |
 | 4. Telemetry | 0/? | Not started | - |
