@@ -43,12 +43,15 @@ jobs:
         # Squirrel is a hard prereq for install.sh (line 47-51 pre-flight check).
         # Cask name is "squirrel" on current Homebrew (renamed from "squirrel-app"
         # circa 2024). If brew install fails, retry with --cask squirrel-app for
-        # legacy Homebrew taps. --no-quarantine avoids Gatekeeper friction in CI.
+        # legacy Homebrew taps. The --no-quarantine flag was removed by Homebrew
+        # in 2025; quarantine on the bundle is harmless here because install.sh
+        # only copies schema files and the GUI launch path is gated by
+        # SMOODLE_GUI_SESSION=0 in CI (CP-4 prevention).
         # If both casks fail, exit non-zero with a helpful message — do NOT swallow.
         run: |
           brew update
-          brew install --cask --no-quarantine squirrel \
-            || brew install --cask --no-quarantine squirrel-app \
+          brew install --cask squirrel \
+            || brew install --cask squirrel-app \
             || { echo "ERROR: neither 'squirrel' nor 'squirrel-app' cask installable on this runner. Check Homebrew tap state."; exit 1; }
           # Sanity check: Squirrel.app must exist where install.sh expects it.
           test -e "/Library/Input Methods/Squirrel.app" \
