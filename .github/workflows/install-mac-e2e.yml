@@ -85,3 +85,23 @@ jobs:
           echo "src=$src"
           echo "dst=$dst"
           test "$src" = "$dst" || { echo "ERROR: dict.yaml SHA mismatch"; exit 1; }
+
+      - name: Run install-librime-fork.sh sandboxed (SHA + arch gate exercised)
+        # Plan 02-02: exercises the new SHA256 + arch-refusal gate end-to-end
+        # without sudo. SMOODLE_SKIP_SWAP=1 prevents the sudo cp; the script
+        # downloads + arch-checks + SHA-verifies and exits 0 on the happy path.
+        # Hash provenance: live ${RELEASE_URL}.sha256 first (404 expected until
+        # Phase 5 / HARDEN-04 ships live sidecar emission in smoodle-type/librime),
+        # vendored fallback at vendor/macos/librime.1.dylib.sha256 second.
+        # This step is what ROADMAP SC #4's "exit 1 before any sudo cp executes"
+        # is operationally verified by — SKIP_SWAP=1 prevents sudo regardless.
+        env:
+          SMOODLE_SKIP_SWAP: "1"
+          SMOODLE_NONINTERACTIVE: "1"
+        run: bash scripts/install-librime-fork.sh
+
+      - name: Run install-librime-fork tests (E2EMAC-03, E2EMAC-04)
+        # Plan 02-02 unit tests — arch refusal (verbatim MP-3 string) +
+        # SHA mismatch (failure-before-sudo) + vendored fallback +
+        # sidecar format. Stdlib unittest, no pip deps.
+        run: python3 -m unittest tests.test_install_librime_fork_mac
