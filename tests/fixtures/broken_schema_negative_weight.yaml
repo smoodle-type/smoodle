@@ -1,0 +1,24 @@
+# Rime dictionary
+# encoding: utf-8
+#
+# smoodle Thai phonetic dictionary — BROKEN FIXTURE
+#
+# DELIBERATELY BROKEN: row 2 has negative weight (-50). Valid: positive integer >= 0.
+# Purpose: negative-test fixture for tests/test_schema_lint.py TestNegativeFixtures.
+# Expected failure: validate_dict_structure() returns (False, msg) with "weight" and
+# "-50" (or "negative") in msg.
+
+---
+name: thai_phonetic
+version: "0.0.6-broken"
+sort: by_weight
+use_preset_vocabulary: false
+columns:
+  - text
+  - code
+  - weight
+...
+
+สวัสดี	sawadee	1000
+ขอบคุณ	khobkhun	-50
+ครับ	krap	200

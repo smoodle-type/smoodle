@@ -1,0 +1,65 @@
+# Rime schema
+# encoding: utf-8
+#
+# smoodle Thai phonetic input — BROKEN FIXTURE
+#
+# DELIBERATELY BROKEN: schema.schema_id is missing. Required key per Rime convention.
+# Purpose: negative-test fixture for tests/test_schema_lint.py TestNegativeFixtures.
+# Expected failure: validate_schema_structure() returns (False, msg) with "schema_id"
+# in msg, since the required sub-key is absent from the schema: block.
+
+schema:
+  name: smoodle Thai phonetic
+  version: "0.0.6"
+  author:
+    - lex
+  description: |
+    Broken fixture with schema_id missing.
+
+switches:
+  - name: ascii_mode
+    reset: 0
+    states: [ ไทย, ENG ]
+
+engine:
+  processors:
+    - ascii_composer
+    - recognizer
+    - key_binder
+    - speller
+    - punctuator
+    - selector
+    - navigator
+    - express_editor
+  segmentors:
+    - ascii_segmentor
+    - matcher
+    - abc_segmentor
+    - punct_segmentor
+    - fallback_segmentor
+  translators:
+    - punct_translator
+    - table_translator
+  filters:
+    - uniquifier
+
+speller:
+  alphabet: 'abcdefghijklmnopqrstuvwxyz'
+  delimiter: " '"
+  algebra:
+    - derive/kh/k/
+
+translator:
+  dictionary: thai_phonetic
+  enable_completion: true
+  enable_sentence: false
+  initial_quality: 0
+
+punctuator:
+  import_preset: symbols
+
+key_binder:
+  import_preset: default
+
+recognizer:
+  import_preset: default
