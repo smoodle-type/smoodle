@@ -1,7 +1,7 @@
 # Project State: Smoodle Phase 1 Finish
 
 **Last updated:** 2026-05-09
-**Status:** EXECUTING-PHASE-1 (Wave 2 ready)
+**Status:** EXECUTING-PHASE-1 (Wave 2 — awaiting smoke-test PR verification)
 **Mode:** yolo
 
 ## Project Reference
@@ -24,9 +24,9 @@
 ## Current Position
 
 **Phase:** 1 (Lane F: Lint & CI Fast Path)
-**Plans:** 2 plans in 2 waves (01-01 schema-lint+yamllint Wave 1 COMPLETE, 01-02 ci.yml+ps1-ASCII Wave 2)
-**Status:** 01-01 complete; 01-02 next (Wave 2)
-**Next action:** `/gsd-execute-phase 1` Wave 2 — 01-02-PLAN.md: ci.yml ubuntu-latest fast path + tests/test_powershell_ascii.py + 3 smoke-test PRs (LINT-03, LINT-04). Wave 2 has a `checkpoint:human-verify` task.
+**Plans:** 2 plans in 2 waves (01-01 schema-lint+yamllint Wave 1 COMPLETE, 01-02 ci.yml+ps1-ASCII Wave 2 Tasks 1+2 COMPLETE)
+**Status:** 01-02 Tasks 1+2 committed; awaiting smoke-test PR verification (Task 3 checkpoint:human-verify)
+**Next action:** Human operator pushes 3 smoke-test PRs (ci-smoke-readme GREEN, ci-smoke-schema-break RED, ci-smoke-ps1-nonascii RED) and replies "approved" to trigger continuation agent for final SUMMARY.md + plan close.
 
 ```
 Roadmap progress: [▣□□□□□□] 0/7 phases complete (Phase 1 planned, not yet executed)
@@ -87,7 +87,7 @@ Phase 1 plan coverage: 4/4 LINT REQ-IDs (LINT-01,02 in 01-01; LINT-03,04 in 01-0
 | **MP-1**: README tested only on author's machine | Phase 6 (DOCS-06) | Pending |
 | **MP-2**: Decision Gate survivorship bias + founder confounding | Phase 7 (GATE-01 pre-registration) | Pending |
 | **MP-3**: Universal dylib silent failure on Intel Mac | Phase 5 (HARDEN-03) | Pending |
-| **MP-4**: PowerShell 5.1 cp1252 parser breakage | Phase 1 (LINT-04) | Pending |
+| **MP-4**: PowerShell 5.1 cp1252 parser breakage | Phase 1 (LINT-04) | Mitigated — test_powershell_ascii.py blocks any non-ASCII byte in .ps1 files at PR-time (commit 4b8ad4d) |
 | **MP-5**: GHA multi-asset release upload partial state | Phase 5 (HARDEN-04 atomic draft-then-publish) | Pending |
 
 ### Cross-Repo Dependencies
@@ -120,9 +120,12 @@ None at roadmap-creation time. All blockers are surfaced at plan-phase per `Risk
 4. Next action is `/gsd-plan-phase <next-phase>` per Current Position.
 
 **Active milestone:** phase-1-finish
-**Active phase:** none yet — start with `/gsd-plan-phase 1`
-**Active plan:** none yet
-**Files in flight:** none
+**Active phase:** 1 (Lane F: Lint & CI Fast Path)
+**Active plan:** 01-02 (Tasks 1+2 committed; Task 3 awaiting human-verify checkpoint)
+**Files in flight:**
+- `.github/workflows/ci.yml` (commit 5133982) — COMMITTED
+- `tests/test_powershell_ascii.py` (commit 4b8ad4d) — COMMITTED
 
 ---
 *State initialized: 2026-05-08 alongside ROADMAP.md creation.*
+*Updated: 2026-05-09 after 01-02 Tasks 1+2 committed; checkpoint:human-verify pending.*

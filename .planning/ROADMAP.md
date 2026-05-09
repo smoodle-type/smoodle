@@ -128,7 +128,7 @@ Wrap Phase 1 of Smoodle: ship the Lane E (mac+win E2E), schema lint, opt-in tele
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Lint & CI Fast Path | 1/2 | In progress | - |
+| 1. Lint & CI Fast Path | 1/2 | In progress — 01-02 Tasks 1+2 committed; awaiting smoke-test PR verify | - |
 | 2. macOS E2E | 0/? | Not started | - |
 | 3. Windows E2E | 0/? | Not started | - |
 | 4. Telemetry | 0/? | Not started | - |
