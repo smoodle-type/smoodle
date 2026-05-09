@@ -60,7 +60,9 @@ Wrap Phase 1 of Smoodle: ship the Lane E (mac+win E2E), schema lint, opt-in tele
   3. `scripts/install-librime-fork.sh` invoked on an `x86_64` Mac against an `arm64`-only dylib refuses to swap with a non-zero exit and prints "this is an arm64-only dylib; Intel Mac not supported until universal dylib lands" (PITFALLS MP-3).
   4. SHA256 verification block runs *between* download and swap; an artificially-corrupted dylib triggers exit 1 *before* any sudo cp executes (PITFALLS CP-2).
   5. The workflow runs on `paths-filter` (`scripts/install*.sh`, `schema/**`) + `workflow_dispatch` + weekly cron — confirmed by inspecting `install-mac-e2e.yml` triggers section.
-**Plans**: TBD
+**Plans**:
+- [ ] 02-01: install-mac-e2e.yml + bash driver + GUI gate (Wave 1, autonomous: true) — REQs E2EMAC-01,02,05
+- [ ] 02-02: SHA256 verify + Intel arch refusal in install-librime-fork.sh + sidecar stub (Wave 2, autonomous: no — checkpoint:human-verify) — REQs E2EMAC-03,04
 
 ### Phase 3: Windows E2E (Lane E2)
 **Goal**: A regression in `scripts/install-windows.ps1` or `scripts/install-librime-fork.ps1` is caught automatically by GHA before reaching the th-dc dockur dogfood test bed, on a `windows-latest` runner with `%APPDATA%\Rime\` cleared per job to prevent state contamination across runs.
@@ -129,7 +131,7 @@ Wrap Phase 1 of Smoodle: ship the Lane E (mac+win E2E), schema lint, opt-in tele
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Lint & CI Fast Path | 2/2 | ✅ COMPLETE (verifier PASS) | 2026-05-09 |
-| 2. macOS E2E | 0/? | Not started | - |
+| 2. macOS E2E | 0/2 | 📝 PLANNED (plan-checker PASS) | 2026-05-09 |
 | 3. Windows E2E | 0/? | Not started | - |
 | 4. Telemetry | 0/? | Not started | - |
 | 5. Sparkle & Release Hardening | 0/? | Not started | - |

@@ -1,7 +1,7 @@
 # Project State: Smoodle Phase 1 Finish
 
 **Last updated:** 2026-05-09
-**Status:** PHASE-1-COMPLETE (verifier verdict: PASS, 100% goal achievement)
+**Status:** PHASE-2-PLANNED (Lane E1 macOS E2E plans drafted + plan-checker verdict PASS; ready for `/gsd-execute-phase 2`)
 **Mode:** yolo
 
 ## Project Reference
@@ -23,18 +23,21 @@
 
 ## Current Position
 
-**Phase:** 1 → COMPLETE (Lane F shipped; verifier verdict PASS 2026-05-09)
-**Plans:** 2 of 2 complete. Smoke-test gate cleared with 4 GHA runs in ≤21s each.
-**Verification:** `.planning/phases/01-lint-and-ci-fast-path/01-VERIFICATION.md` — 4/4 success criteria met, 4/4 LINT REQ-IDs verified, all locked decisions (CP-5, two-tier CI, unittest, byte-level ASCII) honored.
-**Next action:** `/gsd-plan-phase 2` (or 3 or 4) — Phases 2 / 3 / 4 are parallelizable. Recommended start: Phase 2 (macOS E2E, ~2-3 days) since you're on a Mac and SHA verify needs the librime fork sidecar.
+**Phase:** 2 → PLANNED (Lane E1 macOS E2E; 2 plans drafted, plan-checker PASS 2026-05-09)
+**Plans:** 2 of 2 drafted. 02-01 (Wave 1, autonomous) ships install-mac-e2e.yml + bash test driver + GUI gate; 02-02 (Wave 2, autonomous: no — checkpoint:human-verify) adds SHA256 verify + Intel-Mac arch refusal in install-librime-fork.sh + cross-repo sidecar stub.
+**Plan-check:** PASS on first iteration (10/10 dimensions). 5 non-blocking recommendations noted but not applied (would have been scope creep at plan-phase boundary).
+**Phase 1:** COMPLETE — `.planning/phases/01-lint-and-ci-fast-path/01-VERIFICATION.md` — 4/4 success criteria met, 4/4 LINT REQ-IDs verified.
+**Next action:** `/gsd-execute-phase 2` — Wave 1 (Plan 02-01) runs autonomously; Wave 2 (Plan 02-02) will surface a human-verify checkpoint for live workflow_dispatch on macos-15 (mirrors Phase 1's smoke-test gate).
 
 ```
 Roadmap progress: [■□□□□□□] 1/7 phases complete (Phase 1 PASS 2026-05-09)
                    ^
-                   Phase 2/3/4 unblocked; parallelizable
+                   Phase 2 PLANNED (verdict: PASS, ready to execute)
+                   Phase 3/4 also unblocked; parallelizable
 
 Coverage: 41/41 requirements mapped ✓
-Phase 1 LINT REQ-IDs (4/4): LINT-01,02 (Plan 01-01) + LINT-03,04 (Plan 01-02) — verifier PASS ✓
+Phase 1 LINT REQ-IDs (4/4): LINT-01..04 — verifier PASS ✓
+Phase 2 E2EMAC REQ-IDs (5/5): 01,02,05 (Plan 02-01) + 03,04 (Plan 02-02) — plan-checker PASS ✓
 ```
 
 ## Performance Metrics
@@ -120,12 +123,15 @@ None at roadmap-creation time. All blockers are surfaced at plan-phase per `Risk
 4. Next action is `/gsd-plan-phase <next-phase>` per Current Position.
 
 **Active milestone:** phase-1-finish
-**Active phase:** 1 (Lane F: Lint & CI Fast Path)
-**Active plan:** 01-02 (Tasks 1+2 committed; Task 3 awaiting human-verify checkpoint)
-**Files in flight:**
-- `.github/workflows/ci.yml` (commit 5133982) — COMMITTED
-- `tests/test_powershell_ascii.py` (commit 4b8ad4d) — COMMITTED
+**Active phase:** 2 (Lane E1: macOS E2E) — PLANNED, awaiting `/gsd-execute-phase 2`
+**Active plans:** 02-01 (Wave 1, autonomous) + 02-02 (Wave 2, checkpoint:human-verify)
+**Files awaiting execution:**
+- `.github/workflows/install-mac-e2e.yml` (Plan 02-01)
+- `tests/test_install_e2e_mac.sh` (Plan 02-01)
+- `scripts/install-librime-fork.sh` modifications (Plan 02-02 — SHA256 + Intel arch)
+- `vendor/macos/librime.1.dylib.sha256` stub sidecar (Plan 02-02 — cross-repo seam)
+- `tests/test_install_librime_fork_mac.py` (Plan 02-02 — Python unittest)
 
 ---
 *State initialized: 2026-05-08 alongside ROADMAP.md creation.*
-*Updated: 2026-05-09 after 01-02 Tasks 1+2 committed; checkpoint:human-verify pending.*
+*Updated: 2026-05-09 after Phase 1 verifier PASS; Phase 2 plans drafted + plan-checker PASS first iteration.*
