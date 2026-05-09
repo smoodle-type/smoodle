@@ -189,3 +189,28 @@ jobs:
               exit 1
           }
           Write-Host "[OK] dict.yaml SHA match"
+
+      - name: Run install-librime-fork.ps1 sandboxed (SHA + Authenticode gate exercised)
+        # Plan 03-02: exercises the new SHA256 + Authenticode-diagnostic gate
+        # end-to-end without admin elevation. SMOODLE_SKIP_SWAP=1 prevents the
+        # Copy-Item-to-Weasel-rime.dll AND the admin pre-flight; the script
+        # resolves the vendored DLL + SHA-verifies + exits 0 on the happy path.
+        # Hash provenance: vendored vendor/windows/rime.dll.sha256 is PRIMARY
+        # (Win install path is vendored-DLL primary per D5 - REVERSED from mac
+        # which is live-URL primary).
+        # This step is what ROADMAP SC #5's "exit 1 before any Copy-Item to
+        # Weasel install path" is operationally verified by - SKIP_SWAP=1
+        # prevents Copy-Item regardless of failure path.
+        shell: pwsh
+        env:
+          SMOODLE_SKIP_SWAP: "1"
+          SMOODLE_NONINTERACTIVE: "1"
+        run: pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/install-librime-fork.ps1
+
+      - name: Run install-librime-fork tests (E2EWIN-03, E2EWIN-05)
+        # Plan 03-02 unit tests - SHA mismatch + sidecar-matches-DLL invariant +
+        # Authenticode diagnostic + verbatim regression-guard string.
+        # Stdlib unittest, no pip deps. pwsh-runtime tests run on windows-latest;
+        # grep-only tests run cross-platform.
+        shell: pwsh
+        run: python3 -m unittest tests.test_install_librime_fork_win
