@@ -1,0 +1,98 @@
+name: ci
+
+# Ubuntu-only fast path that gates every PR (~3 min total).
+# Per-OS E2E lives in install-{mac,win}-e2e.yml (Phases 2 + 3) -- slow,
+# paths-filter + workflow_dispatch + weekly cron only.
+# Locked decision (CLAUDE.md, .planning/research/ARCHITECTURE.md
+# Anti-Pattern #1): NOT a single 3-OS matrix on every PR.
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  lint-and-shape:
+    name: Lane F lint + shape (ubuntu-latest fast path)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install lint deps (PyYAML + yamllint)
+        run: |
+          python3 -m pip install --upgrade pip
+          python3 -m pip install yamllint==1.38.0 PyYAML==6.0.2
+
+      - name: Verify pwsh is available
+        run: |
+          which pwsh
+          pwsh -NoProfile -Command '$PSVersionTable.PSVersion'
+
+      - name: Schema lint (REQ LINT-01)
+        run: python3 tests/test_schema_lint.py
+
+      - name: yamllint baseline (REQ LINT-02)
+        run: |
+          yamllint -c .yamllint \
+            schema/thai_phonetic.schema.yaml \
+            schema/thai_phonetic.dict.yaml \
+            schema/default.custom.yaml
+
+      - name: Installer shape suite (existing)
+        run: python3 tests/test_installers.py
+
+      - name: PowerShell ASCII-only assertion (REQ LINT-04)
+        run: python3 tests/test_powershell_ascii.py
+
+      - name: Bash syntax check (REQ LINT-03)
+        run: |
+          # Per ROADMAP success criterion 4: bash -n must run as a gated
+          # step. Cover all user-facing installers + helper scripts.
+          # Loop and aggregate failures so contributors see all bad files
+          # in one run, not chained one-at-a-time.
+          fail=0
+          for f in scripts/install.sh \
+                   scripts/install-librime-fork.sh \
+                   scripts/install-linux.sh \
+                   scripts/build-macos-dmg.sh \
+                   scripts/dev-sync-windows.sh \
+                   scripts/init_rime_testdir.sh; do
+            if ! bash -n "$f"; then
+              echo "FAIL  bash -n rejected: $f"
+              fail=1
+            fi
+          done
+          if [ "$fail" -ne 0 ]; then
+            echo "ERROR: bash syntax errors above. Fix and re-push."
+            exit 1
+          fi
+          echo "OK  all .sh files pass bash -n"
+
+      - name: PowerShell parse check (REQ LINT-03)
+        run: |
+          # Per ROADMAP success criterion 4: pwsh parse check must run as
+          # a gated step. Use the exact form from the ROADMAP:
+          #   pwsh -NoProfile -c "[scriptblock]::Create((Get-Content -Raw <ps1>))"
+          # This catches catastrophic syntax errors but does NOT catch
+          # PS5.1-vs-7.x differences (Phase 3 Win E2E covers that).
+          fail=0
+          for f in scripts/install-windows.ps1 \
+                   scripts/install-librime-fork.ps1; do
+            if ! pwsh -NoProfile -Command "[scriptblock]::Create((Get-Content -Raw '$f'))" >/dev/null; then
+              echo "FAIL  pwsh parse rejected: $f"
+              fail=1
+            fi
+          done
+          if [ "$fail" -ne 0 ]; then
+            echo "ERROR: PowerShell syntax errors above. Fix and re-push."
+            exit 1
+          fi
+          echo "OK  all .ps1 files pass pwsh parse"
