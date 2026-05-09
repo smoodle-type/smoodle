@@ -1,0 +1,87 @@
+name: install-mac e2e
+
+# Lane E1 — macOS E2E. Two-tier CI: this is the SLOW path (~5-10 min), opt-in.
+# Phase 1 ci.yml (ubuntu-only, ~20s) gates every PR; this gates installer changes.
+# Locked decisions (Plan 02-01): macos-15 runner, paths-filter, workflow_dispatch,
+# weekly cron. GUI gate via SMOODLE_GUI_SESSION=0 in CI (CP-4 prevention).
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - scripts/install*.sh
+      - schema/**
+      - .github/workflows/install-mac-e2e.yml
+  pull_request:
+    paths:
+      - scripts/install*.sh
+      - schema/**
+      - .github/workflows/install-mac-e2e.yml
+  workflow_dispatch:
+  schedule:
+    # Monday 07:00 UTC — surfaces runner-image upgrade regressions before users hit them.
+    - cron: '0 7 * * 1'
+
+jobs:
+  install-mac:
+    name: Lane E1 macOS E2E (macos-15)
+    runs-on: macos-15
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Show runner identity
+        # Sanity: confirm we're on macos-15 + Apple Silicon. Phase 5 universal dylib
+        # lands later; until then, mac E2E only covers arm64 hosts.
+        run: |
+          sw_vers
+          uname -m
+
+      - name: Install Squirrel via brew cask
+        # Squirrel is a hard prereq for install.sh (line 47-51 pre-flight check).
+        # Cask name is "squirrel" on current Homebrew (renamed from "squirrel-app"
+        # circa 2024). If brew install fails, retry with --cask squirrel-app for
+        # legacy Homebrew taps. --no-quarantine avoids Gatekeeper friction in CI.
+        # If both casks fail, exit non-zero with a helpful message — do NOT swallow.
+        run: |
+          brew update
+          brew install --cask --no-quarantine squirrel \
+            || brew install --cask --no-quarantine squirrel-app \
+            || { echo "ERROR: neither 'squirrel' nor 'squirrel-app' cask installable on this runner. Check Homebrew tap state."; exit 1; }
+          # Sanity check: Squirrel.app must exist where install.sh expects it.
+          test -e "/Library/Input Methods/Squirrel.app" \
+            || { echo "ERROR: Squirrel.app missing after brew install"; exit 1; }
+
+      - name: Run E2E driver
+        # CP-4 prevention: SMOODLE_GUI_SESSION=0 (skip osascript), SMOODLE_AUTO_DEPLOY=0
+        # (skip kill+restart inside install.sh). Driver runs install.sh with auto-deploy
+        # off, then verifies file presence + SHA + content.
+        env:
+          SMOODLE_GUI_SESSION: "0"
+          SMOODLE_AUTO_DEPLOY: "0"
+        run: bash tests/test_install_e2e_mac.sh
+
+      - name: Assert GUI-gate skip log line was emitted
+        # CP-4 belt-and-suspenders: re-run the driver capturing stdout, then grep
+        # for the verbatim skip line. Drift in driver wording surfaces here as
+        # a red CI step, not silent skip.
+        env:
+          SMOODLE_GUI_SESSION: "0"
+          SMOODLE_AUTO_DEPLOY: "0"
+        run: |
+          out="$(bash tests/test_install_e2e_mac.sh 2>&1 || true)"
+          echo "$out"
+          echo "$out" | grep -F '[smoodle-e2e] no-GUI-session, skipped osascript step' \
+            || { echo "ERROR: GUI-gate skip log line missing — CP-4 invariant broken"; exit 1; }
+
+      - name: Verify dict.yaml SHA in destination matches repo source
+        # ROADMAP SC #1 — independent re-check (driver also does this; this step
+        # exists so the workflow log line is unambiguous on the green run).
+        run: |
+          src=$(shasum -a 256 schema/thai_phonetic.dict.yaml | awk '{print $1}')
+          dst=$(shasum -a 256 "$HOME/Library/Rime/thai_phonetic.dict.yaml" | awk '{print $1}')
+          echo "src=$src"
+          echo "dst=$dst"
+          test "$src" = "$dst" || { echo "ERROR: dict.yaml SHA mismatch"; exit 1; }
