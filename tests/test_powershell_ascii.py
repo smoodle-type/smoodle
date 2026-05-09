@@ -54,10 +54,19 @@ class TestPowerShellAscii(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.ps1_files = sorted(SCRIPTS_DIR.glob("*.ps1"))
+        # Phase 3 Plan 03-01 expansion: Pester driver tests/test_install_e2e_win.ps1
+        # ships under tests/ alongside the installer .ps1 files in scripts/. PS 5.1
+        # cp1252 parses every .ps1 file the same way regardless of directory, so
+        # MP-4 (em-dash / Thai-script byte regression) must apply to the union of
+        # scripts/*.ps1 + tests/*.ps1. Plan-checker (2026-05-09) confirmed this
+        # extension is mandatory before tests/test_install_e2e_win.ps1 lands.
+        cls.ps1_files = sorted(
+            list((REPO_ROOT / "scripts").glob("*.ps1"))
+            + list((REPO_ROOT / "tests").glob("*.ps1"))
+        )
         if not cls.ps1_files:
             raise unittest.SkipTest(
-                f"No .ps1 files found under {SCRIPTS_DIR}. "
+                f"No .ps1 files found under {SCRIPTS_DIR} or {REPO_ROOT / 'tests'}. "
                 "If this is a true regression (all installers deleted), "
                 "this test should fail loudly -- change to assertFail "
                 "instead of skip in that scenario."
@@ -113,10 +122,12 @@ def main() -> int:
     if not SCRIPTS_DIR.is_dir():
         print(f"FAIL  scripts dir missing: {SCRIPTS_DIR}", file=sys.stderr)
         return 2
-    ps1_count = len(list(SCRIPTS_DIR.glob("*.ps1")))
+    # Plan 03-01: union scripts/*.ps1 + tests/*.ps1 (Pester driver lives under tests/).
+    tests_dir = REPO_ROOT / "tests"
+    ps1_count = len(list(SCRIPTS_DIR.glob("*.ps1"))) + len(list(tests_dir.glob("*.ps1")))
     if ps1_count == 0:
         print(
-            f"FAIL  no .ps1 files found under {SCRIPTS_DIR} -- "
+            f"FAIL  no .ps1 files found under {SCRIPTS_DIR} or {tests_dir} -- "
             "test setup error or installers deleted",
             file=sys.stderr,
         )
