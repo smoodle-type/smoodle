@@ -68,6 +68,26 @@ $NonInteractive = ($env:SMOODLE_NONINTERACTIVE -eq '1')
 $CacheDir      = if ($env:SMOODLE_DLL_CACHE_DIR) { $env:SMOODLE_DLL_CACHE_DIR } `
                  else { Join-Path $env:LOCALAPPDATA 'smoodle\librime' }
 
+# Plan 03-02: SHA256 verify env surface ----------------------------------------
+# SMOODLE_SHA256_SIDECAR  - path to a local .sha256 sidecar (LOWERCASE hex; one
+#                            line, optional trailing newline). Default: the
+#                            vendored vendor/windows/rime.dll.sha256 (Win primary
+#                            sidecar source per D5 - Win install path is vendored-
+#                            DLL primary, so sidecar primacy follows install-path
+#                            primacy; this REVERSES Phase 2 mac's primary/secondary).
+# SMOODLE_SHA256_LIVE_URL - URL to a remote .sha256 sidecar; SECONDARY source
+#                            used only on the gh-run-download install path.
+#                            Default null until Phase 5 / HARDEN-04 ships
+#                            live sidecar emission in smoodle-type/librime
+#                            release.yml. Test hook for guaranteed-404.
+$Sha256SidecarVendored = if ($env:SMOODLE_SHA256_SIDECAR) {
+    $env:SMOODLE_SHA256_SIDECAR
+} else {
+    $vendoredSidecar = Join-Path $ScriptDir '..\vendor\windows\rime.dll.sha256'
+    try { (Resolve-Path $vendoredSidecar -ErrorAction Stop).Path } catch { $null }
+}
+$Sha256LiveUrl = $env:SMOODLE_SHA256_LIVE_URL
+
 # Weasel install dir  -  same detection logic as install-windows.ps1.
 # winget installs to a versioned subdir (e.g. C:\Program Files\Rime\weasel-0.17.4\)
 # not the unversioned \Rime\Weasel\ we originally assumed. Probes parent dirs and
@@ -288,6 +308,60 @@ if ($VendoredDll) {
 }
 
 # ---------------------------------------------------------------------------
+# Plan 03-02: SHA256 verify (CP-2)
+# ---------------------------------------------------------------------------
+# Post-DLL-resolution, pre-Copy-Item gate. Sidecar source order (Win-specific,
+# REVERSED from Phase 2 mac): vendored PRIMARY, live URL SECONDARY. Reason:
+# Win install path's primary is vendored DLL (lines 95-112); sidecar primacy
+# follows install-path primacy.
+#
+# This block runs BEFORE the SKIP_SWAP early-exit so the sandboxed workflow
+# step (SMOODLE_SKIP_SWAP=1) still exercises the gate. Failure-before-Copy-Item
+# invariant: SHA mismatch exits 1 BEFORE the existing Copy-Item to the resolved
+# Weasel install path further below.
+#
+# NOTE: install-librime-fork.ps1 uses Copy-Item (not Move-Item); the ROADMAP
+# wording 'before any Move-Item to Weasel\Frameworks\rime.dll' is a Win-side
+# mistake - actual Weasel install path is Program Files\Rime\weasel-X.Y.Z\rime.dll
+# per install-windows.ps1's probe logic (NOT Weasel\Frameworks\rime.dll). The
+# invariant is: no Copy-Item to the resolved $WeaselDll on the failure path.
+$expectedSha = $null
+if ($Sha256SidecarVendored -and (Test-Path $Sha256SidecarVendored)) {
+    $expectedSha = ((Get-Content -Raw -Encoding UTF8 $Sha256SidecarVendored) -split '\s+')[0].Trim().ToLower()
+    Write-Host "  sha source: vendored sidecar at $Sha256SidecarVendored"
+} elseif ($Sha256LiveUrl) {
+    $tmpSha = New-TemporaryFile
+    try {
+        Invoke-WebRequest -Uri $Sha256LiveUrl -OutFile $tmpSha -UseBasicParsing -ErrorAction Stop
+        $expectedSha = ((Get-Content -Raw -Encoding UTF8 $tmpSha) -split '\s+')[0].Trim().ToLower()
+        Write-Host "  sha source: live URL at $Sha256LiveUrl"
+    } catch {
+        Write-Host "  sha source: live URL fetch failed ($($_.Exception.Message)); no fallback configured"
+    } finally {
+        Remove-Item -Force -ErrorAction SilentlyContinue $tmpSha 2>$null
+    }
+}
+
+if (-not $expectedSha) {
+    Write-Error "ERROR: no SHA256 sidecar available (vendored absent + no live URL + Phase 5 live emission not yet shipped)"
+    Write-Host  "       cannot verify rime.dll integrity; refusing to swap"
+    exit 1
+}
+
+# Get-FileHash returns UPPERCASE hex; sidecar is LOWERCASE; normalize via .ToLower()
+# (D6: symmetric lowering means either source can ship either case without breaking).
+$actualSha = (Get-FileHash -Algorithm SHA256 -Path $DllOut).Hash.ToLower()
+if ($expectedSha -ne $actualSha) {
+    Write-Error "ERROR: SHA256 mismatch on rime.dll"
+    Write-Host  "  expected: $expectedSha"
+    Write-Host  "  actual:   $actualSha"
+    Write-Host  "  source:   $DllOut"
+    Write-Host  "       refusing to swap (CP-2 supply-chain protection)"
+    exit 1
+}
+Write-Host "  [OK] SHA256 verify passed ($actualSha)"
+
+# ---------------------------------------------------------------------------
 # Swap.
 # ---------------------------------------------------------------------------
 if ($SkipSwap) {
@@ -353,6 +427,20 @@ if (-not $copyOk) {
 }
 $newSizeKb = [math]::Round((Get-Item $WeaselDll).Length / 1KB, 0)
 Write-Host "  [OK] Weasel's rime.dll is now $newSizeKb KB."
+
+# --- Plan 03-02: Authenticode regression diagnostic (E2EWIN-05 script-level) ---
+# Non-blocking warning - swap already happened. Phase 1 baseline = NotSigned.
+# If status flips (legitimate librime fork upgrade to signed bins, OR supply-
+# chain compromise inserting a signed binary), surface for human review.
+# Plan 03-01's Pester driver Describe 4 is the BLOCKING workflow-time check;
+# this diagnostic is the install-time post-swap visibility check.
+$sig = Get-AuthenticodeSignature -FilePath $WeaselDll
+if ($sig.Status -ne 'NotSigned') {
+    Write-Warning "Weasel rime.dll signature changed; review fork upgrade vs. supply-chain compromise before unblocking"
+    Write-Warning "  expected: NotSigned (Phase 1 unsigned dogfood baseline)"
+    Write-Warning "  actual:   $($sig.Status)"
+    Write-Warning "  if this is a legitimate librime-fork upgrade to signed binaries, update tests/test_install_librime_fork_win.py + Plan 03-01 Pester Describe 4 baseline."
+}
 
 # Restart WeaselServer.
 if (Test-Path $weaselServerExe) {
