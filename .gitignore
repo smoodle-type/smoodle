@@ -22,6 +22,10 @@ vendor/*
 !vendor/windows/
 vendor/windows/*
 !vendor/windows/rime.dll
+!vendor/macos/
+vendor/macos/*
+!vendor/macos/README.md
+!vendor/macos/librime.1.dylib.sha256
 
 # LLM model files (v0.2+, downloaded on first launch)
 models/
