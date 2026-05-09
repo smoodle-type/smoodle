@@ -1,7 +1,7 @@
 # Project State: Smoodle Phase 1 Finish
 
 **Last updated:** 2026-05-09
-**Status:** PHASE-2-PLANNED (Lane E1 macOS E2E plans drafted + plan-checker verdict PASS; ready for `/gsd-execute-phase 2`)
+**Status:** PHASE-2-COMPLETE (verifier verdict: PASS, 100% goal achievement; live macos-15 smoke run 25594460125 GREEN in 1m 4s)
 **Mode:** yolo
 
 ## Project Reference
@@ -23,21 +23,21 @@
 
 ## Current Position
 
-**Phase:** 2 → PLANNED (Lane E1 macOS E2E; 2 plans drafted, plan-checker PASS 2026-05-09)
-**Plans:** 2 of 2 drafted. 02-01 (Wave 1, autonomous) ships install-mac-e2e.yml + bash test driver + GUI gate; 02-02 (Wave 2, autonomous: no — checkpoint:human-verify) adds SHA256 verify + Intel-Mac arch refusal in install-librime-fork.sh + cross-repo sidecar stub.
-**Plan-check:** PASS on first iteration (10/10 dimensions). 5 non-blocking recommendations noted but not applied (would have been scope creep at plan-phase boundary).
-**Phase 1:** COMPLETE — `.planning/phases/01-lint-and-ci-fast-path/01-VERIFICATION.md` — 4/4 success criteria met, 4/4 LINT REQ-IDs verified.
-**Next action:** `/gsd-execute-phase 2` — Wave 1 (Plan 02-01) runs autonomously; Wave 2 (Plan 02-02) will surface a human-verify checkpoint for live workflow_dispatch on macos-15 (mirrors Phase 1's smoke-test gate).
+**Phase:** 2 → COMPLETE (Lane E1 shipped; verifier verdict PASS 2026-05-09)
+**Plans:** 2 of 2 complete. Smoke-test gate cleared with live macos-15 run 25594460125 (1m 4s, 9/9 substeps green) after fix `d4ba9db` (drop deprecated `--no-quarantine` flag — Homebrew external regression).
+**Verification:** `.planning/phases/02-macos-e2e/02-VERIFICATION.md` — 5/5 success criteria met, 5/5 E2EMAC REQ-IDs verified, all locked decisions (macos-15 / two-tier CI / sidecar SHA / arch-before-SHA / Python unittest / SMOODLE_GUI_SESSION / paths-filter+workflow_dispatch+weekly cron) honored. CP-2, CP-4, MP-3 mitigations all code-resident.
+**Phase 1:** COMPLETE — `.planning/phases/01-lint-and-ci-fast-path/01-VERIFICATION.md` — 4/4 success criteria met.
+**Next action:** `/gsd-plan-phase 3` (or 4) — Phase 3 (Windows E2E, Lane E2) and Phase 4 (Telemetry, Lane T) are still parallelizable. Phase 5 (Sparkle + release) needs Phases 2 + 3 both green; Phase 2 ✓ done, Phase 3 still gating.
 
 ```
-Roadmap progress: [■□□□□□□] 1/7 phases complete (Phase 1 PASS 2026-05-09)
-                   ^
-                   Phase 2 PLANNED (verdict: PASS, ready to execute)
-                   Phase 3/4 also unblocked; parallelizable
+Roadmap progress: [■■□□□□□] 2/7 phases complete (Phase 2 PASS 2026-05-09)
+                    ^
+                    Phase 3/4 unblocked; parallelizable
+                    Phase 5 still gated on Phase 3
 
 Coverage: 41/41 requirements mapped ✓
 Phase 1 LINT REQ-IDs (4/4): LINT-01..04 — verifier PASS ✓
-Phase 2 E2EMAC REQ-IDs (5/5): 01,02,05 (Plan 02-01) + 03,04 (Plan 02-02) — plan-checker PASS ✓
+Phase 2 E2EMAC REQ-IDs (5/5): 01,02,05 (Plan 02-01) + 03,04 (Plan 02-02) — verifier PASS ✓
 ```
 
 ## Performance Metrics
@@ -123,15 +123,19 @@ None at roadmap-creation time. All blockers are surfaced at plan-phase per `Risk
 4. Next action is `/gsd-plan-phase <next-phase>` per Current Position.
 
 **Active milestone:** phase-1-finish
-**Active phase:** 2 (Lane E1: macOS E2E) — PLANNED, awaiting `/gsd-execute-phase 2`
-**Active plans:** 02-01 (Wave 1, autonomous) + 02-02 (Wave 2, checkpoint:human-verify)
-**Files awaiting execution:**
-- `.github/workflows/install-mac-e2e.yml` (Plan 02-01)
-- `tests/test_install_e2e_mac.sh` (Plan 02-01)
-- `scripts/install-librime-fork.sh` modifications (Plan 02-02 — SHA256 + Intel arch)
-- `vendor/macos/librime.1.dylib.sha256` stub sidecar (Plan 02-02 — cross-repo seam)
-- `tests/test_install_librime_fork_mac.py` (Plan 02-02 — Python unittest)
+**Active phase:** 2 → COMPLETE 2026-05-09. Recommended next: `/gsd-plan-phase 3`.
+**Phase 2 commits (8 total, all on main):**
+- `67d7b1b` feat(02-01): tests/test_install_e2e_mac.sh
+- `d01912a` feat(02-01): .github/workflows/install-mac-e2e.yml
+- `a2709da` docs(02-01): plan close
+- `466b43c` feat(02-02): vendor/macos/librime.1.dylib.sha256 + .gitignore allowlist
+- `550d026` feat(02-02): SHA256 verify + Intel arch refusal in install-librime-fork.sh
+- `9676d49` test(02-02): tests/test_install_librime_fork_mac.py
+- `668e6dc` feat(02-02): wire script + tests into workflow
+- `d4ba9db` fix(02-01): drop deprecated --no-quarantine brew flag (external regression)
+
+**Live smoke-test:** run 25594460125 GREEN in 1m 4s — 9/9 substeps passing on macos-15 runner image 20260427.0018 (macos-15-arm64).
 
 ---
 *State initialized: 2026-05-08 alongside ROADMAP.md creation.*
-*Updated: 2026-05-09 after Phase 1 verifier PASS; Phase 2 plans drafted + plan-checker PASS first iteration.*
+*Updated: 2026-05-09 after Phase 2 verifier PASS (5/5 SC, 5/5 REQ, 100% goal achievement).*

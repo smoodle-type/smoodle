@@ -19,7 +19,7 @@ Wrap Phase 1 of Smoodle: ship the Lane E (mac+win E2E), schema lint, opt-in tele
 ## Phases
 
 - [x] **Phase 1: Lint & CI Fast Path (Lane F)** — Schema lint test + ubuntu-only `ci.yml` running on every PR (~3 min). Foundational gate for every later PR. **COMPLETE 2026-05-09 (verifier PASS, 100% goal achievement; 4 GHA runs ≤21s each).**
-- [ ] **Phase 2: macOS E2E (Lane E1)** — `install-mac-e2e.yml` + driver + SHA256 verify + Intel-Mac arch refusal + GUI-required-step gating. Runs in parallel with Phases 3 + 4 after Phase 1.
+- [x] **Phase 2: macOS E2E (Lane E1)** — `install-mac-e2e.yml` + driver + SHA256 verify + Intel-Mac arch refusal + GUI-required-step gating. **COMPLETE 2026-05-09 (verifier PASS, 100% goal achievement; live macos-15 run 25594460125 GREEN in 1m 4s after fix d4ba9db).**
 - [ ] **Phase 3: Windows E2E (Lane E2)** — `install-win-e2e.yml` + Pester 5 driver + SHA256 verify + clean-slate per job + Authenticode assertion. Runs in parallel with Phases 2 + 4 after Phase 1.
 - [ ] **Phase 4: Telemetry (Lane T)** — umami self-host on th-dc + opt-in default-OFF clients + ephemeral install_id + purge endpoint + 90d retention. Runs in parallel with Phases 2 + 3 after Phase 1. Depends on infra-side th-dc deploy.
 - [ ] **Phase 5: Sparkle Re-Swap & Release Hardening (Lane S)** — `verify-librime.{sh,ps1}` (manual, no daemon) + universal macOS dylib (cross-repo work in `smoodle-type/librime`) + atomic draft-then-publish `release.yml` + tag-immutability CI guard + schema timestamp touch. Depends on Phases 2 + 3.
@@ -61,8 +61,8 @@ Wrap Phase 1 of Smoodle: ship the Lane E (mac+win E2E), schema lint, opt-in tele
   4. SHA256 verification block runs *between* download and swap; an artificially-corrupted dylib triggers exit 1 *before* any sudo cp executes (PITFALLS CP-2).
   5. The workflow runs on `paths-filter` (`scripts/install*.sh`, `schema/**`) + `workflow_dispatch` + weekly cron — confirmed by inspecting `install-mac-e2e.yml` triggers section.
 **Plans**:
-- [ ] 02-01: install-mac-e2e.yml + bash driver + GUI gate (Wave 1, autonomous: true) — REQs E2EMAC-01,02,05
-- [ ] 02-02: SHA256 verify + Intel arch refusal in install-librime-fork.sh + sidecar stub (Wave 2, autonomous: no — checkpoint:human-verify) — REQs E2EMAC-03,04
+- [x] 02-01: install-mac-e2e.yml + bash driver + GUI gate (Wave 1, autonomous: true) — REQs E2EMAC-01,02,05 — COMPLETE
+- [x] 02-02: SHA256 verify + Intel arch refusal in install-librime-fork.sh + sidecar stub (Wave 2, checkpoint:human-verify cleared via run 25594460125) — REQs E2EMAC-03,04 — COMPLETE
 
 ### Phase 3: Windows E2E (Lane E2)
 **Goal**: A regression in `scripts/install-windows.ps1` or `scripts/install-librime-fork.ps1` is caught automatically by GHA before reaching the th-dc dockur dogfood test bed, on a `windows-latest` runner with `%APPDATA%\Rime\` cleared per job to prevent state contamination across runs.
@@ -131,7 +131,7 @@ Wrap Phase 1 of Smoodle: ship the Lane E (mac+win E2E), schema lint, opt-in tele
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Lint & CI Fast Path | 2/2 | ✅ COMPLETE (verifier PASS) | 2026-05-09 |
-| 2. macOS E2E | 0/2 | 📝 PLANNED (plan-checker PASS) | 2026-05-09 |
+| 2. macOS E2E | 2/2 | ✅ COMPLETE (verifier PASS) | 2026-05-09 |
 | 3. Windows E2E | 0/? | Not started | - |
 | 4. Telemetry | 0/? | Not started | - |
 | 5. Sparkle & Release Hardening | 0/? | Not started | - |
