@@ -1,7 +1,7 @@
 # Project State: Smoodle Phase 1 Finish
 
 **Last updated:** 2026-05-09
-**Status:** PHASE-2-COMPLETE (verifier verdict: PASS, 100% goal achievement; live macos-15 smoke run 25594460125 GREEN in 1m 4s)
+**Status:** PHASE-3-PLANNED (Lane E2 Windows E2E plans drafted; plan-checker NEEDS-REVISION resolved inline; ready for `/gsd-execute-phase 3`)
 **Mode:** yolo
 
 ## Project Reference
@@ -23,21 +23,24 @@
 
 ## Current Position
 
-**Phase:** 2 → COMPLETE (Lane E1 shipped; verifier verdict PASS 2026-05-09)
-**Plans:** 2 of 2 complete. Smoke-test gate cleared with live macos-15 run 25594460125 (1m 4s, 9/9 substeps green) after fix `d4ba9db` (drop deprecated `--no-quarantine` flag — Homebrew external regression).
-**Verification:** `.planning/phases/02-macos-e2e/02-VERIFICATION.md` — 5/5 success criteria met, 5/5 E2EMAC REQ-IDs verified, all locked decisions (macos-15 / two-tier CI / sidecar SHA / arch-before-SHA / Python unittest / SMOODLE_GUI_SESSION / paths-filter+workflow_dispatch+weekly cron) honored. CP-2, CP-4, MP-3 mitigations all code-resident.
-**Phase 1:** COMPLETE — `.planning/phases/01-lint-and-ci-fast-path/01-VERIFICATION.md` — 4/4 success criteria met.
-**Next action:** `/gsd-plan-phase 3` (or 4) — Phase 3 (Windows E2E, Lane E2) and Phase 4 (Telemetry, Lane T) are still parallelizable. Phase 5 (Sparkle + release) needs Phases 2 + 3 both green; Phase 2 ✓ done, Phase 3 still gating.
+**Phase:** 3 → PLANNED (Lane E2 Windows E2E; 2 plans drafted, plan-checker NEEDS-REVISION resolved inline 2026-05-09)
+**Plans:** 2 of 2 drafted. 03-01 (Wave 1, autonomous: true, 906 lines) ships install-win-e2e.yml + Pester 5 driver + clean-slate + Authenticode NotSigned regression guard; 03-02 (Wave 2, autonomous: no — checkpoint:human-verify, 1219 lines) adds SHA256 verify in install-librime-fork.ps1 + vendored vendor/windows/rime.dll.sha256 sidecar + Python unittest.
+**Plan-check:** First iteration NEEDS-REVISION (2 small items in 03-01); both resolved inline (no re-spawn): (a) MP-4 glob extension promoted optional → mandatory in Task 1 acceptance; (b) STRIDE T-03-01-08 added documenting Win daemon-precondition vacuous satisfaction via SMOODLE_AUTO_DEPLOY=0. 03-02 stands as-is.
+**Phase 1:** COMPLETE — 4/4 SC met, verifier PASS.
+**Phase 2:** COMPLETE — 5/5 SC met, verifier PASS, live macos-15 run 25594460125 GREEN in 1m 4s.
+**Next action:** `/gsd-execute-phase 3` — Wave 1 (03-01) autonomous; Wave 2 (03-02) human-verify checkpoint for live windows-latest workflow_dispatch (expected wall-time ~3-7 min — slower than mac due to winget + Weasel install).
 
 ```
-Roadmap progress: [■■□□□□□] 2/7 phases complete (Phase 2 PASS 2026-05-09)
-                    ^
-                    Phase 3/4 unblocked; parallelizable
-                    Phase 5 still gated on Phase 3
+Roadmap progress: [■■▣□□□□] 2 complete + 1 planned
+                    ^^
+                    Phase 3 PLANNED (verdict: PASS post-revision)
+                    Phase 4 still unblocked; parallelizable
+                    Phase 5 will unblock once Phase 3 green
 
 Coverage: 41/41 requirements mapped ✓
 Phase 1 LINT REQ-IDs (4/4): LINT-01..04 — verifier PASS ✓
 Phase 2 E2EMAC REQ-IDs (5/5): 01,02,05 (Plan 02-01) + 03,04 (Plan 02-02) — verifier PASS ✓
+Phase 3 E2EWIN REQ-IDs (5/5): 01,02,04,05 (Plan 03-01) + 03,05 (Plan 03-02) — plan-checker PASS post-revision ✓
 ```
 
 ## Performance Metrics
@@ -123,7 +126,16 @@ None at roadmap-creation time. All blockers are surfaced at plan-phase per `Risk
 4. Next action is `/gsd-plan-phase <next-phase>` per Current Position.
 
 **Active milestone:** phase-1-finish
-**Active phase:** 2 → COMPLETE 2026-05-09. Recommended next: `/gsd-plan-phase 3`.
+**Active phase:** 3 (Lane E2: Windows E2E) — PLANNED, awaiting `/gsd-execute-phase 3`
+**Active plans:** 03-01 (Wave 1, autonomous, 906 lines) + 03-02 (Wave 2, checkpoint:human-verify, 1219 lines)
+**Files awaiting execution:**
+- `.github/workflows/install-win-e2e.yml` (Plan 03-01)
+- `tests/test_install_e2e_win.ps1` (Plan 03-01 — Pester 5)
+- `tests/test_powershell_ascii.py` glob extension (Plan 03-01 — MP-4 invariant extended to tests/*.ps1)
+- `scripts/install-librime-fork.ps1` modifications (Plan 03-02 — SHA256 verify)
+- `vendor/windows/rime.dll.sha256` sidecar stub (Plan 03-02 — computed live from existing 2.9 MB BSD-3 rime.dll)
+- `tests/test_install_librime_fork_win.py` (Plan 03-02 — Python unittest with shim Get-FileHash + Get-AuthenticodeSignature)
+
 **Phase 2 commits (8 total, all on main):**
 - `67d7b1b` feat(02-01): tests/test_install_e2e_mac.sh
 - `d01912a` feat(02-01): .github/workflows/install-mac-e2e.yml

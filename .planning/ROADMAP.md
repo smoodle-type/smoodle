@@ -74,7 +74,13 @@ Wrap Phase 1 of Smoodle: ship the Lane E (mac+win E2E), schema lint, opt-in tele
   3. `Get-AuthenticodeSignature` on `rime.dll` returns `NotSigned` (Phase 1 unsigned dogfood expectation); test fails red if the signature status changes unexpectedly (guards future regressions).
   4. Pre-step `Remove-Item -Recurse -ErrorAction SilentlyContinue $env:APPDATA\Rime, "$env:LOCALAPPDATA\Rime"` runs before each job; idempotency test verifies clean-slate state.
   5. SHA256 verification block runs *between* download and swap in `install-librime-fork.ps1`; corrupted dll triggers exit 1 before any `Move-Item` to `Weasel\Frameworks\rime.dll`.
-**Plans**: TBD
+**Plans**: 2 plans
+
+  **Wave 1 (autonomous: true)**:
+  - [ ] 03-01-PLAN.md — install-win-e2e.yml + Pester 5 driver + clean-slate pre-step + Authenticode regression guard (REQs E2EWIN-01, E2EWIN-02, E2EWIN-04, E2EWIN-05)
+
+  **Wave 2 (autonomous: false — checkpoint:human-verify for live workflow_dispatch on windows-latest)**:
+  - [ ] 03-02-PLAN.md — SHA256 verify + Authenticode diagnostic in install-librime-fork.ps1 + vendored rime.dll.sha256 sidecar + Python unittest + workflow wiring (REQs E2EWIN-03, E2EWIN-05)
 
 ### Phase 4: Telemetry (Lane T)
 **Goal**: Founder gains an opt-in, default-OFF, no-PII install signal pipeline (founder-visible at `telemetry.<chosen-subdomain>/dashboard`) that sanity-checks "did the install actually work for non-founder N=2..5 friends" without surrendering anonymity at small-N. **NOT** a Decision Gate input — qualitative signals dominate the gate per Phase 0 close.
@@ -132,7 +138,7 @@ Wrap Phase 1 of Smoodle: ship the Lane E (mac+win E2E), schema lint, opt-in tele
 |-------|----------------|--------|-----------|
 | 1. Lint & CI Fast Path | 2/2 | ✅ COMPLETE (verifier PASS) | 2026-05-09 |
 | 2. macOS E2E | 2/2 | ✅ COMPLETE (verifier PASS) | 2026-05-09 |
-| 3. Windows E2E | 0/? | Not started | - |
+| 3. Windows E2E | 0/2 | Plans created (Wave 1 autonomous; Wave 2 checkpoint:human-verify) | - |
 | 4. Telemetry | 0/? | Not started | - |
 | 5. Sparkle & Release Hardening | 0/? | Not started | - |
 | 6. README & Docs Hardening | 0/? | Not started | - |
