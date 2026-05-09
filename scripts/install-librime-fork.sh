@@ -47,6 +47,21 @@ SKIP_BUILD="${SMOODLE_SKIP_BUILD:-0}"
 SKIP_SWAP="${SMOODLE_SKIP_SWAP:-0}"
 FORCE_REBUILD="${SMOODLE_FORCE_REBUILD:-0}"
 NONINTERACTIVE="${SMOODLE_NONINTERACTIVE:-0}"
+
+# Plan 02-02: arch-refusal + SHA256 verify env surface ----------------------
+# SMOODLE_HOST_ARCH_OVERRIDE — for testing the Intel-Mac refusal path on arm64
+#                              hosts. Default: $(uname -m). Tests set to x86_64.
+# SMOODLE_SHA256_LIVE_URL    — URL of the live `.sha256` sidecar.
+#                              Default: ${RELEASE_URL}.sha256. Tests can point
+#                              this at a 404-guaranteed file:// path to exercise
+#                              the vendored fallback.
+# SMOODLE_SHA256_SIDECAR     — path to a local .sha256 sidecar; used as fallback
+#                              when the live URL above returns 404.
+#                              Default: $REPO_DIR/vendor/macos/librime.1.dylib.sha256
+HOST_ARCH="${SMOODLE_HOST_ARCH_OVERRIDE:-$(uname -m)}"
+SHA256_LIVE_URL="${SMOODLE_SHA256_LIVE_URL:-${RELEASE_URL}.sha256}"
+SHA256_SIDECAR_FALLBACK="${SMOODLE_SHA256_SIDECAR:-${REPO_DIR}/vendor/macos/librime.1.dylib.sha256}"
+
 BREW_DEPS=(cmake boost leveldb marisa yaml-cpp opencc googletest pkg-config ninja glog)
 
 echo "smoodle librime fork installer"
@@ -147,6 +162,67 @@ if [ ! -f "${BUILT_DYLIB}" ]; then
 fi
 size_kb=$(( $(stat -f %z "${BUILT_DYLIB}") / 1024 ))
 echo "✓ dylib ready: $(basename "${BUILT_DYLIB}") (${size_kb} KB)"
+
+# --- Plan 02-02: Architecture refusal (MP-3) -------------------------------
+# Cheaper-than-SHA gate: if host arch is x86_64 but the dylib is arm64-only,
+# refuse to proceed. Verbatim error string per ROADMAP Phase 2 SC #3.
+# Runs BEFORE the SHA256 verify block (D6) — failing earlier on the path
+# Intel-Mac users hit, without making them wait on hash computation.
+DYLIB_ARCHS="$(lipo -archs "${BUILT_DYLIB}" 2>/dev/null || echo "unknown")"
+echo "  host arch: ${HOST_ARCH}"
+echo "  dylib archs: ${DYLIB_ARCHS}"
+if [ "${HOST_ARCH}" = "x86_64" ]; then
+  if ! echo "${DYLIB_ARCHS}" | grep -q "x86_64"; then
+    echo "ERROR: this is an arm64-only dylib; Intel Mac not supported until universal dylib lands"
+    exit 1
+  fi
+elif [ "${HOST_ARCH}" = "arm64" ]; then
+  if ! echo "${DYLIB_ARCHS}" | grep -q "arm64"; then
+    echo "ERROR: dylib does not contain an arm64 slice; cannot run on Apple Silicon"
+    exit 1
+  fi
+fi
+echo "✓ arch check passed"
+
+# --- Plan 02-02: SHA256 verify (CP-2) --------------------------------------
+# Post-download, pre-swap. Sidecar source: live ${SHA256_LIVE_URL} first,
+# vendored fallback at ${SHA256_SIDECAR_FALLBACK} second.
+# This block runs ONLY when the dylib was downloaded (not for source-built
+# dylibs — source builds are local, hash provenance is the build, not a sidecar).
+if [ -n "${_downloaded:-}" ]; then
+  _expected_sha=""
+  _sha_source=""
+  _tmp_sha="$(mktemp /tmp/smoodle-librime-XXXXXX.sha256)"
+  if curl -fsSL -o "${_tmp_sha}" "${SHA256_LIVE_URL}" 2>/dev/null \
+      && [ -s "${_tmp_sha}" ]; then
+    _expected_sha="$(awk '{print $1}' "${_tmp_sha}")"
+    _sha_source="live sidecar at ${SHA256_LIVE_URL}"
+  elif [ -f "${SHA256_SIDECAR_FALLBACK}" ]; then
+    _expected_sha="$(awk '{print $1}' "${SHA256_SIDECAR_FALLBACK}")"
+    _sha_source="vendored fallback ${SHA256_SIDECAR_FALLBACK}"
+  fi
+  rm -f "${_tmp_sha}"
+
+  if [ -z "${_expected_sha}" ]; then
+    echo "ERROR: no SHA256 sidecar available (live 404 + no vendored fallback)"
+    echo "       cannot verify dylib integrity; refusing to swap"
+    exit 1
+  fi
+  echo "  sha source: ${_sha_source}"
+
+  _actual_sha="$(shasum -a 256 "${BUILT_DYLIB}" | awk '{print $1}')"
+  if [ "${_expected_sha}" != "${_actual_sha}" ]; then
+    echo "ERROR: SHA256 mismatch on downloaded dylib"
+    echo "  expected: ${_expected_sha}"
+    echo "  actual:   ${_actual_sha}"
+    echo "  source:   ${RELEASE_URL}"
+    echo "       refusing to swap (CP-2 supply-chain protection)"
+    exit 1
+  fi
+  echo "✓ SHA256 verify passed (${_actual_sha})"
+else
+  echo "  SHA256 verify skipped (source-built dylib, not a download)"
+fi
 
 # --- Swap (sudo) ------------------------------------------------------------
 if [ "${SKIP_SWAP}" = "1" ]; then
