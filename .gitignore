@@ -22,6 +22,7 @@ vendor/*
 !vendor/windows/
 vendor/windows/*
 !vendor/windows/rime.dll
+!vendor/windows/rime.dll.sha256
 !vendor/macos/
 vendor/macos/*
 !vendor/macos/README.md
