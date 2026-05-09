@@ -1,0 +1,37 @@
+# yamllint config for smoodle Phase 1 (Lane F).
+# Tunes default rules so that the v0.0.6 baseline schema files pass.
+# Scope: schema/*.yaml + schema/default.custom.yaml only.
+# Reference: .planning/research/STACK.md (yamllint 1.38.0 + structure-only).
+extends: default
+
+# thai_phonetic.dict.yaml is a two-document file: YAML frontmatter (lines 1-43)
+# terminated by `...`, followed by a TSV body with literal tab characters between
+# columns. yamllint fires a raw syntax error on those tabs because tabs cannot
+# start a YAML token (YAML 1.2 spec, section 6.1). This is not configurable via
+# any yamllint rule -- it is a parser-level rejection. The dict file's frontmatter
+# is validated by tests/test_schema_lint.py via PyYAML safe_load on the frontmatter
+# segment only. yamllint is excluded from the dict file to avoid this conflict.
+ignore: |
+  *.dict.yaml
+
+rules:
+  # Schema files have long comment blocks and the dict body has long Thai entries.
+  # yamllint's 80-char line limit would force chopping, which is wrong scope.
+  line-length: disable
+
+  # thai_phonetic.schema.yaml and default.custom.yaml do not start with `---`
+  # (they start with a comment block). yamllint default rejects this.
+  document-start: disable
+
+  # thai_phonetic.schema.yaml uses flow sequences with inner spaces:
+  #   states: [ ไทย, ENG ]
+  # yamllint default `brackets` rule rejects "too many spaces inside brackets".
+  brackets: disable
+
+  # Schema YAMLs use 2-space indent; allow consistent indentation without
+  # mandating a fixed count (encoder: block uses 4-space nested indent).
+  indentation:
+    spaces: consistent
+    indent-sequences: consistent
+
+  # Keep trailing-spaces ENABLED -- trailing whitespace is a real defect.
