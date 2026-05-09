@@ -111,3 +111,4 @@ The patched librime distribution at
 bundled** — installers configure Squirrel rather than redistributing
 it; users obtain Squirrel via Homebrew (`brew install --cask
 squirrel-app`).
+
