@@ -1,0 +1,97 @@
+name: release
+
+# HARDEN-04: Atomic draft-then-publish release.
+# HARDEN-05: Tag-immutability CI guard.
+#
+# Triggered on tag push. Builds DMG, computes SHA256, uploads to GitHub
+# Releases using draft-then-publish to avoid mid-upload race (MP-5).
+# Post-publish step verifies tag immutability by comparing created_at vs
+# updated_at on each asset (CP-2).
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    name: Build and publish release (macos-15)
+    runs-on: macos-15
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Show runner identity
+        run: |
+          sw_vers
+          uname -m
+          echo "Tag: ${{ github.ref_name }}"
+
+      - name: Build DMG
+        run: |
+          chmod +x scripts/build-macos-dmg.sh
+          ./scripts/build-macos-dmg.sh
+
+      - name: Compute SHA256 sidecars
+        run: |
+          for f in dist/*.dmg; do
+            shasum -a 256 "$f" > "${f}.sha256"
+          done
+          ls -la dist/
+
+      - name: Create draft release
+        run: |
+          gh release create "${{ github.ref_name }}" \
+            --draft \
+            --title "Smoodle ${{ github.ref_name }}" \
+            --notes "Release ${{ github.ref_name }}" \
+            --repo "${{ github.repository }}"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload assets to draft release
+        run: |
+          gh release upload "${{ github.ref_name }}" \
+            dist/*.dmg \
+            dist/*.dmg.sha256 \
+            --repo "${{ github.repository }}" \
+            --clobber
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Publish release (remove draft)
+        run: |
+          gh release edit "${{ github.ref_name }}" \
+            --draft=false \
+            --repo "${{ github.repository }}"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Verify tag immutability
+        # HARDEN-05 / CP-2: After publish, verify no asset was rewritten.
+        # GitHub sets created_at and updated_at to the same value on initial
+        # upload. If --clobber was used after initial publish, updated_at
+        # changes while created_at stays the same.
+        run: |
+          sleep 5  # API indexing latency
+          FAIL=0
+          while IFS='|' read -r name created updated; do
+            if [ "$created" != "$updated" ]; then
+              echo "ERROR: ${name} was rewritten (created=${created}, updated=${updated})"
+              echo "Tag rewrites are not allowed — bump the version tag instead."
+              FAIL=1
+            fi
+          done < <(gh release view "${{ github.ref_name }}" \
+            --repo "${{ github.repository }}" \
+            --json assets \
+            --jq '.assets[] | "\(.name)|\(.created_at)|\(.updated_at)"')
+          if [ "$FAIL" -ne 0 ]; then
+            exit 1
+          fi
+          echo "OK: tag ${{ github.ref_name }} is immutable"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
