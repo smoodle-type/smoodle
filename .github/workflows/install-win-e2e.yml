@@ -52,18 +52,6 @@ jobs:
           Import-Module Pester -MinimumVersion 5.0.0
           (Get-Module Pester).Version
 
-      - name: Clean-slate %APPDATA%\Rime + %LOCALAPPDATA%\Rime (CP-4 prevention)
-        # PITFALLS CP-4 names %APPDATA%\Rime\ caching across jobs as the
-        # canonical Win false-confidence vector for E2E. -ErrorAction
-        # SilentlyContinue is safe on the very first job (clean runner)
-        # where the dirs do not exist; the Pester driver's Clean-slate
-        # Describe block re-asserts EMPTINESS before install-windows.ps1
-        # runs (idempotency belt-and-suspenders).
-        shell: pwsh
-        run: |
-          Remove-Item -Recurse -Force -ErrorAction SilentlyContinue $env:APPDATA\Rime, "$env:LOCALAPPDATA\Rime"
-          Write-Host "Clean-slate Remove-Item completed (errors silently ignored if dirs absent on first job)"
-
       - name: Install Weasel via winget (with 5-min timeout cap)
         # winget Rime.Weasel ships an Inno Setup installer. install-windows.ps1's
         # own winget call uses --interactive (lines 110-122) which is impossible
@@ -129,6 +117,20 @@ jobs:
               exit 1
           }
           Write-Host "rime.dll present at $WeaselDll"
+
+      - name: Clean-slate %APPDATA%\Rime + %LOCALAPPDATA%\Rime (CP-4 prevention)
+        # PITFALLS CP-4 names %APPDATA%\Rime\ caching as the canonical Win
+        # false-confidence vector for E2E. Position is intentional: AFTER
+        # winget Rime.Weasel install (which can deploy default Rime configs
+        # to %APPDATA%\Rime in some Inno Setup --silent paths) and BEFORE
+        # the Pester driver runs. The driver's Clean-slate Describe re-
+        # asserts EMPTINESS before install-windows.ps1 runs (idempotency
+        # belt-and-suspenders, CP-4 audit-trail of intent).
+        # -ErrorAction SilentlyContinue is safe when dirs are absent.
+        shell: pwsh
+        run: |
+          Remove-Item -Recurse -Force -ErrorAction SilentlyContinue $env:APPDATA\Rime, "$env:LOCALAPPDATA\Rime"
+          Write-Host "Clean-slate Remove-Item completed (errors silently ignored if dirs absent)"
 
       - name: Run Pester E2E driver (E2EWIN-01, E2EWIN-04, E2EWIN-05)
         # Driver runs install-windows.ps1 internally with SMOODLE_AUTO_DEPLOY=0
