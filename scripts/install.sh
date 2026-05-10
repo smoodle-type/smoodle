@@ -77,6 +77,14 @@ for f in thai_phonetic.schema.yaml thai_phonetic.dict.yaml default.custom.yaml; 
   fi
 done
 
+# --- HARDEN-07: Touch schema files to force Squirrel to recompile ----------
+# This mirrors the Windows LastWriteTime = Get-Date pattern (install-windows.ps1).
+# Without this, rsync from Time Machine or other backup tools can restore
+# schema YAMLs with stale mtimes that Squirrel considers "already compiled."
+for f in thai_phonetic.schema.yaml thai_phonetic.dict.yaml; do
+  touch -m "${RIME_DIR}/${f}"
+done
+
 # --- Attempt auto-deploy: kill Squirrel + restart (timeout-bounded) ---------
 # Squirrel deploys schemas on launch when YAMLs have changed since last build.
 # This is more reliable than osascript or rime_deployer (which require extra
