@@ -467,8 +467,16 @@ Verify:
   Type 'sawadee' in Notepad with smoodle Thai phonetic active.
   Expect candidate window with: sawatdee
 
-Note: a Weasel update via winget upgrade may overwrite this patched
-DLL. Re-run this script to reapply. The artifact at $DllOut is
-cached, so subsequent runs skip the download (or set
-SMOODLE_SKIP_DOWNLOAD=1 explicitly).
+Note: a Weasel update may overwrite the patched rime.dll silently.
+If Thai ranking ever degrades, run:
+
+  .\scripts\verify-librime.ps1
+
+This will check whether the DLL hash still matches the smoodle patch.
+If drift is detected, re-run this installer:
+
+  .\scripts\install-librime-fork.ps1
+
+The artifact at $DllOut is cached, so subsequent runs skip the download
+(or set SMOODLE_SKIP_DOWNLOAD=1 explicitly).
 "@
