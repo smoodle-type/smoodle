@@ -352,11 +352,16 @@ if (-not $expectedSha) {
 # (D6: symmetric lowering means either source can ship either case without breaking).
 $actualSha = (Get-FileHash -Algorithm SHA256 -Path $DllOut).Hash.ToLower()
 if ($expectedSha -ne $actualSha) {
-    Write-Error "ERROR: SHA256 mismatch on rime.dll"
+    # Log diagnostics BEFORE Write-Error: the script runs with
+    # $ErrorActionPreference = 'Stop' so Write-Error is terminating;
+    # any Write-Host that follows would be unreachable. Operators (and
+    # the unittest) must see expected/actual hashes to triage CP-2
+    # supply-chain anomalies vs. corrupted-download anomalies.
     Write-Host  "  expected: $expectedSha"
     Write-Host  "  actual:   $actualSha"
     Write-Host  "  source:   $DllOut"
     Write-Host  "       refusing to swap (CP-2 supply-chain protection)"
+    Write-Error "ERROR: SHA256 mismatch on rime.dll"
     exit 1
 }
 Write-Host "  [OK] SHA256 verify passed ($actualSha)"
