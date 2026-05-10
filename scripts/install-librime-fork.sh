@@ -266,7 +266,15 @@ Verify:
   python3 tests/test_dict.py --use-rime-api-console --fixture tests/v01_fixture.yaml
   → expect PASS 56/56
 
-Note: Squirrel auto-updates from the Rime project may overwrite this patched
-dylib. Re-run this script to reapply the swap. Fork tag ${FORK_TAG} keeps the
-patch reproducible.
+Note: Squirrel auto-updates via Sparkle may overwrite the patched
+librime.1.dylib silently. If Thai ranking ever degrades, run:
+
+  bash scripts/verify-librime.sh
+
+This will check whether the dylib hash still matches the smoodle patch.
+If drift is detected, re-run this installer:
+
+  bash scripts/install-librime-fork.sh
+
+Fork tag ${FORK_TAG} keeps the patch reproducible.
 EOF
