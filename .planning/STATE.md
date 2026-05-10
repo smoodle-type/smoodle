@@ -1,7 +1,7 @@
 # Project State: Smoodle Phase 1 Finish
 
-**Last updated:** 2026-05-09
-**Status:** PHASE-3-PLANNED (Lane E2 Windows E2E plans drafted; plan-checker NEEDS-REVISION resolved inline; ready for `/gsd-execute-phase 3`)
+**Last updated:** 2026-05-10
+**Status:** PHASE-3-COMPLETE (Lane E2 Windows E2E shipped; verifier PASS 5/5 SC; live run 25623956809 GREEN 2m12s; ready for `/gsd-plan-phase 4` or `/gsd-plan-phase 5`)
 **Mode:** yolo
 
 ## Project Reference
@@ -23,24 +23,24 @@
 
 ## Current Position
 
-**Phase:** 3 → PLANNED (Lane E2 Windows E2E; 2 plans drafted, plan-checker NEEDS-REVISION resolved inline 2026-05-09)
-**Plans:** 2 of 2 drafted. 03-01 (Wave 1, autonomous: true, 906 lines) ships install-win-e2e.yml + Pester 5 driver + clean-slate + Authenticode NotSigned regression guard; 03-02 (Wave 2, autonomous: no — checkpoint:human-verify, 1219 lines) adds SHA256 verify in install-librime-fork.ps1 + vendored vendor/windows/rime.dll.sha256 sidecar + Python unittest.
-**Plan-check:** First iteration NEEDS-REVISION (2 small items in 03-01); both resolved inline (no re-spawn): (a) MP-4 glob extension promoted optional → mandatory in Task 1 acceptance; (b) STRIDE T-03-01-08 added documenting Win daemon-precondition vacuous satisfaction via SMOODLE_AUTO_DEPLOY=0. 03-02 stands as-is.
+**Phase:** 3 → COMPLETE (Lane E2 Windows E2E shipped 2026-05-10, verifier PASS 5/5 SC + 5/5 REQ + 8/8 STRIDE, zero gaps)
+**Plans:** 2 of 2 shipped. 03-01 (Wave 1, autonomous, 906 lines) shipped install-win-e2e.yml + Pester 5 driver + clean-slate + Authenticode NotSigned regression guard; 03-02 (Wave 2, human-verify, 1219 lines) shipped SHA256 verify in install-librime-fork.ps1 + vendored vendor/windows/rime.dll.sha256 sidecar + Python unittest.
 **Phase 1:** COMPLETE — 4/4 SC met, verifier PASS.
 **Phase 2:** COMPLETE — 5/5 SC met, verifier PASS, live macos-15 run 25594460125 GREEN in 1m 4s.
-**Next action:** `/gsd-execute-phase 3` — Wave 1 (03-01) autonomous; Wave 2 (03-02) human-verify checkpoint for live windows-latest workflow_dispatch (expected wall-time ~3-7 min — slower than mac due to winget + Weasel install).
+**Phase 3:** COMPLETE — 5/5 SC met, verifier PASS, live windows-latest run 25623956809 GREEN in 2m 12s after 2 internal-defect fixes (ba11f59 Pester 5 scoping + clean-slate ordering, 41daefb Write-Error diagnostics ordering).
+**Next action:** `/gsd-plan-phase 4` (Telemetry, parallelizable, infra-blocked on th-dc umami deploy) OR `/gsd-plan-phase 5` (Sparkle/release hardening, sequential, now unblocked since both Phases 2 + 3 are green).
 
 ```
-Roadmap progress: [■■▣□□□□] 2 complete + 1 planned
-                    ^^
-                    Phase 3 PLANNED (verdict: PASS post-revision)
-                    Phase 4 still unblocked; parallelizable
-                    Phase 5 will unblock once Phase 3 green
+Roadmap progress: [■■■□□□□] 3 complete
+                       ^
+                       Phase 3 COMPLETE (verdict: PASS, zero gaps)
+                       Phase 4 unblocked; parallelizable
+                       Phase 5 unblocked (depended on Phases 2+3 both green)
 
 Coverage: 41/41 requirements mapped ✓
 Phase 1 LINT REQ-IDs (4/4): LINT-01..04 — verifier PASS ✓
 Phase 2 E2EMAC REQ-IDs (5/5): 01,02,05 (Plan 02-01) + 03,04 (Plan 02-02) — verifier PASS ✓
-Phase 3 E2EWIN REQ-IDs (5/5): 01,02,04,05 (Plan 03-01) + 03,05 (Plan 03-02) — plan-checker PASS post-revision ✓
+Phase 3 E2EWIN REQ-IDs (5/5): 01,02,04,05 (Plan 03-01) + 03,05 (Plan 03-02) — verifier PASS ✓
 ```
 
 ## Performance Metrics
@@ -126,15 +126,26 @@ None at roadmap-creation time. All blockers are surfaced at plan-phase per `Risk
 4. Next action is `/gsd-plan-phase <next-phase>` per Current Position.
 
 **Active milestone:** phase-1-finish
-**Active phase:** 3 (Lane E2: Windows E2E) — PLANNED, awaiting `/gsd-execute-phase 3`
-**Active plans:** 03-01 (Wave 1, autonomous, 906 lines) + 03-02 (Wave 2, checkpoint:human-verify, 1219 lines)
-**Files awaiting execution:**
-- `.github/workflows/install-win-e2e.yml` (Plan 03-01)
-- `tests/test_install_e2e_win.ps1` (Plan 03-01 — Pester 5)
-- `tests/test_powershell_ascii.py` glob extension (Plan 03-01 — MP-4 invariant extended to tests/*.ps1)
-- `scripts/install-librime-fork.ps1` modifications (Plan 03-02 — SHA256 verify)
-- `vendor/windows/rime.dll.sha256` sidecar stub (Plan 03-02 — computed live from existing 2.9 MB BSD-3 rime.dll)
-- `tests/test_install_librime_fork_win.py` (Plan 03-02 — Python unittest with shim Get-FileHash + Get-AuthenticodeSignature)
+**Active phase:** 3 (Lane E2: Windows E2E) — COMPLETE; next is Phase 4 (parallelizable, infra-blocked) or Phase 5 (sequential, now unblocked)
+**Active plans:** none in flight
+
+**Phase 3 commits (11 total, all on main):**
+- `ec41146` docs(03): plan Phase 3 — 2 plans, plan-checker PASS post-revision
+- `bec3caf` chore(03-01): extend MP-4 ASCII glob to tests/*.ps1
+- `64b04e6` feat(03-01): tests/test_install_e2e_win.ps1 (Pester 5 driver, 4 Describes)
+- `04cc350` feat(03-01): .github/workflows/install-win-e2e.yml (windows-latest workflow)
+- `7b2ef02` docs(03-01): plan close + 03-01-SUMMARY.md
+- `3b2083d` feat(03-02): vendor/windows/rime.dll.sha256 sidecar (3700c2f9...4275e)
+- `b02ece0` feat(03-02): SHA256 verify + Authenticode diagnostic in install-librime-fork.ps1
+- `55b33c8` test(03-02): tests/test_install_librime_fork_win.py
+- `579601d` feat(03-02): wire install-librime-fork.ps1 + tests into install-win-e2e.yml
+- `ba11f59` fix(03-01): Pester 5 scoping + workflow clean-slate ordering (live run 25623770858 red)
+- `41daefb` fix(03-02): emit SHA mismatch diagnostics before Write-Error (live run 25623904961 red)
+
+**Live smoke-tests:**
+- run 25623770858 RED — Pester 5 file-scope code ran during Discovery phase (before Describe 1's emptiness assertion). Fixed `ba11f59`.
+- run 25623904961 RED — `$ErrorActionPreference = 'Stop'` made Write-Error terminating before Write-Host hash diagnostics could print. Fixed `41daefb`.
+- run 25623956809 **GREEN** in 2m12s — 12/12 steps passing on windows-latest. Both fixes were INTERNAL Pester 5 + PowerShell defects (distinct from Phase 2's `d4ba9db` external Homebrew regression).
 
 **Phase 2 commits (8 total, all on main):**
 - `67d7b1b` feat(02-01): tests/test_install_e2e_mac.sh
@@ -146,8 +157,7 @@ None at roadmap-creation time. All blockers are surfaced at plan-phase per `Risk
 - `668e6dc` feat(02-02): wire script + tests into workflow
 - `d4ba9db` fix(02-01): drop deprecated --no-quarantine brew flag (external regression)
 
-**Live smoke-test:** run 25594460125 GREEN in 1m 4s — 9/9 substeps passing on macos-15 runner image 20260427.0018 (macos-15-arm64).
-
 ---
 *State initialized: 2026-05-08 alongside ROADMAP.md creation.*
 *Updated: 2026-05-09 after Phase 2 verifier PASS (5/5 SC, 5/5 REQ, 100% goal achievement).*
+*Updated: 2026-05-10 after Phase 3 verifier PASS (5/5 SC, 5/5 REQ, 8/8 STRIDE, zero gaps; live windows-latest run 25623956809 GREEN 2m12s).*
