@@ -1,7 +1,7 @@
 # Project State: Smoodle Phase 1 Finish
 
-**Last updated:** 2026-05-10
-**Status:** PHASE-5-COMPLETE (Lane S Sparkle/release hardening shipped; all 7 HARDEN REQ-IDs covered; release workflow live-verified green on test tag v0.0.6-test-release)
+**Last updated:** 2026-05-11
+**Status:** PHASE-4-COMPLETE (Lane T Telemetry shipped; all 9 TELEM REQ-IDs covered; Docker Compose stack for umami + postgres + caddy + forget-api on th-dc)
 **Mode:** yolo
 
 ## Project Reference
@@ -23,25 +23,27 @@
 
 ## Current Position
 
-**Phase:** 5 → COMPLETE (Lane S Sparkle/release hardening shipped 2026-05-11, all 7 HARDEN REQ-IDs covered, release workflow live-verified green on test tag v0.0.6-test-release)
-**Plans:** 2 of 2 shipped. 05-01 (Wave 1, autonomous, 7 tasks) shipped verify-librime.{sh,ps1}, tests, post-install messages, touch -m; 05-02 (Wave 2, human-verify, 3 tasks) shipped release.yml draft-then-publish + tag-immutability guard.
+**Phase:** 4 → COMPLETE (Lane T Telemetry shipped 2026-05-11, all 9 TELEM REQ-IDs covered)
+**Plans:** All tasks shipped across 3 waves: infra (docker-compose + Postgres triggers + forget-api), client (telemetry.{sh,ps1} + installer integration), tests (12 new tests + unskipped test_telemetry_opt_in_default_off).
 **Phase 1:** COMPLETE — 4/4 SC met, verifier PASS.
 **Phase 2:** COMPLETE — 5/5 SC met, verifier PASS, live macos-15 run 25594460125 GREEN in 1m 4s.
 **Phase 3:** COMPLETE — 5/5 SC met, verifier PASS, live windows-latest run 25623956809 GREEN in 2m 12s after 2 internal-defect fixes.
-**Phase 5:** COMPLETE — 6/6 SC met, all 7 HARDEN REQ-IDs covered. Human verification on test tag v0.0.6-test-release passed green (all steps: checkout → build DMG → SHA256 → create draft → upload assets → publish → verify immutability). Test tag cleaned up.
-**Next action:** `/gsd-plan-phase 4` (Telemetry, parallelizable, infra-blocked on th-dc umami deploy) OR `/gsd-plan-phase 6` (README & Docs hardening, sequential).
+**Phase 4:** COMPLETE — 9/9 TELEM REQ-IDs covered. Docker Compose stack ready for th-dc deploy.
+**Phase 5:** COMPLETE — 6/6 SC met, all 7 HARDEN REQ-IDs covered. Human verification on test tag v0.0.6-test-release passed green.
+**Next action:** `/gsd-plan-phase 6` (README & Docs hardening, sequential) OR manual deploy of telemetry stack on th-dc.
 
 ```
 Roadmap progress: [■■■■■□□] 5 complete
                        ^
+                       Phase 4 COMPLETE (all 9 TELEM REQ-IDs covered)
                        Phase 5 COMPLETE (all 7 HARDEN REQ-IDs covered)
-                       Phase 4 unblocked; parallelizable
                        Phase 6 ready; sequential
 
 Coverage: 41/41 requirements mapped ✓
 Phase 1 LINT REQ-IDs (4/4): LINT-01..04 — verifier PASS ✓
 Phase 2 E2EMAC REQ-IDs (5/5): 01,02,05 (Plan 02-01) + 03,04 (Plan 02-02) — verifier PASS ✓
 Phase 3 E2EWIN REQ-IDs (5/5): 01,02,04,05 (Plan 03-01) + 03,05 (Plan 03-02) — verifier PASS ✓
+Phase 4 TELEM REQ-IDs (9/9): 01,07,08 (Wave 1 infra) + 02,03,04,05 (Wave 2 client) + 06,09 (Wave 3 tests) ✓
 Phase 5 HARDEN REQ-IDs (7/7): 01,02,06,07 (Plan 05-01) + 04,05 (Plan 05-02) + 03 (cross-repo note) ✓
 ```
 
@@ -89,7 +91,7 @@ Phase 5 HARDEN REQ-IDs (7/7): 01,02,06,07 (Plan 05-01) + 04,05 (Plan 05-02) + 03
 |---------|-------|--------|
 | **CP-1**: Sparkle re-swap loop (silent dylib overwrite) | Phase 5 (HARDEN-01/02/06) | Mitigated — verify-librime.{sh,ps1} detect drift, exit 1, no daemon |
 | **CP-2**: Tag rewrite supply-chain inversion | Phases 2+3+5 (E2EMAC-03, E2EWIN-03, HARDEN-04/05) | Mitigated — tag-immutability guard in release.yml fails red on rewrite |
-| **CP-3**: Telemetry de-anonymization at small N | Phase 4 (TELEM-05/07/08, MP-2) | Pending |
+| **CP-3**: Telemetry de-anonymization at small N | Phase 4 (TELEM-05/07/08, MP-2) | Mitigated — ephemeral install_id, strict allowlist payload, [y/N] default-N, server-side IP-drop + timestamp rounding via Postgres triggers, 90-day retention cron, forget CLI for data purge |
 | **CP-4**: GHA non-interactive runner false-confidence E2E | Phases 2+3 (E2EMAC-05, E2EWIN-04) | Mitigated — live runs green on macos-15 + windows-latest |
 | **CP-5**: Schema lint false-positive churn (Python re ≠ boost::regex) | Phase 1 (LINT-01 scope) | Mitigated — structure-only lint scope |
 | **MP-1**: README tested only on author's machine | Phase 6 (DOCS-06) | Pending |
