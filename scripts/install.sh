@@ -17,6 +17,37 @@ DEPLOY_TIMEOUT_SECS="${SMOODLE_DEPLOY_TIMEOUT_SECS:-10}"
 # touching the user's running Squirrel; production default is 1).
 AUTO_DEPLOY="${SMOODLE_AUTO_DEPLOY:-1}"
 
+# --- Uninstall mode (DOCS-04) ------------------------------------------------
+if [[ "${1:-}" == "--uninstall" ]]; then
+  echo "smoodle uninstaller (macOS)"
+  echo "==========================="
+  echo "  removing: ${RIME_DIR}/thai_phonetic.schema.yaml"
+  echo "  removing: ${RIME_DIR}/thai_phonetic.dict.yaml"
+  echo "  removing: ${RIME_DIR}/default.custom.yaml"
+  echo "  removing: ${HOME}/.smoodle/ (telemetry data)"
+  echo
+
+  removed=0
+  for f in thai_phonetic.schema.yaml thai_phonetic.dict.yaml default.custom.yaml; do
+    if [[ -f "${RIME_DIR}/${f}" ]]; then
+      rm -f "${RIME_DIR}/${f}"
+      echo "  removed ${f}"
+      removed=$((removed + 1))
+    fi
+  done
+  if [[ -d "${HOME}/.smoodle" ]]; then
+    rm -rf "${HOME}/.smoodle"
+    echo "  removed ~/.smoodle/ (telemetry data)"
+  fi
+  if [[ "$removed" -eq 0 ]] && [[ ! -d "${HOME}/.smoodle" ]]; then
+    echo "  Nothing to remove (already clean)."
+  else
+    echo
+    echo "  Uninstall complete. Restart Squirrel to apply."
+  fi
+  exit 0
+fi
+
 # --- Source telemetry helper (TELEM-02) -------------------------------------
 # When not opted in, this is a no-op (zero network traffic).
 . "$(dirname "${BASH_SOURCE[0]}")/lib/telemetry.sh"

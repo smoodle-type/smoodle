@@ -22,6 +22,57 @@ DEPLOY_TIMEOUT_SECS="${SMOODLE_DEPLOY_TIMEOUT_SECS:-10}"
 # the user's running IM; production default is 1).
 AUTO_DEPLOY="${SMOODLE_AUTO_DEPLOY:-1}"
 
+# --- Uninstall mode (DOCS-04) ------------------------------------------------
+if [[ "${1:-}" == "--uninstall" ]]; then
+  echo "smoodle uninstaller (Linux)"
+  echo "==========================="
+
+  # Detect IM to find the right dir
+  IM="${SMOODLE_IM:-}"
+  if [[ -z "$IM" ]]; then
+    if pgrep -x fcitx5 >/dev/null 2>&1; then
+      IM=fcitx5
+    elif pgrep -x ibus-daemon >/dev/null 2>&1; then
+      IM=ibus
+    else
+      echo "ERROR: no IM running. Override with SMOODLE_IM=fcitx5 or SMOODLE_IM=ibus"
+      exit 1
+    fi
+  fi
+
+  case "${IM}" in
+    fcitx5) RIME_DIR="${SMOODLE_RIME_DIR:-${HOME}/.local/share/fcitx5/rime}" ;;
+    ibus)   RIME_DIR="${SMOODLE_RIME_DIR:-${HOME}/.config/ibus/rime}" ;;
+    *)      echo "ERROR: unsupported IM '${IM}'"; exit 1 ;;
+  esac
+
+  echo "  removing: ${RIME_DIR}/thai_phonetic.schema.yaml"
+  echo "  removing: ${RIME_DIR}/thai_phonetic.dict.yaml"
+  echo "  removing: ${RIME_DIR}/default.custom.yaml"
+  echo "  removing: ${HOME}/.smoodle/ (telemetry data)"
+  echo
+
+  removed=0
+  for f in thai_phonetic.schema.yaml thai_phonetic.dict.yaml default.custom.yaml; do
+    if [[ -f "${RIME_DIR}/${f}" ]]; then
+      rm -f "${RIME_DIR}/${f}"
+      echo "  removed ${f}"
+      removed=$((removed + 1))
+    fi
+  done
+  if [[ -d "${HOME}/.smoodle" ]]; then
+    rm -rf "${HOME}/.smoodle"
+    echo "  removed ~/.smoodle/ (telemetry data)"
+  fi
+  if [[ "$removed" -eq 0 ]] && [[ ! -d "${HOME}/.smoodle" ]]; then
+    echo "  Nothing to remove (already clean)."
+  else
+    echo
+    echo "  Uninstall complete. Restart ${IM} to apply."
+  fi
+  exit 0
+fi
+
 # --- Source telemetry helper (TELEM-02) -------------------------------------
 . "$(dirname "${BASH_SOURCE[0]}")/lib/telemetry.sh"
 
