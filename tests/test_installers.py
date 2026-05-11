@@ -573,11 +573,17 @@ class FutureLanes(unittest.TestCase):
     convert into real tests.
     """
 
-    @unittest.skip("Phase 1 telemetry milestone not yet implemented")
     def test_telemetry_opt_in_default_off(self):
-        # When the telemetry POST client lands, verify default is OFF
-        # and payload contains only {install_id_hash, version, os}.
-        ...
+        """Assert all installers prompt [y/N] (default-N) for telemetry."""
+        for installer in ['install.sh', 'install-linux.sh', 'install-windows.ps1']:
+            path = os.path.join(REPO_ROOT, 'scripts', installer)
+            if not os.path.exists(path):
+                self.skipTest(f"{installer} not found (may be on different OS)")
+            with open(path) as f:
+                content = f.read()
+            # Must contain [y/N] pattern (capital N = default no)
+            self.assertIn('[y/N]', content,
+                f"{installer}: missing [y/N] telemetry prompt (default-Y or no prompt)")
 
     @unittest.skip("E2E only: requires real Squirrel.app + dogfood machine")
     def test_auto_deploy_kill_restart_against_real_squirrel(self):
