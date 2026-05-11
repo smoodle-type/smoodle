@@ -81,6 +81,13 @@ $DeployTimeoutSecs = if ($env:SMOODLE_DEPLOY_TIMEOUT_SECS) {
 
 $AutoDeploy = if ($env:SMOODLE_AUTO_DEPLOY -eq '0') { $false } else { $true }
 
+# --- Source telemetry helper (TELEM-03) --------------------------------------
+# When not opted in, this is a no-op (zero network traffic).
+$TelemetryLibPath = Join-Path $SmoodleDir 'lib\telemetry.ps1'
+if (Test-Path $TelemetryLibPath) {
+    . $TelemetryLibPath
+}
+
 $SchemaFiles = @(
     'thai_phonetic.schema.yaml',
     'thai_phonetic.dict.yaml',
@@ -92,6 +99,11 @@ Write-Host '===================================='
 Write-Host "  source:      $SmoodleDir\schema\"
 Write-Host "  destination: $RimeDir\"
 Write-Host ''
+
+# Telemetry: install_started (TELEM-04)
+if (Get-Command Invoke-SmoodleTelemetryEvent -ErrorAction SilentlyContinue) {
+    Invoke-SmoodleTelemetryEvent -EventName 'install_started'
+}
 
 # ---------------------------------------------------------------------------
 # Pre-flight #1: Weasel host present (auto-install via winget if missing).
@@ -199,6 +211,11 @@ foreach ($f in $SchemaFiles) {
     }
 }
 
+# Telemetry: schema_copied (TELEM-04)
+if (Get-Command Invoke-SmoodleTelemetryEvent -ErrorAction SilentlyContinue) {
+    Invoke-SmoodleTelemetryEvent -EventName 'schema_copied'
+}
+
 # ---------------------------------------------------------------------------
 # Auto-deploy via WeaselDeployer.exe /deploy (timeout-bounded).
 # ---------------------------------------------------------------------------
@@ -231,6 +248,9 @@ if (Test-Path $deployerExe) {
 
 if ($autoDeployOk) {
     Write-Host '  [OK] WeaselDeployer succeeded; schemas compiled.'
+    if (Get-Command Invoke-SmoodleTelemetryEvent -ErrorAction SilentlyContinue) {
+        Invoke-SmoodleTelemetryEvent -EventName 'deploy_success'
+    }
 } else {
     Write-Host "  [WARN] Auto-deploy failed or timed out after ${DeployTimeoutSecs}s."
     Write-Host '    This is normal on first install (Thai dict is large).'
@@ -238,6 +258,44 @@ if ($autoDeployOk) {
     Write-Host '    If missing: Start > Weasel Server > open it.'
     Write-Host '    Then: right-click the Weasel tray icon > Deploy.'
     Write-Host '    Wait for the "Under maintenance" notification to clear (~30s).'
+    if (Get-Command Invoke-SmoodleTelemetryEvent -ErrorAction SilentlyContinue) {
+        Invoke-SmoodleTelemetryEvent -EventName 'deploy_timeout' -LibrimeShaMatch 'false'
+    }
+}
+
+# ---------------------------------------------------------------------------
+# Telemetry opt-in prompt (TELEM-04).
+# ---------------------------------------------------------------------------
+$TelemetryMarkerPath = Join-Path $env:USERPROFILE '.smoodle\telemetry-on'
+$AlreadyOptedIn = ($env:SMOODLE_TELEMETRY -eq '1') -or (Test-Path $TelemetryMarkerPath)
+
+if (-not $AlreadyOptedIn) {
+    Write-Host ''
+    Write-Host 'Telemetry (opt-in, default OFF)'
+    Write-Host '  Sends an anonymous install ping to telemetry.0dl.me'
+    Write-Host '  Payload: {install_id_hash, os, smoodle_version, librime_sha_match}'
+    Write-Host '  No hostname, username, or personal data is sent.'
+    Write-Host "  Disable anytime: Remove-Item '$TelemetryMarkerPath'"
+    Write-Host ''
+
+    $telemetryAnswer = Read-Host '  Enable telemetry? [y/N]'
+    if ($telemetryAnswer -eq 'y' -or $telemetryAnswer -eq 'Y') {
+        $smoodleConfigDir = Join-Path $env:USERPROFILE '.smoodle'
+        if (-not (Test-Path $smoodleConfigDir)) {
+            New-Item -ItemType Directory -Path $smoodleConfigDir -Force | Out-Null
+        }
+        if (-not (Test-Path (Join-Path $smoodleConfigDir 'install_id'))) {
+            $null = Get-SmoodleInstallIdHash
+        }
+        New-Item -ItemType File -Path $TelemetryMarkerPath -Force | Out-Null
+        Write-Host '  Telemetry enabled. Thank you!'
+        # Fire install_completed now that user just opted in.
+        if (Get-Command Invoke-SmoodleTelemetryEvent -ErrorAction SilentlyContinue) {
+            Invoke-SmoodleTelemetryEvent -EventName 'install_completed'
+        }
+    } else {
+        Write-Host '  Telemetry disabled. No data will be sent.'
+    }
 }
 
 # ---------------------------------------------------------------------------

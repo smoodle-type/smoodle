@@ -22,6 +22,9 @@ DEPLOY_TIMEOUT_SECS="${SMOODLE_DEPLOY_TIMEOUT_SECS:-10}"
 # the user's running IM; production default is 1).
 AUTO_DEPLOY="${SMOODLE_AUTO_DEPLOY:-1}"
 
+# --- Source telemetry helper (TELEM-02) -------------------------------------
+. "$(dirname "${BASH_SOURCE[0]}")/lib/telemetry.sh"
+
 # --- Detect host IM ---------------------------------------------------------
 # Hybrid setups exist (fcitx5 installed but ibus running, etc) — detect
 # by *running process*, not by binary presence. SMOODLE_IM env var
@@ -83,6 +86,9 @@ echo "  source:      ${SMOODLE_DIR}/schema/"
 echo "  destination: ${RIME_DIR}/"
 echo
 
+# --- Telemetry: install_started (TELEM-04) ----------------------------------
+smoodle_telemetry_event "install_started"
+
 # --- Copy schema YAMLs (idempotent, with timestamped backup) ----------------
 mkdir -p "${RIME_DIR}"
 
@@ -110,6 +116,9 @@ for f in thai_phonetic.schema.yaml thai_phonetic.dict.yaml default.custom.yaml; 
   fi
 done
 
+# --- Telemetry: schema_copied (TELEM-04) ------------------------------------
+smoodle_telemetry_event "schema_copied"
+
 # --- Attempt auto-deploy ----------------------------------------------------
 echo
 
@@ -131,6 +140,7 @@ fi
 
 if [ "${auto_deploy_ok}" = "1" ]; then
   echo "  ✓ ${IM} reloaded; schemas will compile on first activation."
+  smoodle_telemetry_event "deploy_success"
 else
   echo "  ⚠ Auto-deploy failed or timed out after ${DEPLOY_TIMEOUT_SECS}s."
   echo "    Manual fallback:"
@@ -138,6 +148,32 @@ else
     fcitx5) echo "      fcitx5 -r" ;;
     ibus)   echo "      ibus-daemon -drxR" ;;
   esac
+  smoodle_telemetry_event "deploy_timeout" "false"
+fi
+
+# --- Telemetry opt-in prompt (TELEM-04) -------------------------------------
+if [[ "${SMOODLE_TELEMETRY:-}" != "1" ]] && [[ ! -f "${HOME}/.smoodle/telemetry-on" ]]; then
+  echo
+  echo "Telemetry (opt-in, default OFF)"
+  echo "  Sends an anonymous install ping to telemetry.0dl.me"
+  echo "  Payload: {install_id_hash, os, smoodle_version, librime_sha_match}"
+  echo "  No hostname, username, or personal data is sent."
+  echo "  Disable anytime: rm ~/.smoodle/telemetry-on"
+  echo
+
+  read -rp "  Enable telemetry? [y/N]: " _smoodle_telemetry_answer
+  if [[ "$_smoodle_telemetry_answer" == "y" || "$_smoodle_telemetry_answer" == "Y" ]]; then
+    mkdir -p "${HOME}/.smoodle"
+    if [[ ! -f "${HOME}/.smoodle/install_id" ]]; then
+      head -c 16 /dev/urandom | sha256sum | awk '{print $1}' > "${HOME}/.smoodle/install_id"
+    fi
+    touch "${HOME}/.smoodle/telemetry-on"
+    echo "  Telemetry enabled. Thank you!"
+    export SMOODLE_TELEMETRY=1
+    smoodle_telemetry_event "install_completed"
+  else
+    echo "  Telemetry disabled. No data will be sent."
+  fi
 fi
 
 # --- Test instructions ------------------------------------------------------
