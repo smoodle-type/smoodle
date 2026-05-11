@@ -1,7 +1,7 @@
 # Project State: Smoodle Phase 1 Finish
 
 **Last updated:** 2026-05-11
-**Status:** PHASE-4-COMPLETE (Lane T Telemetry shipped; all 9 TELEM REQ-IDs covered; Docker Compose stack for umami + postgres + caddy + forget-api on th-dc)
+**Status:** PHASE-6-COMPLETE (Lane R README/docs hardening shipped; all 7 DOCS REQ-IDs covered; LoneExile→smoodle-type migration complete)
 **Mode:** yolo
 
 ## Project Reference
@@ -23,21 +23,23 @@
 
 ## Current Position
 
-**Phase:** 4 → COMPLETE (Lane T Telemetry shipped 2026-05-11, all 9 TELEM REQ-IDs covered)
-**Plans:** All tasks shipped across 3 waves: infra (docker-compose + Postgres triggers + forget-api), client (telemetry.{sh,ps1} + installer integration), tests (12 new tests + unskipped test_telemetry_opt_in_default_off).
+**Phase:** 6 → COMPLETE (Lane R README/docs hardening shipped 2026-05-11, all 7 DOCS REQ-IDs covered)
+**Plans:** All tasks shipped: LoneExile→smoodle-type migration (42 replacements across 8 files), status/version fix, hardcoded path cleanup, uninstall flags in install.sh + install-linux.sh, README rewrite (3-OS install, troubleshooting, uninstall), RELEASE-CHECKLIST.md.
 **Phase 1:** COMPLETE — 4/4 SC met, verifier PASS.
 **Phase 2:** COMPLETE — 5/5 SC met, verifier PASS, live macos-15 run 25594460125 GREEN in 1m 4s.
 **Phase 3:** COMPLETE — 5/5 SC met, verifier PASS, live windows-latest run 25623956809 GREEN in 2m 12s after 2 internal-defect fixes.
 **Phase 4:** COMPLETE — 9/9 TELEM REQ-IDs covered. Docker Compose stack ready for th-dc deploy.
 **Phase 5:** COMPLETE — 6/6 SC met, all 7 HARDEN REQ-IDs covered. Human verification on test tag v0.0.6-test-release passed green.
-**Next action:** `/gsd-plan-phase 6` (README & Docs hardening, sequential) OR manual deploy of telemetry stack on th-dc.
+**Phase 6:** COMPLETE — 7/7 DOCS REQ-IDs covered. README status APPROVED, LoneExile→smoodle-type migration complete, hardcoded paths cleaned, uninstall flags added, RELEASE-CHECKLIST.md created.
+**Next action:** Phase 7 (Decision Gate Close — GATE-01 pre-registration MUST be first, before any soak observation).
 
 ```
-Roadmap progress: [■■■■■□□] 5 complete
+Roadmap progress: [■■■■■■□] 6 complete
                        ^
                        Phase 4 COMPLETE (all 9 TELEM REQ-IDs covered)
                        Phase 5 COMPLETE (all 7 HARDEN REQ-IDs covered)
-                       Phase 6 ready; sequential
+                       Phase 6 COMPLETE (all 7 DOCS REQ-IDs covered)
+                       Phase 7 ready — Decision Gate
 
 Coverage: 41/41 requirements mapped ✓
 Phase 1 LINT REQ-IDs (4/4): LINT-01..04 — verifier PASS ✓
@@ -45,6 +47,7 @@ Phase 2 E2EMAC REQ-IDs (5/5): 01,02,05 (Plan 02-01) + 03,04 (Plan 02-02) — ver
 Phase 3 E2EWIN REQ-IDs (5/5): 01,02,04,05 (Plan 03-01) + 03,05 (Plan 03-02) — verifier PASS ✓
 Phase 4 TELEM REQ-IDs (9/9): 01,07,08 (Wave 1 infra) + 02,03,04,05 (Wave 2 client) + 06,09 (Wave 3 tests) ✓
 Phase 5 HARDEN REQ-IDs (7/7): 01,02,06,07 (Plan 05-01) + 04,05 (Plan 05-02) + 03 (cross-repo note) ✓
+Phase 6 DOCS REQ-IDs (7/7): 01,05,07 (Wave 1 migration) + 02,03,04,06 (Wave 2 rewrite) ✓
 ```
 
 ## Performance Metrics
@@ -94,7 +97,7 @@ Phase 5 HARDEN REQ-IDs (7/7): 01,02,06,07 (Plan 05-01) + 04,05 (Plan 05-02) + 03
 | **CP-3**: Telemetry de-anonymization at small N | Phase 4 (TELEM-05/07/08, MP-2) | Mitigated — ephemeral install_id, strict allowlist payload, [y/N] default-N, server-side IP-drop + timestamp rounding via Postgres triggers, 90-day retention cron, forget CLI for data purge |
 | **CP-4**: GHA non-interactive runner false-confidence E2E | Phases 2+3 (E2EMAC-05, E2EWIN-04) | Mitigated — live runs green on macos-15 + windows-latest |
 | **CP-5**: Schema lint false-positive churn (Python re ≠ boost::regex) | Phase 1 (LINT-01 scope) | Mitigated — structure-only lint scope |
-| **MP-1**: README tested only on author's machine | Phase 6 (DOCS-06) | Pending |
+| **MP-1**: README tested only on author's machine | Phase 6 (DOCS-06) | Mitigated — docs/RELEASE-CHECKLIST.md documents fresh-clone + 3-OS validation procedure |
 | **MP-2**: Decision Gate survivorship bias + founder confounding | Phase 7 (GATE-01 pre-registration) | Pending |
 | **MP-3**: Universal dylib silent failure on Intel Mac | Phase 5 (HARDEN-03) | Pending — cross-repo PR in smoodle-type/librime required |
 | **MP-4**: PowerShell 5.1 cp1252 parser breakage | Phase 1 (LINT-04) | Mitigated — test_powershell_ascii.py blocks any non-ASCII byte in .ps1 files at PR-time (commit 4b8ad4d) |
