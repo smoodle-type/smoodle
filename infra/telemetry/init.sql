@@ -1,0 +1,12 @@
+-- Smoodle telemetry — Postgres init script
+-- Runs during postgres container first boot via docker-entrypoint-initdb.d/
+--
+-- NOTE: umami's own Prisma migrations run AFTER this script (on the umami
+-- app container's first connect). Therefore, we CANNOT create triggers on
+-- umami tables here. Triggers are created by setup-triggers.sh post-migration.
+--
+-- This file is intentionally minimal. If you add pg_cron or extensions here,
+-- remember they require shared_preload_libraries in postgresql.conf.
+
+-- Nothing to initialize at DB level for dogfood scope.
+-- Triggers and website insertion handled by setup-website.sh + setup-triggers.sh.

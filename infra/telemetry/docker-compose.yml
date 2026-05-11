@@ -1,0 +1,70 @@
+# Smoodle telemetry — umami v3.1.0 + PostgreSQL on th-dc
+#
+# Deploys a self-hosted umami analytics instance for opt-in, default-OFF,
+# no-PII install signal tracking. Founder-visible at telemetry.0dl.me.
+#
+# Deploy:
+#   docker --context th-dc compose -f infra/telemetry/docker-compose.yml up -d
+#   bash infra/telemetry/setup-website.sh
+#
+# Teardown:
+#   docker --context th-dc compose -f infra/telemetry/docker-compose.yml down
+
+services:
+  # umami — privacy-first analytics (POST /api/send receiver)
+  umami:
+    image: ghcr.io/umami-software/umami:postgresql-v3.1.0
+    container_name: smoodle-telemetry-umami
+    environment:
+      DATABASE_URL: postgresql://umami:umami@postgres:5432/umami
+      APP_SECRET: smoodle-telemetry-secret-change-me
+    ports:
+      - "3000:3000"
+    depends_on:
+      postgres:
+        condition: service_started
+    restart: unless-stopped
+
+  # PostgreSQL — umami's data store
+  postgres:
+    image: postgres:16-alpine
+    container_name: smoodle-telemetry-postgres
+    environment:
+      POSTGRES_DB: umami
+      POSTGRES_USER: umami
+      POSTGRES_PASSWORD: umami
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
+    restart: unless-stopped
+
+  # Caddy — reverse proxy + automatic TLS for telemetry.0dl.me
+  caddy:
+    image: caddy:2-alpine
+    container_name: smoodle-telemetry-caddy
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    restart: unless-stopped
+
+  # forget-api — sidecar for per-install delete (TELEM-06)
+  forget-api:
+    build: ./forget-api
+    container_name: smoodle-telemetry-forget-api
+    environment:
+      DATABASE_URL: postgresql://umami:umami@postgres:5432/umami
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_started
+    restart: unless-stopped
+
+volumes:
+  postgres-data:
+  caddy-data:
+  caddy-config:

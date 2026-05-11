@@ -1,0 +1,5 @@
+telemetry.0dl.me {
+    reverse_proxy umami:3000
+    encode gzip
+    log
+}
