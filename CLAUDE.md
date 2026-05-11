@@ -41,7 +41,7 @@ Thai phonetic input method built on Rime/librime. Type `sawadee` → `สวั�
 | 3 | E2 (win E2E) | `install-win-e2e.yml` + Pester 5 + clean-slate per job + Authenticode assertion |
 | 4 | T (telemetry) | umami self-host + opt-in default-OFF + ephemeral install_id + purge endpoint |
 | 5 | S (Sparkle + release) | `verify-librime.{sh,ps1}` (manual) + universal dylib (cross-repo) + atomic draft-then-publish |
-| 6 | R (README + docs) | Status APPROVED + Win/Linux snippets + troubleshooting + LoneExile→smoodle-type |
+| 6 | R (README + docs) | Status APPROVED + Win/Linux snippets + troubleshooting + smoodle-type→smoodle-type |
 | 7 | G (Decision Gate) | Pre-register criteria FIRST, then 7-day soak + verdict |
 
 ## Out of Scope (deliberate; don't pull in)

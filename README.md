@@ -3,34 +3,26 @@
 Pinyin-style phonetic Thai input method. Type `sawadee`, get `สวัสดี`. Type
 `khrap` / `krap` / `kub`, get `ครับ`.
 
-Built as a [Rime](https://rime.im/) schema running inside Squirrel on macOS.
-Cross-platform support (Windows via Weasel, Linux via fcitx5/ibus) is the
-Phase 1 target. Phase 1.5 adds an `smoodle_llm_translator` C++ plugin
-(local `llama.cpp` + Qwen 1.8B Q4) for tone disambiguation on
-out-of-dictionary input.
+Built as a [Rime](https://rime.im/) schema running inside Squirrel on macOS,
+Weasel on Windows, and fcitx5/ibus on Linux.
 
 ## Status
 
 **v0.0.6** — schema covers 100% of the Thai National Corpus freq≥50 tail
 (14,893 Thai words / 28,239 entries), TNC-frequency-weighted ranking. The
 `DictEntryIterator::Peek` first-call-sort fix ships via the
-[LoneExile/librime](https://github.com/LoneExile/librime) soft-fork at tag
+[smoodle-type/librime](https://github.com/smoodle-type/librime) soft-fork at tag
 `1.16.0-smoodle.1` until upstream merges.
 
-Phase 1 status: `APPROVED-PENDING-PHASE-0`. macOS dogfood install path is
-end-to-end. Windows / Linux installers land in Lane B / Lane C.
+Phase 1 status: `APPROVED`. Phases 1-5 complete: lint+CI, macOS E2E, Windows E2E,
+telemetry, Sparkle/release hardening.
 
-In-repo source-of-truth:
-- [`docs/PHASE1-PROMPT.md`](docs/PHASE1-PROMPT.md) — active execution plan
-- [`TODOS.md`](TODOS.md) — outstanding work outside the active milestone
-- [`docs/RESUME.md`](docs/RESUME.md) — architecture, file map, librime
-  patch internals, "don't do" list
+## Install
 
-## Install (macOS dogfood)
+### macOS
 
 ```bash
 brew install --cask squirrel-app             # one-time host install
-
 bash scripts/install.sh                      # ~/Library/Rime/ schema YAMLs (sudoless)
 bash scripts/install-librime-fork.sh         # build patched librime + dylib swap (sudo)
 
@@ -41,10 +33,84 @@ open -b im.rime.inputmethod.Squirrel
 Then press `Ctrl+\`` in any text field to open Squirrel's schema switcher
 and pick **smoodle Thai phonetic**. Type `sawadee` → expect `สวัสดี`.
 
-The librime build needs Homebrew deps (`cmake`, `boost`, `leveldb`,
-`marisa`, `yaml-cpp`, `opencc`, `googletest`, `pkg-config`, `ninja`,
-`glog`); the script fails loudly with the exact `brew install ...` line
-on missing deps.
+### Windows
+
+```powershell
+winget install Rime.Weasel                   # one-time host install (UAC required)
+powershell -ExecutionPolicy Bypass -File scripts\install-windows.ps1
+powershell -ExecutionPolicy Bypass -File scripts\install-librime-fork.ps1  # admin
+```
+
+Then press `Win+Space` and switch to **smoodle Thai phonetic** (or **Weasel**
+and switch schema via `Ctrl+\``). Type `sawadee` → expect candidate with `สวัสดี`.
+
+### Linux
+
+```bash
+# Requires fcitx5 or ibus already running
+bash scripts/install-linux.sh
+```
+
+Then switch input method to **smoodle Thai phonetic** (`Ctrl+Space` by default
+on most Linux desktops). Type `sawadee` → expect `สวัสดี`.
+
+> **Linux ranking limitation:** The Linux install uses the distro's system
+> librime, which lacks the `DictEntryIterator::Peek` first-call sort fix.
+> On first lookup, alphabetically-earlier syllables may rank above higher-weight
+> entries. Type → commit → retype — second lookup ranks correctly. This is fixed
+> in the macOS/Windows builds via the [smoodle-type/librime](https://github.com/smoodle-type/librime) fork.
+
+## Troubleshooting
+
+### Smoodle not in input switcher
+- Verify the three YAML files exist in your Rime user directory
+  (`~/Library/Rime/`, `%APPDATA%\Rime\`, or `~/.local/share/fcitx5/rime/` / `~/.config/ibus/rime/`)
+- Click **Deploy** in your IME's menu to recompile schemas
+
+### Ranking degraded after Squirrel auto-update (macOS)
+- Squirrel's Sparkle auto-update may have overwritten the patched `librime.1.dylib`
+- Run `bash scripts/verify-librime.sh` to check for hash drift
+- If drift detected: `bash scripts/install-librime-fork.sh` to re-swap
+
+### Intel Mac: "arm64-only dylib" error
+- As of v0.0.6, the patched dylib from the librime fork is arm64-only
+- Universal dylib (arm64 + x86_64) is planned for Phase 1.5
+- Workaround: build librime from source on your Intel Mac
+  (`cd vendor/librime && make release`)
+
+### Windows: Weasel installed but not registered
+- Open Settings > Time & Language > Language > Keyboard
+- Add **Rime** if not present in the list
+- Re-run `install-windows.ps1` to ensure schema files land in `%APPDATA%\Rime\`
+- Right-click the Weasel tray icon → Settings → Schema list → add
+  **smoodle Thai phonetic** if missing
+
+### Linux: candidate ranks wrong on first lookup
+- Known limitation: system librime lacks the `DictEntryIterator::Peek` fix
+- Workaround: type the input, commit, retype — second lookup ranks correctly
+- This is fixed in the macOS build via the smoodle-type/librime fork
+
+## Uninstall
+
+### macOS
+```bash
+bash scripts/install.sh --uninstall
+```
+
+### Windows
+Remove manually:
+```powershell
+Remove-Item "$env:APPDATA\Rime\thai_phonetic.schema.yaml"
+Remove-Item "$env:APPDATA\Rime\thai_phonetic.dict.yaml"
+Remove-Item "$env:APPDATA\Rime\default.custom.yaml"
+# Optional: remove telemetry data
+Remove-Item "$env:USERPROFILE\.smoodle" -Recurse -Force -ErrorAction SilentlyContinue
+```
+
+### Linux
+```bash
+bash scripts/install-linux.sh --uninstall
+```
 
 ## Test
 
@@ -56,7 +122,7 @@ python3 tests/test_dict.py --fixture tests/v01_fixture.yaml
 bash scripts/init_rime_testdir.sh                                       # one-time
 python3 tests/test_dict.py --use-rime-api-console --fixture tests/v01_fixture.yaml
 
-# Installer suite (17 active + 5 skipped stubs for Lane B/C/E2E)
+# Installer suite
 python3 tests/test_installers.py
 ```
 
@@ -68,45 +134,41 @@ Engine fixture target: 56/56 PASS (35 direct + 21 algebra-tagged).
 smoodle/
 ├── schema/                          # Rime YAML config: schema, dict, default.custom.yaml
 ├── scripts/
-│   ├── install.sh                   # schema YAMLs → ~/Library/Rime/ (sudoless)
+│   ├── install.sh                   # schema YAMLs → ~/Library/Rime/ (sudoless, --uninstall)
 │   ├── install-librime-fork.sh      # build patched librime + dylib swap (sudo)
-│   ├── init_rime_testdir.sh         # /tmp/smoodle-rime-test bootstrap for engine tests
-│   ├── generate_dict.py             # Claude-API romanization variant generator
-│   ├── merge_dict.py                # TNC-frequency-weighted dict builder
-│   ├── tnc_freq.txt                 # PyThaiNLP TNC unigram (CC0)
-│   └── words-*.txt + generated-*.tsv  # dict-build inputs (reproducible via merge_dict.py)
+│   ├── install-windows.ps1          # schema YAMLs → %APPDATA%\Rime\
+│   ├── install-librime-fork.ps1     # DLL swap (admin)
+│   ├── install-linux.sh             # schema YAMLs → fcitx5/ibus dir (--uninstall)
+│   ├── verify-librime.sh            # manual hash-drift checker (macOS)
+│   ├── verify-librime.ps1           # manual hash-drift checker (Windows)
+│   ├── lib/
+│   │   ├── telemetry.sh             # Bash fire-and-forget telemetry POST
+│   │   ├── telemetry.ps1            # PowerShell fire-and-forget telemetry POST
+│   │   ├── telemetry-forget.sh      # Telemetry data purge CLI
+│   │   └── telemetry-forget.ps1     # Telemetry data purge CLI (Windows)
+│   └── (dict-build scripts)
+├── infra/
+│   ├── telemetry/                   # Docker Compose: umami + postgres + caddy
+│   └── lane-b-windows/              # dockur/windows test bed VM
 ├── tests/
 │   ├── test_dict.py                 # 56-entry fixture (string-match + engine mode)
-│   ├── test_installers.py           # 17 active + 5 stub installer cases
+│   ├── test_installers.py           # installer shape tests
+│   ├── test_telemetry.py            # telemetry payload + privacy tests
 │   └── v01_fixture.yaml             # (romanization, expected_thai) assertions
 ├── docs/
-│   ├── PHASE1-PROMPT.md             # active execution plan
-│   └── RESUME.md                    # long-form architecture context
+│   ├── RESUME.md                    # long-form architecture context
+│   └── RELEASE-CHECKLIST.md         # pre-release validation procedure
+├── .github/workflows/               # CI + E2E + release workflows
 ├── TODOS.md                         # tracked work outside the active milestone
-├── vendor/                          # gitignored — librime fork checkout (~2GB after build)
-└── vendor/librime-1.16.0-peek-sort.patch   # historical fallback (fork tag is canonical)
+└── vendor/                          # gitignored — librime fork checkout (~2GB after build)
 ```
-
-## Roadmap
-
-- **Phase 1** *(current)* — Cross-platform unsigned dogfood installers,
-  dict-only. Wedge: Thai language learners on physical Latin keyboards.
-  macOS dogfood live; Windows + Linux installers next.
-- **Phase 1.5** *(conditional, ~4-8 wk)* — Add `smoodle_llm_translator`
-  C++ plugin: local llama.cpp with Qwen 1.8B Q4 for tone disambiguation
-  on OOV input. Privacy-by-construction (all inference on-device).
-- **Phase 2** *(gated by Phase 1 validation signal)* — Native IME
-  shells per OS, license-clean rewrite of the engine in Rust or C++.
-
-See [`docs/PHASE1-PROMPT.md`](docs/PHASE1-PROMPT.md) for sequencing
-details and the Decision Gate criteria.
 
 ## License
 
 [MIT](LICENSE) for smoodle's own code (schema, dict, scripts, tests, docs).
 
 The patched librime distribution at
-[LoneExile/librime](https://github.com/LoneExile/librime) is BSD-3
+[smoodle-type/librime](https://github.com/smoodle-type/librime) is BSD-3
 (inherited from upstream). Squirrel itself is GPLv3 and is **not
 bundled** — installers configure Squirrel rather than redistributing
 it; users obtain Squirrel via Homebrew (`brew install --cask

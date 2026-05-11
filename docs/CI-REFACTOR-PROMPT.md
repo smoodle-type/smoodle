@@ -7,7 +7,7 @@
 
 ## Mission
 
-Refactor `LoneExile/librime/.github/workflows/smoodle-build.yml` so
+Refactor `smoodle-type/librime/.github/workflows/smoodle-build.yml` so
 each OS job delegates to upstream's mature build workflows via
 `workflow_call`, instead of inlining `make release` / `build.bat`.
 
@@ -38,7 +38,7 @@ The fix: stop reinventing the build, delegate to upstream's YAMLs.
 ## Current state snapshot (2026-05-06)
 
 ```
-LoneExile/librime branch 1.16.0-smoodle:
+smoodle-type/librime branch 1.16.0-smoodle:
   cf00ee70  test(dict): update PredictiveLookup expectation for the peek-sort fix
   d0692a4c  ci: add smoodle-build workflow
   a75b6a48  fix(dict): sort DictEntryIterator chunks on first Peek
@@ -111,8 +111,8 @@ Last Commit CI run (upstream's):  25428394245 — 10/10 jobs green
 
 5. **Verify** all three jobs go green:
    ```
-   gh run list -R LoneExile/librime --limit 2
-   gh api repos/LoneExile/librime/actions/runs/<latest>/jobs --jq '.jobs[] | {name, conclusion}'
+   gh run list -R smoodle-type/librime --limit 2
+   gh api repos/smoodle-type/librime/actions/runs/<latest>/jobs --jq '.jobs[] | {name, conclusion}'
    ```
    Expected: `macos`, `linux`, `windows` all conclusion=success.
 
@@ -147,9 +147,9 @@ Don't get pulled into:
 ## Verification
 
 Done when:
-- `LoneExile/librime/.github/workflows/smoodle-build.yml` is ~30
+- `smoodle-type/librime/.github/workflows/smoodle-build.yml` is ~30
   lines, three jobs delegating via `uses:`.
-- `gh run list -R LoneExile/librime --limit 1` shows the workflow
+- `gh run list -R smoodle-type/librime --limit 1` shows the workflow
   completed-success.
 - All three OS jobs in the run conclusion=success (no
   `continue-on-error` masking).
@@ -168,7 +168,7 @@ canonical work tracker. This file is a runway for one specific task.
 ## Recent session summary (for context)
 
 Phase 1 macOS dogfood is fully wired and live. v0.0.6 schema +
-patched librime via the LoneExile/librime fork tag `1.16.0-smoodle.1`
+patched librime via the smoodle-type/librime fork tag `1.16.0-smoodle.1`
 swapped into Squirrel.app. 56/56 engine fixture passes. The CI
 matrix discovered that our patch was breaking an existing upstream
 unit test — that's been fixed (`cf00ee70`) and the patch is now

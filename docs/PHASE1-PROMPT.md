@@ -57,14 +57,14 @@ reviewed (office-hours + plan-eng-review, 2026-05-05). This session is
 - No Windows installer, no Linux installer, no CI workflow, no
   telemetry POST, no E2E tests for installers.
 
-## OQ3 + OQ4 — RESOLVED 2026-05-05: Path A + LoneExile/librime fork
+## OQ3 + OQ4 — RESOLVED 2026-05-05: Path A + smoodle-type/librime fork
 
 Both unblocked in the kickoff session. Phase 1 ships on:
 
 - **Path A** schema (algebra rules stay) — best-practice Rime
   schema architecture, future-proof for v0.2 LLM plugin work, dict
   stays compact.
-- **LoneExile/librime fork** — soft-fork of rime/librime 1.16.0 with the
+- **smoodle-type/librime fork** — soft-fork of rime/librime 1.16.0 with the
   `DictEntryIterator::Peek` patch applied as a commit, tagged
   `1.16.0-smoodle.1`. Replaces `vendor/librime-1.16.0-peek-sort.patch`
   as the source-of-truth for the patch.
@@ -84,7 +84,7 @@ Both unblocked in the kickoff session. Phase 1 ships on:
   actually shipped.
 
 **First fork-bring-up steps (TODO #3 in TODOS.md):**
-1. Fork `rime/librime` to `LoneExile/librime` on GitHub.
+1. Fork `rime/librime` to `smoodle-type/librime` on GitHub.
 2. Apply the contents of `vendor/librime-1.16.0-peek-sort.patch`
    as a real commit on the fork's `main` (or `1.16.0-smoodle` branch).
 3. Tag `1.16.0-smoodle.1`.
@@ -208,7 +208,7 @@ All explicitly deferred with rationale in the design doc.
 OQ3+OQ4 are RESOLVED (Path A + fork). Lane A first concrete steps:
 
 1. Greet briefly. Confirm you've read the four source-of-truth docs.
-2. Confirm fork status: has `LoneExile/librime` been created + tagged
+2. Confirm fork status: has `smoodle-type/librime` been created + tagged
    `1.16.0-smoodle.1` yet? If not, that's TODO #3 — block or proceed
    on local-build path depending on user preference.
 3. Harden `scripts/install.sh`:

@@ -50,7 +50,7 @@ inherits it.
 - CMake ≥ 3.20
 - Ninja
 
-**CI build path** (from `LoneExile/librime/.github/workflows/smoodle-build.yml`):
+**CI build path** (from `smoodle-type/librime/.github/workflows/smoodle-build.yml`):
 ```yaml
 windows-x64:
   runs-on: windows-latest
@@ -181,7 +181,7 @@ fork CI is producing Windows artifacts cleanly:
 | `lane-b-tests` | `tests/test_installers.ps1` + Python shape tests |
 | `lane-b-package` | zip-builder + signing-deferred MSI scaffolding |
 
-All three depend on a green Windows job in `LoneExile/librime`'s
+All three depend on a green Windows job in `smoodle-type/librime`'s
 `smoodle-build.yml`.
 
 ## Open questions

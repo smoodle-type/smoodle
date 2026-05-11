@@ -22,11 +22,11 @@ optional / community-goodwill / fork-retirement trigger; not gating
 any Phase 1 milestone.
 
 **Validation evidence (2026-05-06):** the patch + test fix together
-pass upstream's full CI matrix on the LoneExile/librime fork — 10/10
+pass upstream's full CI matrix on the smoodle-type/librime fork — 10/10
 jobs green: lint + macos-15 + macos-15-intel + linux gcc + linux
 clang + docker + 4 windows variants (mingw + clang-x64 + msvc-x64 +
 msvc-x86). See run
-https://github.com/LoneExile/librime/actions/runs/25428394245 .
+https://github.com/smoodle-type/librime/actions/runs/25428394245 .
 This is exactly the cross-platform evidence the upstream PR review
 will ask for.
 
@@ -42,7 +42,7 @@ correctly takes position #1 over 砸 (za, 6923). Without the
 companion test fix, upstream CI fails on every platform.
 
 **Why it matters:** If upstream merges, smoodle can drop the
-LoneExile/librime fork (TODO 3) and ship against system librime
+smoodle-type/librime fork (TODO 3) and ship against system librime
 everywhere. Until merge, the fork carries the patch. Also benefits
 any other Rime schema author hitting the same bug (Mandarin pinyin
 variants, Cantonese, Japanese romaji collisions, etc.).
@@ -54,7 +54,7 @@ variants, Cantonese, Japanese romaji collisions, etc.).
 2. Open issue on rime/librime describing the bug with repro.
 3. Open PR with the patch (~10 lines in
    `src/rime/dict/dictionary.{cc,h}` adding a `sorted_initial_`
-   flag). Reference the LoneExile/librime fork's commit as a working
+   flag). Reference the smoodle-type/librime fork's commit as a working
    implementation if helpful.
 4. Monitor / respond to maintainer feedback. PR review timeline is
    weeks-to-months.
@@ -63,7 +63,7 @@ variants, Cantonese, Japanese romaji collisions, etc.).
 Phase 1 packaging via fork.
 
 **Done when:** PR is merged into rime/librime master (then drop
-LoneExile/librime fork — see TODO 3), OR closed with "won't fix" and the
+smoodle-type/librime fork — see TODO 3), OR closed with "won't fix" and the
 reasoning is documented here.
 
 ---
@@ -102,7 +102,7 @@ yes/no answer with evidence.
 
 ---
 
-## 3. Create LoneExile/librime fork — Path A bring-up
+## 3. Create smoodle-type/librime fork — Path A bring-up
 
 **Status:** OPEN
 **Created:** 2026-05-05 (Phase 1 kickoff session)
@@ -130,21 +130,21 @@ versioned librime distribution.
 
 **Concrete steps:**
 1. ✓ **DONE 2026-05-05** — `gh repo fork rime/librime --clone=false`
-   created https://github.com/LoneExile/librime (default branch
+   created https://github.com/smoodle-type/librime (default branch
    `master`, parent `rime/librime`).
-2. ✓ **DONE 2026-05-05** — `git remote add smoodle https://github.com/LoneExile/librime.git`
+2. ✓ **DONE 2026-05-05** — `git remote add smoodle https://github.com/smoodle-type/librime.git`
    inside `vendor/librime/`. Origin still points at upstream.
 3. ✓ **DONE 2026-05-05** — branched `1.16.0-smoodle` from upstream
    tag 1.16.0; committed peek-sort patch as
    `a75b6a48 fix(dict): sort DictEntryIterator chunks on first Peek`.
 4. ✓ **DONE 2026-05-05** — annotated tag `1.16.0-smoodle.1` pushed
-   to LoneExile/librime alongside the branch.
+   to smoodle-type/librime alongside the branch.
 5. ✓ **DONE 2026-05-06** — CI matrix green across all 8 jobs after
    the workflow_call refactor. `smoodle-build.yml` now delegates to
    upstream's `linux-build.yml`, `macos-build.yml`,
    `windows-build.yml` via `workflow_call` (commit `69fc2399`,
    pattern matches upstream's `release-ci.yml`). Run
-   https://github.com/LoneExile/librime/actions/runs/25429514636
+   https://github.com/smoodle-type/librime/actions/runs/25429514636
    completed-success in 7m6s with no `continue-on-error` masking:
    - linux / build (gcc): ✅
    - linux / build (clang): ✅
@@ -196,7 +196,7 @@ everywhere, simplify installers.
 **Depends on / blocked by:** Nothing blocking. Step 1 cleared
 2026-05-05 via `gh`. Steps 2-7 ready to proceed when convenient.
 
-**Done when:** `LoneExile/librime` exists on GitHub, has a
+**Done when:** `smoodle-type/librime` exists on GitHub, has a
 `1.16.0-smoodle` branch with the peek-sort commit, has tag
 `1.16.0-smoodle.1`, and `docs/RESUME.md` references the fork.
 
@@ -241,11 +241,11 @@ in algebra rules or the peek-sort patch will not be caught locally.
 
 ## 5. Refactor smoodle-build.yml to use workflow_call
 
-**Status:** ✓ CLOSED 2026-05-06 — refactor landed at LoneExile/librime
+**Status:** ✓ CLOSED 2026-05-06 — refactor landed at smoodle-type/librime
 commit `69fc2399`. `smoodle-build.yml` shrank from 119 lines (3
 inlined jobs duplicating checkout / dep install / build / artifact
 upload) to 20 lines (3 `workflow_call` stubs). Run
-https://github.com/LoneExile/librime/actions/runs/25429514636
+https://github.com/smoodle-type/librime/actions/runs/25429514636
 completed-success in 7m6s with all 8 matrix jobs green and no
 `continue-on-error` masking. See TODO 3 step 5 for the per-job
 breakdown. `docs/CI-REFACTOR-PROMPT.md` retained as historical
@@ -255,7 +255,7 @@ reference for the discovery → refactor flow.
 matrix. macOS + Linux were already green; this closed the remaining gap.
 
 **What:** Rewrote
-`LoneExile/librime/.github/workflows/smoodle-build.yml` so each job
+`smoodle-type/librime/.github/workflows/smoodle-build.yml` so each job
 is a `workflow_call` into upstream's existing build workflows
 instead of inlining `make release` / `build.bat`. Pattern reference
 was upstream's `release-ci.yml`:
@@ -276,7 +276,7 @@ and per-architecture flags. The previous inlined version reinvented
 this and dropped the Windows ball. After the refactor,
 `smoodle-build.yml` is 20 lines and the matrix is fully green.
 
-**Done when:** `gh run list -R LoneExile/librime --limit 1` shows
+**Done when:** `gh run list -R smoodle-type/librime --limit 1` shows
 all OS jobs green on `smoodle-build`. ✓ Verified
 2026-05-06 via run 25429514636. Promotion to Releases remains a
 separate concern.
@@ -379,7 +379,7 @@ TSF auto-registers on Win 11 (no CFM #2 mitigation needed for Win 11).
   Mirrors `scripts/install.sh` shape including env overrides
   (`SMOODLE_RIME_DIR`, `SMOODLE_WEASEL_PATH`, `SMOODLE_AUTO_DEPLOY`,
   `SMOODLE_DEPLOY_TIMEOUT_SECS`).
-- `scripts/install-librime-fork.ps1` — fetch the LoneExile/librime
+- `scripts/install-librime-fork.ps1` — fetch the smoodle-type/librime
   fork, build Windows DLL on a CI runner artifact (or local MSVC),
   prompt for admin, swap `rime.dll` in
   `C:\Program Files (x86)\Rime\Weasel\`, backup convention
@@ -445,7 +445,7 @@ the th-dc VM types `sawadee → สวัสดี`. ✓ Verified 2026-05-07.
 **Status:** ✓ CLOSED 2026-05-07 — `install-linux.sh` implemented + GHA E2E green.
 Run 25480673681 (`install-linux e2e` / ubuntu-latest / ibus) completed success in 5m54s.
 All 5 steps pass: checkout → ibus-rime apt install → installer → schema file presence → content grep.
-Commit `ac46abc` on `LoneExile/smoodle` main.
+Commit `ac46abc` on `smoodle-type/smoodle` main.
 **Created:** 2026-05-06
 **Priority:** Low — design doc stretch goal. Defer if month 1.5
 slips.

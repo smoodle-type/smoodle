@@ -7,7 +7,7 @@
 
 ## What was accomplished in the previous session (2026-05-07)
 
-Lane B hardening is **complete** — commit `1b6504c` on `LoneExile/smoodle` main.
+Lane B hardening is **complete** — commit `1b6504c` on `smoodle-type/smoodle` main.
 
 Three hardening fixes landed and smoke-verified on the th-dc dockur/windows VM:
 
@@ -60,7 +60,7 @@ Two tasks, ~1.5 hrs total:
    this script does.
 3. **`tests/test_installers.py` `InstallLinuxScriptShape`** class — 7 tests
    covering the shape assertions the GHA workflow should also satisfy.
-4. **`vendor/librime/.github/workflows/linux-build.yml`** (LoneExile/librime
+4. **`vendor/librime/.github/workflows/linux-build.yml`** (smoodle-type/librime
    fork) — reference for how upstream bootstraps the Ubuntu CI environment.
 
 ---
@@ -166,7 +166,7 @@ jobs:
 
 ## Current repo state
 
-- `LoneExile/smoodle` private GitHub repo
+- `smoodle-type/smoodle` private GitHub repo
 - Latest commit: `1b6504c` on `main`
 - 47 tests pass (47 active + 3 skipped)
 - th-dc dockur/windows VM: running, Win 11 + Weasel 0.17.4 + patched

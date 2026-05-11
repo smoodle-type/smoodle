@@ -49,7 +49,7 @@ syllable's chunk won position #1 regardless of weight. The patch calls
 `Sort()` once before the first Peek, gated by a `sorted_initial_` flag.
 
 **Source-of-truth (as of 2026-05-05):** carried as commit `a75b6a48` on
-the `1.16.0-smoodle` branch of https://github.com/LoneExile/librime,
+the `1.16.0-smoodle` branch of https://github.com/smoodle-type/librime,
 tagged `1.16.0-smoodle.1`. The loose patch file at
 `vendor/librime-1.16.0-peek-sort.patch` is kept for ~1 release cycle
 as historical fallback only. Upstream PR (TODOS.md #1) still pending.
@@ -64,7 +64,7 @@ Two caveats:
   - Sparkle auto-update from Rime project could overwrite the patch.
     Watch for that. Reapply via:
     ```
-    sudo cp /Users/lex/Dev/my_repos/experiment/smoodle/vendor/librime/build/lib/librime.1.16.0.dylib \
+    sudo cp ${REPO_DIR}/vendor/librime/build/lib/librime.1.16.0.dylib \
             "/Library/Input Methods/Squirrel.app/Contents/Frameworks/librime.1.dylib"
     ```
   - This machine is Apple Silicon. The arm64-only swap-in would break
@@ -178,7 +178,7 @@ run, so iteration is just edit-fixture → re-run.
   re-export from `ANTHROPIC_CUSTOM_*` (see Quick start below).
 - **vendor/librime/ is ~2 GB** after build. Gitignored. Re-clone from
   the smoodle fork (peek-sort patch already applied as a real commit):
-  `git clone --recurse-submodules https://github.com/LoneExile/librime.git
+  `git clone --recurse-submodules https://github.com/smoodle-type/librime.git
   vendor/librime && cd vendor/librime && git checkout 1.16.0-smoodle.1 &&
   git submodule update --init --recursive`.
   Without the peek-sort fix, ranking is wrong for any input where an
@@ -212,7 +212,7 @@ complete TNC tail?"** before picking infrastructure work.
    - Rankings that disagree with intent despite TNC freq
      (e.g. `kao → เขา` over ข้าว — freq-correct but maybe intent-wrong)
 3. **File upstream PR** for the librime `DictEntryIterator::Peek` bug.
-   Repro is minimal; patch lives at LoneExile/librime commit `a75b6a48`
+   Repro is minimal; patch lives at smoodle-type/librime commit `a75b6a48`
    (tag `1.16.0-smoodle.1`). Demoted to Low priority in TODOS.md #1
    since the fork now absorbs the distribution problem.
 4. **v0.2 Sub-task 1 (the eureka layer):** vendor/librime is built;
@@ -244,7 +244,7 @@ complete TNC tail?"** before picking infrastructure work.
 ## Quick start commands
 
 ```bash
-cd /Users/lex/Dev/my_repos/experiment/smoodle
+cd "${REPO_DIR}"  # or: from repo root
 
 # Run all fixture tests (string + engine)
 python3 tests/test_dict.py --fixture tests/v001_fixture.yaml
@@ -326,7 +326,7 @@ fresh reweight.
   `log()` at compile and `table_translator` applies `exp()` at query.
   Storing raw frequencies is correct; storing log-frequencies double-logs.
 - Don't trust ranking from upstream `rime/librime` without the peek-sort
-  fix. Use `LoneExile/librime` tag `1.16.0-smoodle.1` (preferred), or
+  fix. Use `smoodle-type/librime` tag `1.16.0-smoodle.1` (preferred), or
   re-apply `vendor/librime-1.16.0-peek-sort.patch` against
   `src/rime/dict/dictionary.{cc,h}`. Without it, the first candidate
   will be wrong whenever an algebra-derived spelling shares a syllable

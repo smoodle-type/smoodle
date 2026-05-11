@@ -9,11 +9,11 @@
 
 Lane B Windows smoke is **complete**. `sawatd → สวัสดี` (candidate #1) on
 the th-dc dockur/windows test bed with:
-- Patched librime DLL (`rime.dll`, 2786 KB, from `LoneExile/librime`
+- Patched librime DLL (`rime.dll`, 2786 KB, from `smoodle-type/librime`
   fork `1.16.0-smoodle.1`) swapped into Weasel's install dir
 - Thai phonetic schema compiled by WeaselDeployer (705 KB table)
 
-All scripts are in the repo and pushed to `LoneExile/smoodle` (private).
+All scripts are in the repo and pushed to `smoodle-type/smoodle` (private).
 Latest commit: `ee6efbb` on `main`.
 
 ## Mission for this session
@@ -119,11 +119,11 @@ source — fine to distribute. Add it to `vendor/windows/rime.dll`.
 
 Extraction recipe (run this once on a Mac with th-dc access):
 ```bash
-# The CI artifact is at: LoneExile/librime run 25429514636
+# The CI artifact is at: smoodle-type/librime run 25429514636
 # artifact-Windows-msvc-x64 contains rime-69fc239-Windows-msvc-x64.7z
 # which contains dist/lib/rime.dll
 
-gh run download 25429514636 -R LoneExile/librime \
+gh run download 25429514636 -R smoodle-type/librime \
   -n artifact-Windows-msvc-x64 -D /tmp/rime-artifact/
 # Then on th-dc (has 7z):
 scp /tmp/rime-artifact/rime-*.7z th-dc:/tmp/
