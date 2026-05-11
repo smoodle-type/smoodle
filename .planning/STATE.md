@@ -1,7 +1,7 @@
 # Project State: Smoodle Phase 1 Finish
 
 **Last updated:** 2026-05-10
-**Status:** PHASE-3-COMPLETE (Lane E2 Windows E2E shipped; verifier PASS 5/5 SC; live run 25623956809 GREEN 2m12s; ready for `/gsd-plan-phase 4` or `/gsd-plan-phase 5`)
+**Status:** PHASE-5-COMPLETE (Lane S Sparkle/release hardening shipped; all 7 HARDEN REQ-IDs covered; release workflow live-verified green on test tag v0.0.6-test-release)
 **Mode:** yolo
 
 ## Project Reference
@@ -23,24 +23,26 @@
 
 ## Current Position
 
-**Phase:** 3 → COMPLETE (Lane E2 Windows E2E shipped 2026-05-10, verifier PASS 5/5 SC + 5/5 REQ + 8/8 STRIDE, zero gaps)
-**Plans:** 2 of 2 shipped. 03-01 (Wave 1, autonomous, 906 lines) shipped install-win-e2e.yml + Pester 5 driver + clean-slate + Authenticode NotSigned regression guard; 03-02 (Wave 2, human-verify, 1219 lines) shipped SHA256 verify in install-librime-fork.ps1 + vendored vendor/windows/rime.dll.sha256 sidecar + Python unittest.
+**Phase:** 5 → COMPLETE (Lane S Sparkle/release hardening shipped 2026-05-11, all 7 HARDEN REQ-IDs covered, release workflow live-verified green on test tag v0.0.6-test-release)
+**Plans:** 2 of 2 shipped. 05-01 (Wave 1, autonomous, 7 tasks) shipped verify-librime.{sh,ps1}, tests, post-install messages, touch -m; 05-02 (Wave 2, human-verify, 3 tasks) shipped release.yml draft-then-publish + tag-immutability guard.
 **Phase 1:** COMPLETE — 4/4 SC met, verifier PASS.
 **Phase 2:** COMPLETE — 5/5 SC met, verifier PASS, live macos-15 run 25594460125 GREEN in 1m 4s.
-**Phase 3:** COMPLETE — 5/5 SC met, verifier PASS, live windows-latest run 25623956809 GREEN in 2m 12s after 2 internal-defect fixes (ba11f59 Pester 5 scoping + clean-slate ordering, 41daefb Write-Error diagnostics ordering).
-**Next action:** `/gsd-plan-phase 4` (Telemetry, parallelizable, infra-blocked on th-dc umami deploy) OR `/gsd-plan-phase 5` (Sparkle/release hardening, sequential, now unblocked since both Phases 2 + 3 are green).
+**Phase 3:** COMPLETE — 5/5 SC met, verifier PASS, live windows-latest run 25623956809 GREEN in 2m 12s after 2 internal-defect fixes.
+**Phase 5:** COMPLETE — 6/6 SC met, all 7 HARDEN REQ-IDs covered. Human verification on test tag v0.0.6-test-release passed green (all steps: checkout → build DMG → SHA256 → create draft → upload assets → publish → verify immutability). Test tag cleaned up.
+**Next action:** `/gsd-plan-phase 4` (Telemetry, parallelizable, infra-blocked on th-dc umami deploy) OR `/gsd-plan-phase 6` (README & Docs hardening, sequential).
 
 ```
-Roadmap progress: [■■■□□□□] 3 complete
+Roadmap progress: [■■■■■□□] 5 complete
                        ^
-                       Phase 3 COMPLETE (verdict: PASS, zero gaps)
+                       Phase 5 COMPLETE (all 7 HARDEN REQ-IDs covered)
                        Phase 4 unblocked; parallelizable
-                       Phase 5 unblocked (depended on Phases 2+3 both green)
+                       Phase 6 ready; sequential
 
 Coverage: 41/41 requirements mapped ✓
 Phase 1 LINT REQ-IDs (4/4): LINT-01..04 — verifier PASS ✓
 Phase 2 E2EMAC REQ-IDs (5/5): 01,02,05 (Plan 02-01) + 03,04 (Plan 02-02) — verifier PASS ✓
 Phase 3 E2EWIN REQ-IDs (5/5): 01,02,04,05 (Plan 03-01) + 03,05 (Plan 03-02) — verifier PASS ✓
+Phase 5 HARDEN REQ-IDs (7/7): 01,02,06,07 (Plan 05-01) + 04,05 (Plan 05-02) + 03 (cross-repo note) ✓
 ```
 
 ## Performance Metrics
@@ -85,16 +87,16 @@ Phase 3 E2EWIN REQ-IDs (5/5): 01,02,04,05 (Plan 03-01) + 03,05 (Plan 03-02) — 
 
 | Pitfall | Phase | Status |
 |---------|-------|--------|
-| **CP-1**: Sparkle re-swap loop (silent dylib overwrite) | Phase 5 (HARDEN-01/02/06) | Pending |
-| **CP-2**: Tag rewrite supply-chain inversion | Phases 2+3+5 (E2EMAC-03, E2EWIN-03, HARDEN-04/05) | Pending |
+| **CP-1**: Sparkle re-swap loop (silent dylib overwrite) | Phase 5 (HARDEN-01/02/06) | Mitigated — verify-librime.{sh,ps1} detect drift, exit 1, no daemon |
+| **CP-2**: Tag rewrite supply-chain inversion | Phases 2+3+5 (E2EMAC-03, E2EWIN-03, HARDEN-04/05) | Mitigated — tag-immutability guard in release.yml fails red on rewrite |
 | **CP-3**: Telemetry de-anonymization at small N | Phase 4 (TELEM-05/07/08, MP-2) | Pending |
-| **CP-4**: GHA non-interactive runner false-confidence E2E | Phases 2+3 (E2EMAC-05, E2EWIN-04) | Pending |
-| **CP-5**: Schema lint false-positive churn (Python re ≠ boost::regex) | Phase 1 (LINT-01 scope) | Pending |
+| **CP-4**: GHA non-interactive runner false-confidence E2E | Phases 2+3 (E2EMAC-05, E2EWIN-04) | Mitigated — live runs green on macos-15 + windows-latest |
+| **CP-5**: Schema lint false-positive churn (Python re ≠ boost::regex) | Phase 1 (LINT-01 scope) | Mitigated — structure-only lint scope |
 | **MP-1**: README tested only on author's machine | Phase 6 (DOCS-06) | Pending |
 | **MP-2**: Decision Gate survivorship bias + founder confounding | Phase 7 (GATE-01 pre-registration) | Pending |
-| **MP-3**: Universal dylib silent failure on Intel Mac | Phase 5 (HARDEN-03) | Pending |
+| **MP-3**: Universal dylib silent failure on Intel Mac | Phase 5 (HARDEN-03) | Pending — cross-repo PR in smoodle-type/librime required |
 | **MP-4**: PowerShell 5.1 cp1252 parser breakage | Phase 1 (LINT-04) | Mitigated — test_powershell_ascii.py blocks any non-ASCII byte in .ps1 files at PR-time (commit 4b8ad4d) |
-| **MP-5**: GHA multi-asset release upload partial state | Phase 5 (HARDEN-04 atomic draft-then-publish) | Pending |
+| **MP-5**: GHA multi-asset release upload partial state | Phase 5 (HARDEN-04 atomic draft-then-publish) | Mitigated — draft-then-publish pattern prevents partial releases |
 
 ### Cross-Repo Dependencies
 
@@ -107,11 +109,10 @@ Phase 3 E2EWIN REQ-IDs (5/5): 01,02,04,05 (Plan 03-01) + 03,05 (Plan 03-02) — 
 
 ### Open Todos (carry into plan-phase)
 
-- [ ] Resolve cross-repo PR sequencing for HARDEN-03 (Phase 5 plan-phase's first sub-task).
+- [ ] Resolve cross-repo PR sequencing for HARDEN-03 (Phase 5 cross-repo note — smoodle-type/librine lipo-join job still needed).
 - [ ] Confirm telemetry subdomain at Phase 4 plan-phase (was tentatively `telemetry.0dl.me` per research; founder picks).
 - [ ] GATE-01 pre-registration must be authored *before* Phase 2/3 turn green (verifiable from git log timestamps; enforce via plan ordering at Phase 7 plan-phase).
 - [ ] Phase 4 plan-phase: research-flag `/gsd-research-phase 4` recommended for `smoodle telemetry forget` server endpoint design (umami doesn't ship per-install delete OOTB).
-- [ ] Phase 5 plan-phase: research-flag `/gsd-research-phase 5` recommended for `release.yml` atomic draft-then-publish multi-asset sequencing (PITFALLS MP-5 has subtleties).
 
 ### Blockers
 
@@ -126,38 +127,26 @@ None at roadmap-creation time. All blockers are surfaced at plan-phase per `Risk
 4. Next action is `/gsd-plan-phase <next-phase>` per Current Position.
 
 **Active milestone:** phase-1-finish
-**Active phase:** 3 (Lane E2: Windows E2E) — COMPLETE; next is Phase 4 (parallelizable, infra-blocked) or Phase 5 (sequential, now unblocked)
+**Active phase:** 5 (Lane S: Sparkle/release hardening) — COMPLETE; next is Phase 4 (parallelizable, infra-blocked) or Phase 6 (sequential, docs hardening)
 **Active plans:** none in flight
 
-**Phase 3 commits (11 total, all on main):**
-- `ec41146` docs(03): plan Phase 3 — 2 plans, plan-checker PASS post-revision
-- `bec3caf` chore(03-01): extend MP-4 ASCII glob to tests/*.ps1
-- `64b04e6` feat(03-01): tests/test_install_e2e_win.ps1 (Pester 5 driver, 4 Describes)
-- `04cc350` feat(03-01): .github/workflows/install-win-e2e.yml (windows-latest workflow)
-- `7b2ef02` docs(03-01): plan close + 03-01-SUMMARY.md
-- `3b2083d` feat(03-02): vendor/windows/rime.dll.sha256 sidecar (3700c2f9...4275e)
-- `b02ece0` feat(03-02): SHA256 verify + Authenticode diagnostic in install-librime-fork.ps1
-- `55b33c8` test(03-02): tests/test_install_librime_fork_win.py
-- `579601d` feat(03-02): wire install-librime-fork.ps1 + tests into install-win-e2e.yml
-- `ba11f59` fix(03-01): Pester 5 scoping + workflow clean-slate ordering (live run 25623770858 red)
-- `41daefb` fix(03-02): emit SHA mismatch diagnostics before Write-Error (live run 25623904961 red)
+**Phase 5 commits (10 total, all on main):**
+- `c8a487e` feat(05-01): add scripts/verify-librime.sh -- manual hash-drift checker (HARDEN-01)
+- `39819ad` feat(05-01): add scripts/verify-librime.ps1 -- manual hash-drift checker (HARDEN-02)
+- `8a97155` test(05-01): add tests/test_verify_librime_mac.py (HARDEN-01 test)
+- `86cb398` test(05-01): add tests/test_verify_librime_win.py (HARDEN-02 test)
+- `b5f6919` fix(05-01): update install-librime-fork.sh trailing message to reference verify-librime.sh (HARDEN-06)
+- `e71a2ad` fix(05-01): update install-librime-fork.ps1 trailing message to reference verify-librime.ps1 (HARDEN-06)
+- `483f602` fix(05-01): add touch -m for schema files after cp loop in install.sh (HARDEN-07)
+- `ceb3d0e` docs(05-01): add 05-01-SUMMARY.md for Phase 5 Plan 01 completion
+- `1f34b7b` feat(05-02): add .github/workflows/release.yml — draft-then-publish + tag-immutability guard (HARDEN-04, HARDEN-05)
+- `f5b1b42` docs(05): add Phase 5 research and plan artifacts
 
-**Live smoke-tests:**
-- run 25623770858 RED — Pester 5 file-scope code ran during Discovery phase (before Describe 1's emptiness assertion). Fixed `ba11f59`.
-- run 25623904961 RED — `$ErrorActionPreference = 'Stop'` made Write-Error terminating before Write-Host hash diagnostics could print. Fixed `41daefb`.
-- run 25623956809 **GREEN** in 2m12s — 12/12 steps passing on windows-latest. Both fixes were INTERNAL Pester 5 + PowerShell defects (distinct from Phase 2's `d4ba9db` external Homebrew regression).
-
-**Phase 2 commits (8 total, all on main):**
-- `67d7b1b` feat(02-01): tests/test_install_e2e_mac.sh
-- `d01912a` feat(02-01): .github/workflows/install-mac-e2e.yml
-- `a2709da` docs(02-01): plan close
-- `466b43c` feat(02-02): vendor/macos/librime.1.dylib.sha256 + .gitignore allowlist
-- `550d026` feat(02-02): SHA256 verify + Intel arch refusal in install-librime-fork.sh
-- `9676d49` test(02-02): tests/test_install_librime_fork_mac.py
-- `668e6dc` feat(02-02): wire script + tests into workflow
-- `d4ba9db` fix(02-01): drop deprecated --no-quarantine brew flag (external regression)
+**Live verification:**
+- Test tag v0.0.6-test-release → release workflow run 25649115808 **GREEN** — all steps passed (checkout → build DMG → SHA256 → create draft → upload → publish → verify immutability). Tag and release cleaned up.
 
 ---
 *State initialized: 2026-05-08 alongside ROADMAP.md creation.*
 *Updated: 2026-05-09 after Phase 2 verifier PASS (5/5 SC, 5/5 REQ, 100% goal achievement).*
 *Updated: 2026-05-10 after Phase 3 verifier PASS (5/5 SC, 5/5 REQ, 8/8 STRIDE, zero gaps; live windows-latest run 25623956809 GREEN 2m12s).*
+*Updated: 2026-05-11 after Phase 5 verifier PASS (7/7 HARDEN REQ-IDs covered; release workflow live-verified green on test tag v0.0.6-test-release).*
