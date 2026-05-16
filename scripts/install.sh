@@ -212,6 +212,7 @@ If 'smoodle Thai phonetic' doesn't appear in the schema switcher:
 Note: this build uses smoodle's patched librime (smoodle-type/librime fork,
 tagged 1.16.0-smoodle.1). If Squirrel was updated via Sparkle since
 your last smoodle install, the bundled librime.1.dylib in
-${SQUIRREL_PATH}/Contents/Frameworks/ may have been overwritten; see
-docs/RESUME.md for the dylib-swap recipe.
+${SQUIRREL_PATH}/Contents/Frameworks/ may have been overwritten. Run
+'bash scripts/verify-librime.sh' to detect drift; if it exits non-zero,
+re-run 'bash scripts/install-librime-fork.sh' to re-swap the patched dylib.
 EOF
