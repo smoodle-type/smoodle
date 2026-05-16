@@ -1,8 +1,30 @@
 # Project State: Smoodle Phase 1 Finish
 
-**Last updated:** 2026-05-11
-**Status:** PHASE-1-CLOSED (all 7 phases complete; 41/41 REQ-IDs covered; verdict: stay-in-dogfood — recruit 2-5 friends for formal 7-day soak)
+**Last updated:** 2026-05-16 (audit-driven re-scope)
+**Status:** PHASE-1-MACOS-SHIPPABLE — milestone v0.0.6 narrowed to macOS-only dogfood; Windows + telemetry surfaces deferred to milestone v0.0.7-cross-platform. Verdict (macOS-scoped): stay-in-dogfood — recruit 2-5 diaspora-Thai friends with macOS machines for formal 7-day soak.
 **Mode:** yolo
+
+## 2026-05-16 Audit Re-Scope (binding)
+
+Audit `.planning/v0.0.6-MILESTONE-AUDIT.md` + integration check `.planning/INTEGRATION-CHECK-v0.0.6.md` (run 2026-05-16) surfaced 3 BLOCK + 6 FLAG + 7 PASS findings. Re-scope decisions:
+
+**v0.0.6 (this milestone) — keeps:** Phase 1 lint, Phase 2 macOS E2E, Phase 5 macOS-side release hardening, Phase 6 macOS docs, Phase 7 decision gate (macOS-scoped, with timing caveat per BLOCK-3).
+
+**v0.0.6 — fixed on re-scope:** BLOCK-1 (`scripts/install.sh:216` stale `docs/RESUME.md` reference replaced with `bash scripts/verify-librime.sh` invocation). BLOCK-3 (`.planning/DECISION-GATE.md` updated with Pre-Registration Timing Caveat retracting MP-2 mitigation claim).
+
+**v0.0.6 — deferred to v0.0.7-cross-platform:**
+- BLOCK-2: `scripts/install-windows.ps1` `--uninstall` flag missing (DOCS-04 Windows portion).
+- FLAG-1: README missing telemetry-forget privacy-CLI subsection (TELEM-06).
+- FLAG-4: `.github/workflows/install-linux-e2e.yml` not in ROADMAP — formal disclosure or removal.
+- FLAG-5: `scripts/lib/telemetry.sh:15` placeholder umami website UUID (TELEM-01/02/03).
+- FLAG-6: `scripts/lib/telemetry-forget.{sh,ps1}:12` defaults `FORGET_URL` to localhost (TELEM-06).
+- All E2EWIN-01..05 (Windows E2E milestone-level claim).
+- All TELEM-01..09 (telemetry milestone-level claim).
+- HARDEN-03 (cross-repo universal dylib lipo-join in `smoodle-type/librime`).
+
+**v0.0.6 — accepted tech debt (FLAG-2):** Phases 4, 5, 6, 7 closed without `*-VERIFICATION.md`. Acceptable for v0.0.6 close given the audit doc + integration check serve as the verifier-equivalent rollup. Backfilling per-phase `VERIFICATION.md` is queued as v0.0.7 W5.
+
+**Cross-platform code mandate (preserved):** Windows installer, Linux installer, telemetry clients, telemetry infra all remain in-tree. macOS-side work on shared modules must not break the Windows/Linux/telemetry paths — future v0.0.7 finish-work depends on this.
 
 ## Project Reference
 
@@ -23,35 +45,43 @@
 
 ## Current Position
 
-**Phase:** 7 → COMPLETE (Lane G Decision Gate closed 2026-05-11; verdict: stay-in-dogfood)
-**Plans:** docs/DECISION-GATE-CRITERIA.md pre-registered (GATE-01), .planning/DECISION-GATE.md checklist filled (GATE-03/GATE-04). Verdict: stay-in-dogfood — all code complete but zero non-founder installs attempted.
-**Phase 1:** CLOSED — 4/4 SC met, verifier PASS. All 41 REQ-IDs across 7 phases covered.
-**Phase 2:** COMPLETE — 5/5 SC met, verifier PASS, live macos-15 run 25594460125 GREEN in 1m 4s.
-**Phase 3:** COMPLETE — 5/5 SC met, verifier PASS, live windows-latest run 25623956809 GREEN in 2m 12s after 2 internal-defect fixes.
-**Phase 4:** COMPLETE — 9/9 TELEM REQ-IDs covered. Docker Compose stack ready for th-dc deploy.
-**Phase 5:** COMPLETE — 6/6 SC met, all 7 HARDEN REQ-IDs covered. Human verification on test tag v0.0.6-test-release passed green.
-**Phase 6:** COMPLETE — 7/7 DOCS REQ-IDs covered. README status APPROVED, LoneExile→smoodle-type migration complete, hardcoded paths cleaned, uninstall flags added, RELEASE-CHECKLIST.md created.
-**Phase 7:** COMPLETE — 4/4 GATE REQ-IDs covered. Verdict: stay-in-dogfood. Next: recruit 2-5 diaspora-Thai friends, start formal 7-day soak, re-evaluate.
-**Next action:** Recruit non-founders. When ready: `./gsd-audit-milestone` to validate Phase 1 closure. Then either `/gsd-new-milestone phase-1.5` or `/gsd-capture` to dogfood-soak-notes.
+**Phase:** v0.0.6 milestone CLOSED with macOS-only scope. Audit 2026-05-16 re-scoped Windows + telemetry to v0.0.7-cross-platform.
+**Plans:** docs/DECISION-GATE-CRITERIA.md committed (GATE-01 partial per BLOCK-3 timing caveat), .planning/DECISION-GATE.md checklist filled + timing caveat appended 2026-05-16 (GATE-03/GATE-04 satisfied; verdict: stay-in-dogfood macOS-scoped).
+
+**Phase 1 (LINT):** CLOSED — 4/4 SC met, verifier PASS. LINT-01..04 satisfied.
+**Phase 2 (E2EMAC):** CLOSED — 5/5 SC met, verifier PASS, live macos-15 run 25594460125 GREEN in 1m 4s. E2EMAC-01..05 satisfied.
+**Phase 3 (E2EWIN):** CODE-COMPLETE, MILESTONE-DEFERRED → v0.0.7 — live windows-latest run 25623956809 GREEN in 2m 12s, but BLOCK-2 (`install-windows.ps1` missing `--uninstall`) blocks the cross-platform claim. Code preserved in-tree.
+**Phase 4 (TELEM):** CODE-COMPLETE, MILESTONE-DEFERRED → v0.0.7 — infra/clients/forget CLI all on disk, but FLAG-5 (placeholder umami UUID) + FLAG-6 (localhost forget endpoint) mean telemetry won't reach a server. Code preserved in-tree.
+**Phase 5 (HARDEN):** CLOSED (macOS-side) — verify-librime.sh + release.yml + tag-immutability guard live-verified on test tag v0.0.6-test-release. HARDEN-01/04/05/06/07 satisfied; HARDEN-02 partial (Windows verify-librime.ps1 ships but milestone scope deferred); HARDEN-03 deferred → v0.0.7 (cross-repo).
+**Phase 6 (DOCS):** CLOSED (macOS-side) — README APPROVED + macOS install snippet + troubleshooting + macOS `--uninstall` + LoneExile→smoodle-type migration + RELEASE-CHECKLIST.md + BLOCK-1 fix. DOCS-01/03/05/06/07 satisfied; DOCS-02/04 partial (Windows portions deferred → v0.0.7).
+**Phase 7 (GATE):** CLOSED (macOS-scoped) — checklist + verdict (stay-in-dogfood) + pre-registration timing caveat. GATE-03/04 satisfied; GATE-01 partial per BLOCK-3 caveat; GATE-02 open pending non-founder recruits.
+
+**Next action:** Recruit 2-5 diaspora-Thai friends with **macOS machines** for the 7-day soak (GATE-02). When signal arrives, run `/gsd-new-milestone v0.0.7-cross-platform` to formalize the deferred Windows + telemetry work.
 
 ```
-Roadmap progress: [■■■■■■■] 7 complete — PHASE 1 CLOSED
-                       ^
-                       Phase 4 COMPLETE (all 9 TELEM REQ-IDs covered)
-                       Phase 5 COMPLETE (all 7 HARDEN REQ-IDs covered)
-                       Phase 6 COMPLETE (all 7 DOCS REQ-IDs covered)
-                       Phase 7 COMPLETE (all 4 GATE REQ-IDs covered)
-                       Verdict: stay-in-dogfood
+v0.0.6 progress: [■■◐◐■◐◐] macOS-scoped CLOSED
+                  1 2 3 4 5 6 7
+                  ^ ^   ^ ^ ^
+                  satisfied: Phase 1 LINT + Phase 2 E2EMAC + Phase 5 HARDEN-mac + Phase 6 DOCS-mac
+                  ◐ partial/deferred: Phase 3 E2EWIN → v0.0.7, Phase 4 TELEM → v0.0.7,
+                                       Phase 6 DOCS-04-win → v0.0.7, Phase 7 GATE (timing caveat)
 
-Coverage: 41/41 requirements mapped ✓
-Phase 1 LINT REQ-IDs (4/4): LINT-01..04 — verifier PASS ✓
-Phase 2 E2EMAC REQ-IDs (5/5): 01,02,05 (Plan 02-01) + 03,04 (Plan 02-02) — verifier PASS ✓
-Phase 3 E2EWIN REQ-IDs (5/5): 01,02,04,05 (Plan 03-01) + 03,05 (Plan 03-02) — verifier PASS ✓
-Phase 4 TELEM REQ-IDs (9/9): 01,07,08 (Wave 1 infra) + 02,03,04,05 (Wave 2 client) + 06,09 (Wave 3 tests) ✓
-Phase 5 HARDEN REQ-IDs (7/7): 01,02,06,07 (Plan 05-01) + 04,05 (Plan 05-02) + 03 (cross-repo note) ✓
-Phase 6 DOCS REQ-IDs (7/7): 01,05,07 (Wave 1 migration) + 02,03,04,06 (Wave 2 rewrite) ✓
-Phase 7 GATE REQ-IDs (4/4): 01 (pre-registration) + 03 (checklist) + 04 (verdict: stay-in-dogfood) ✓
-  Note: GATE-02 (7-day soak) cannot complete until non-founders attempt install.
+Coverage (v0.0.6 disposition):
+  Satisfied:                22 REQ-IDs (LINT × 4, E2EMAC × 5, HARDEN × 6, DOCS × 5, GATE × 2)
+  Partial w/ caveat:         5 REQ-IDs (HARDEN-02, DOCS-02, DOCS-04, GATE-01, GATE-04-scope)
+  Open in v0.0.6:            1 REQ-ID (GATE-02 — pending non-founder recruits)
+  Deferred → v0.0.7:        17 REQ-IDs (E2EWIN × 5, TELEM × 9, HARDEN-03 cross-repo,
+                                          DOCS-04-win + FLAG-1 + FLAG-5 + FLAG-6 in scope-list)
+
+v0.0.7-cross-platform queue (formalize after macOS soak signal arrives):
+  - Close BLOCK-2: Port --uninstall block from install-linux.sh:25-72 into install-windows.ps1
+  - Close FLAG-5: Replace placeholder umami website UUID with real telemetry.0dl.me site_id
+  - Close FLAG-6: Change FORGET_URL default to production HTTPS endpoint
+  - Close FLAG-1: Add Telemetry/Privacy subsection to README documenting forget CLI
+  - Close FLAG-4: Decide on .github/workflows/install-linux-e2e.yml (keep or remove)
+  - Close FLAG-2 (audit-trail backfill): write 0[4567]-VERIFICATION.md retroactively
+  - Close HARDEN-03 (cross-repo): smoodle-type/librime lipo-join job
+  - Pre-register v0.0.7 decision criteria BEFORE any v0.0.7 E2E lane turns green (reinstate MP-2)
 ```
 
 ## Performance Metrics
@@ -135,9 +165,9 @@ None at roadmap-creation time. All blockers are surfaced at plan-phase per `Risk
 3. If a plan was in-flight, re-read its PLAN-N.md.
 4. Next action is `/gsd-plan-phase <next-phase>` per Current Position.
 
-**Active milestone:** phase-1-finish
-**Active phase:** 5 (Lane S: Sparkle/release hardening) — COMPLETE; next is Phase 4 (parallelizable, infra-blocked) or Phase 6 (sequential, docs hardening)
-**Active plans:** none in flight
+**Active milestone:** phase-1-finish (v0.0.6) — macOS-only scope after 2026-05-16 audit re-scope
+**Active phase:** all 7 phases closed at milestone level for macOS scope; v0.0.7-cross-platform queued for Windows + telemetry finish-work
+**Active plans:** none in flight in v0.0.6; v0.0.7 not yet opened (gated on macOS soak signal)
 
 **Phase 5 commits (10 total, all on main):**
 - `c8a487e` feat(05-01): add scripts/verify-librime.sh -- manual hash-drift checker (HARDEN-01)
@@ -159,3 +189,4 @@ None at roadmap-creation time. All blockers are surfaced at plan-phase per `Risk
 *Updated: 2026-05-09 after Phase 2 verifier PASS (5/5 SC, 5/5 REQ, 100% goal achievement).*
 *Updated: 2026-05-10 after Phase 3 verifier PASS (5/5 SC, 5/5 REQ, 8/8 STRIDE, zero gaps; live windows-latest run 25623956809 GREEN 2m12s).*
 *Updated: 2026-05-11 after Phase 5 verifier PASS (7/7 HARDEN REQ-IDs covered; release workflow live-verified green on test tag v0.0.6-test-release).*
+*Updated: 2026-05-16 after audit re-scope: v0.0.6 narrowed to macOS-only; Windows + telemetry deferred to v0.0.7-cross-platform; BLOCK-1 + BLOCK-3 closed.*

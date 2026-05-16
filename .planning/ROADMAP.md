@@ -1,30 +1,42 @@
 # Roadmap: Smoodle Phase 1 Finish
 
 **Created:** 2026-05-08
-**Milestone:** phase-1-finish
+**Re-scoped:** 2026-05-16 (post-audit; see `.planning/v0.0.6-MILESTONE-AUDIT.md`)
+**Milestone:** phase-1-finish (v0.0.6) — **macOS-only soak**
 **Granularity:** standard (5-8 phases, 3-5 plans each)
-**Parallelization:** enabled (Phases 2 / 3 / 4 run concurrently after Phase 1)
+**Parallelization:** enabled (Phases 2 / 3 / 4 originally concurrent after Phase 1)
 **Mode:** yolo
 
-## Goal
+## Goal (revised 2026-05-16)
 
-Wrap Phase 1 of Smoodle: ship the Lane E (mac+win E2E), schema lint, opt-in telemetry, Sparkle re-swap detection + release hardening, README/docs hardening, and the Decision Gate close memo. v0.0.6 schema is the locked baseline — **no schema regen, no dict expansion** in this milestone.
+**v0.0.6 ships as macOS-only dogfood-soak.** The audit on 2026-05-16 surfaced 3 BLOCKers + 6 FLAGs concentrated in the Windows + telemetry surfaces (BLOCK-2 `install-windows.ps1` missing `--uninstall`; FLAG-5 telemetry website UUID placeholder; FLAG-6 telemetry forget endpoint defaults to localhost). The macOS path is materially complete and ready for the 7-day soak with non-founder diaspora-Thai friends.
+
+**Original v0.0.6 intent (now narrowed):** ~~Ship the Lane E (mac+win E2E), schema lint, opt-in telemetry, Sparkle re-swap detection + release hardening, README/docs hardening, and the Decision Gate close memo.~~
+
+**Current v0.0.6 scope:** schema lint + macOS E2E + macOS release hardening + macOS README + Decision Gate close (macOS-only). Windows E2E code is preserved in-tree but its `--uninstall` gap and the telemetry deployment placeholders are explicitly deferred to **milestone v0.0.7-cross-platform**.
+
+v0.0.6 schema is the locked baseline — **no schema regen, no dict expansion** in this milestone.
+
+**Cross-platform mandate (preserved):** Windows + Linux + telemetry code stays in-tree. Future macOS-side work MUST remain cross-platform-friendly (no hardcoded `darwin`-only paths in shared modules, no breaking changes to `install-windows.ps1` / `install-linux.sh` / `scripts/lib/telemetry.*` without a v0.0.7 migration plan).
 
 ## Coverage
 
 - v1 requirements: **41**
-- Mapped to phases: **41 / 41 (100%)** ✓
-- Unmapped: **0** ✓
+- Mapped to v0.0.6 (macOS-only): **22** ✓
+- Deferred to v0.0.7-cross-platform: **17** (E2EWIN-01..05, TELEM-01..09, plus partials: DOCS-04 Windows portion, HARDEN-03)
+- Genuinely open in v0.0.6: **2** (GATE-02 pending recruits; GATE-01 retracted per timing caveat)
 
-## Phases
+## Phases (v0.0.6 — macOS-only)
 
 - [x] **Phase 1: Lint & CI Fast Path (Lane F)** — Schema lint test + ubuntu-only `ci.yml` running on every PR (~3 min). Foundational gate for every later PR. **COMPLETE 2026-05-09 (verifier PASS, 100% goal achievement; 4 GHA runs ≤21s each).**
 - [x] **Phase 2: macOS E2E (Lane E1)** — `install-mac-e2e.yml` + driver + SHA256 verify + Intel-Mac arch refusal + GUI-required-step gating. **COMPLETE 2026-05-09 (verifier PASS, 100% goal achievement; live macos-15 run 25594460125 GREEN in 1m 4s after fix d4ba9db).**
-- [x] **Phase 3: Windows E2E (Lane E2)** — `install-win-e2e.yml` + Pester 5 driver + SHA256 verify + clean-slate per job + Authenticode assertion. **COMPLETE 2026-05-10 (verifier PASS, 100% goal achievement; live windows-latest run 25623956809 GREEN in 2m 12s after 2 internal-defect fixes ba11f59 + 41daefb).**
-- [ ] **Phase 4: Telemetry (Lane T)** — umami self-host on th-dc + opt-in default-OFF clients + ephemeral install_id + purge endpoint + 90d retention. Runs in parallel with Phases 2 + 3 after Phase 1. Depends on infra-side th-dc deploy.
-- [ ] **Phase 5: Sparkle Re-Swap & Release Hardening (Lane S)** — `verify-librime.{sh,ps1}` (manual, no daemon) + universal macOS dylib (cross-repo work in `smoodle-type/librime`) + atomic draft-then-publish `release.yml` + tag-immutability CI guard + schema timestamp touch. Depends on Phases 2 + 3.
-- [ ] **Phase 6: README & Docs Hardening (Lane R)** — Status flip APPROVED + Win/Linux install snippets + troubleshooting top-5 + uninstall instructions + LoneExile/* → smoodle-type/* migration + RELEASE-CHECKLIST.md. Depends on Phase 5.
-- [ ] **Phase 7: Decision Gate Close (Lane G)** — Pre-register criteria *first* (PITFALLS MP-2), then 7-day soak + verdict memo. Depends on Phase 6 + 7-day calendar soak after Lane E green.
+- [~] **Phase 3: Windows E2E (Lane E2)** — `install-win-e2e.yml` + Pester 5 driver + SHA256 verify + clean-slate per job + Authenticode assertion. **CODE LANDED 2026-05-10 (live windows-latest run 25623956809 GREEN in 2m 12s) BUT DEFERRED TO v0.0.7** — audit (2026-05-16) found BLOCK-2 `install-windows.ps1` has no `--uninstall` flag. Windows path is preserved in-tree but not claimed shipped for v0.0.6.
+- [~] **Phase 4: Telemetry (Lane T)** — umami self-host on th-dc + opt-in default-OFF clients + ephemeral install_id + purge endpoint + 90d retention. **CODE LANDED 2026-05-11 BUT DEFERRED TO v0.0.7** — audit found FLAG-5 placeholder umami website UUID + FLAG-6 forget-endpoint defaults to localhost. Telemetry won't actually reach a server today.
+- [x] **Phase 5: Sparkle Re-Swap & Release Hardening (Lane S)** — `verify-librime.{sh,ps1}` (manual, no daemon) + universal macOS dylib (cross-repo work in `smoodle-type/librime`) + atomic draft-then-publish `release.yml` + tag-immutability CI guard + schema timestamp touch. **macOS-side COMPLETE 2026-05-11**; HARDEN-03 (universal macOS dylib via cross-repo lipo-join) tracked separately in `smoodle-type/librime`.
+- [x] **Phase 6: README & Docs Hardening (Lane R) — macOS portion** — Status flip APPROVED + macOS install snippets + troubleshooting + macOS `--uninstall` instructions + LoneExile/* → smoodle-type/* migration + RELEASE-CHECKLIST.md. **COMPLETE 2026-05-11.** Windows + Linux `--uninstall` docs deferred to v0.0.7. BLOCK-1 (`install.sh:216` stale `docs/RESUME.md` pointer) fixed 2026-05-16.
+- [~] **Phase 7: Decision Gate Close (Lane G) — macOS-only** — Criteria committed (`docs/DECISION-GATE-CRITERIA.md`) but AFTER Phase 2/3 green (BLOCK-3); MP-2 mitigation retracted. Verdict `stay-in-dogfood` survives on independent N=0 grounds. **MACOS-SCOPED VERDICT RENDERED 2026-05-11; CAVEAT ADDED 2026-05-16.** GATE-02 7-day macOS soak pending non-founder recruits.
+
+**Legend:** `[x]` complete and in scope · `[~]` partial scope — macOS-portion done, cross-platform finish deferred · `[ ]` pending
 
 ## Phase Details
 
@@ -192,8 +204,43 @@ Phase 6 + (Phase 2/3 green for 7 calendar days)
 
 ## Traceability
 
-See `.planning/REQUIREMENTS.md` Traceability table — all 41 v1 REQ-IDs mapped.
+See `.planning/REQUIREMENTS.md` Traceability table — all 41 v1 REQ-IDs mapped (22 v0.0.6 + 17 deferred-v0.0.7 + 2 open).
 
 ---
-*Roadmap created: 2026-05-08 (rolled up from research SUMMARY/PITFALLS/ARCHITECTURE + REQUIREMENTS.md + PROJECT.md)*
-*Next: `/gsd-plan-phase 1` to break Phase 1 (Lane F) into plans.*
+
+## Next Milestone Preview: v0.0.7-cross-platform
+
+**Created (preview only):** 2026-05-16 (post v0.0.6 audit re-scope)
+**Status:** placeholder — formalize via `/gsd-new-milestone v0.0.7-cross-platform` after macOS soak signals are collected
+**Goal:** finish what v0.0.6 deferred — Windows install path, telemetry deployment, Linux E2E disclosure — such that smoodle can credibly be claimed cross-platform.
+
+### Inherited gaps to close
+
+| Source | Item | Affected REQ-IDs |
+|--------|------|------------------|
+| BLOCK-2 (audit) | Port `--uninstall` block from `install-linux.sh:25-72` into `install-windows.ps1` | DOCS-04 (Windows portion) |
+| FLAG-5 (audit) | Replace placeholder umami website UUID in `scripts/lib/telemetry.{sh,ps1}:15` with real `telemetry.0dl.me` site_id | TELEM-01, TELEM-02, TELEM-03 |
+| FLAG-6 (audit) | Change `FORGET_URL` default in `telemetry-forget.{sh,ps1}:12` to production HTTPS endpoint; document `SMOODLE_FORGET_URL` override in README | TELEM-06 |
+| FLAG-1 (audit) | Add Telemetry/Privacy subsection to README documenting `telemetry-forget` as an invocable CLI | TELEM-06 |
+| FLAG-4 (audit) | Either delete `.github/workflows/install-linux-e2e.yml` (deferral per CLAUDE.md) or formally adopt it as a phase in v0.0.7 | none currently |
+| FLAG-2 (audit) | Backfill `*-VERIFICATION.md` for v0.0.6 phases 4, 5, 6, 7 (retroactive — preserves audit trail) | TELEM-01..09, HARDEN-01..07, DOCS-01..07, GATE-01..04 |
+| HARDEN-03 | Cross-repo: `smoodle-type/librime` `smoodle-build.yml` lipo-join → universal macOS dylib (PR in librime fork, not here) | HARDEN-03 |
+| BLOCK-3 carry-over | Re-establish MP-2 anti-survivorship-bias guarantee for v0.0.7 — pre-register decision criteria BEFORE any v0.0.7 E2E lane turns green, verifiable via `git log` | new GATE-equivalent |
+
+### Phase preview (to be confirmed at `/gsd-new-milestone`)
+
+- **W1: Windows finish** — port `--uninstall`, re-run win E2E, update README Windows section, write `03-VERIFICATION.md` retroactively if needed.
+- **W2: Telemetry deployment finish** — real umami site_id, production forget endpoint, README privacy subsection, smoke-test end-to-end.
+- **W3: Linux scope disclosure** — formalize or remove `install-linux-e2e.yml`.
+- **W4: Cross-repo HARDEN-03** — track upstream `smoodle-type/librime` PR for universal dylib lipo-join.
+- **W5: Audit-trail backfill** — write `0[4567]-VERIFICATION.md` for v0.0.6 phases that closed without one.
+
+### Decision gate for v0.0.7 (pre-register before any E2E lane goes green)
+
+- Trigger: any of {first non-founder Windows install attempt, telemetry going live, first 5 cross-platform installs}.
+- Criteria: TBD — must be committed to `docs/DECISION-GATE-CRITERIA-v0.0.7.md` BEFORE the gate's E2E surface turns green (MP-2 reinstated).
+
+---
+*Roadmap created: 2026-05-08*
+*Re-scoped: 2026-05-16 (v0.0.6 narrowed to macOS-only; v0.0.7-cross-platform queued)*
+*Next: recruit 2-5 diaspora-Thai macOS users; collect signals; then `/gsd-new-milestone v0.0.7-cross-platform`*

@@ -6,7 +6,7 @@ Thai phonetic input method built on Rime/librime. Type `sawadee` → `สวั�
 - `smoodle-type/smoodle-app` — macOS IME app (Squirrel fork, universal binary, v0.1.0)
 - `smoodle-type/librime` — librime fork carrying the peek-sort patch (tag `1.16.0-smoodle.1`)
 
-**Status:** Phase 1 finish in progress. v0.0.6 schema shipped. Phase 0 closed 2026-05-06 — wedge narrowed to "founder + diaspora-Thai friends as they surface."
+**Status:** Phase 1 finish CLOSED with **macOS-only scope** after 2026-05-16 audit re-scope. v0.0.6 schema shipped. Phase 0 closed 2026-05-06 — wedge narrowed to "founder + diaspora-Thai friends with macOS machines, as they surface." Windows + self-hosted telemetry are deferred to milestone **v0.0.7-cross-platform** (code preserved in-tree). Verdict: `stay-in-dogfood` — recruiting non-founders for 7-day macOS soak (GATE-02 still open).
 
 ## Read these first (in order)
 
@@ -29,20 +29,33 @@ Thai phonetic input method built on Rime/librime. Type `sawadee` → `สวั�
 - **Algebra rules replace ALL occurrences** in one pass (`boost::regex_replace`), not first-match-only.
 - **Rime weights are log-frequencies** — store RAW counts in dict YAML.
 - **License separation** — Squirrel/Weasel are GPLv3, smoodle is MIT. Don't bundle the hosts.
+- **v0.0.6 = macOS-only ship; v0.0.7 = cross-platform finish (audit re-scope 2026-05-16).** Windows installer + telemetry clients/infra STAY IN-TREE — they're deferred, not deleted. macOS-side work on shared modules MUST preserve cross-platform compatibility (no hardcoded `darwin`-only paths in shared code; no breaking changes to `install-windows.ps1` / `install-linux.sh` / `scripts/lib/telemetry.*` without a v0.0.7 migration plan).
 
-## Phase 1 finish open work (do these)
+## v0.0.6 Status (macOS-only ship)
 
-7 phases. Parallel: 2+3+4 after 1. Sequential: 5 → 6 → 7.
+7 phases originally. After 2026-05-16 audit re-scope:
 
-| Phase | Lane | Goal |
+| Phase | Lane | v0.0.6 status |
 |---|---|---|
-| 1 | F (lint + CI fast path) | `tests/test_schema_lint.py` + `.yamllint` + ubuntu-only `ci.yml` (~3min/PR) |
-| 2 | E1 (mac E2E) | `install-mac-e2e.yml` + driver + SHA256 verify + Intel-Mac arch refusal |
-| 3 | E2 (win E2E) | `install-win-e2e.yml` + Pester 5 + clean-slate per job + Authenticode assertion |
-| 4 | T (telemetry) | umami self-host + opt-in default-OFF + ephemeral install_id + purge endpoint |
-| 5 | S (Sparkle + release) | `verify-librime.{sh,ps1}` (manual) + universal dylib (cross-repo) + atomic draft-then-publish |
-| 6 | R (README + docs) | Status APPROVED + Win/Linux snippets + troubleshooting + smoodle-type→smoodle-type |
-| 7 | G (Decision Gate) | Pre-register criteria FIRST, then 7-day soak + verdict |
+| 1 | F (lint + CI fast path) | ✅ shipped (verifier PASS) |
+| 2 | E1 (mac E2E) | ✅ shipped (live mac run 25594460125 GREEN) |
+| 3 | E2 (win E2E) | ⚠️ code in-tree, **deferred → v0.0.7** (BLOCK-2: no `--uninstall`) |
+| 4 | T (telemetry) | ⚠️ code in-tree, **deferred → v0.0.7** (FLAG-5/6: placeholder UUID + localhost) |
+| 5 | S (Sparkle + release) | ✅ shipped macOS-side (HARDEN-03 cross-repo → v0.0.7) |
+| 6 | R (README + docs) | ✅ shipped macOS-side (DOCS-04 Windows portion → v0.0.7) |
+| 7 | G (Decision Gate) | ✅ shipped macOS-scoped (BLOCK-3 timing caveat documented; verdict: stay-in-dogfood) |
+
+## v0.0.7-cross-platform queue (formalize after macOS soak signal arrives)
+
+Run `/gsd-new-milestone v0.0.7-cross-platform` when ready. Pre-register decision criteria BEFORE any v0.0.7 E2E lane goes green (MP-2 reinstatement).
+
+| Workstream | What it closes |
+|---|---|
+| W1 Windows finish | BLOCK-2 (port `--uninstall` from `install-linux.sh:25-72` into `install-windows.ps1`); re-run win E2E |
+| W2 Telemetry deployment | FLAG-5 real umami site_id; FLAG-6 prod `FORGET_URL`; FLAG-1 README privacy subsection |
+| W3 Linux disclosure | FLAG-4 (`install-linux-e2e.yml` — keep + formalize, or remove) |
+| W4 Cross-repo HARDEN-03 | universal dylib lipo-join in `smoodle-type/librime` `smoodle-build.yml` |
+| W5 Audit-trail backfill | retroactive `0[4567]-VERIFICATION.md` for v0.0.6 phases that closed without one |
 
 ## Out of Scope (deliberate; don't pull in)
 
@@ -88,4 +101,6 @@ Mode is yolo (auto-approve). Parallelization enabled. Quality model profile (opu
 - `.env` (gitignored) holds the `crs.0dl.me` Anthropic relay credentials for dict regen.
 
 ---
-*Last updated: 2026-05-08 after `/gsd-new-project` (Phase 1 finish initialization)*
+*Last updated: 2026-05-16 after audit re-scope (v0.0.6 narrowed to macOS-only; v0.0.7-cross-platform queued).*
+*Audit artifacts: `.planning/v0.0.6-MILESTONE-AUDIT.md`, `.planning/INTEGRATION-CHECK-v0.0.6.md`.*
+*Previously updated: 2026-05-08 after `/gsd-new-project` (Phase 1 finish initialization).*

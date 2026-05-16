@@ -14,8 +14,24 @@ Weasel on Windows, and fcitx5/ibus on Linux.
 [smoodle-type/librime](https://github.com/smoodle-type/librime) soft-fork at tag
 `1.16.0-smoodle.1` until upstream merges.
 
-Phase 1 status: `APPROVED`. Phases 1-5 complete: lint+CI, macOS E2E, Windows E2E,
-telemetry, Sparkle/release hardening.
+**Phase 1 (macOS dogfood):** `APPROVED` — verdict `stay-in-dogfood`, recruiting
+2-5 diaspora-Thai friends with macOS machines for a formal 7-day soak.
+
+**Scope this release (v0.0.6):**
+- ✅ **macOS path is the supported install surface.** Schema lint, macOS E2E,
+  release hardening, and macOS docs are all verified green.
+- ⚠️ **Windows installer ships in-tree but is not v0.0.6-supported.** Code runs
+  on `windows-latest` GHA but `install-windows.ps1` is missing a `--uninstall`
+  flag (audit-flagged). Tracked for **v0.0.7-cross-platform**.
+- ⚠️ **Telemetry is opt-in and currently routes to a placeholder endpoint.**
+  Self-hosted umami deployment + production forget endpoint are tracked for
+  **v0.0.7-cross-platform**. Opting in today is a no-op.
+- ⚠️ **Linux uses unpatched system librime** — first-lookup ranking may be off
+  (documented below).
+
+See [`.planning/v0.0.6-MILESTONE-AUDIT.md`](./.planning/v0.0.6-MILESTONE-AUDIT.md)
+and [`.planning/INTEGRATION-CHECK-v0.0.6.md`](./.planning/INTEGRATION-CHECK-v0.0.6.md)
+for the audit trail behind this scoping.
 
 ## Install
 
@@ -33,7 +49,15 @@ open -b im.rime.inputmethod.Squirrel
 Then press `Ctrl+\`` in any text field to open Squirrel's schema switcher
 and pick **smoodle Thai phonetic**. Type `sawadee` → expect `สวัสดี`.
 
-### Windows
+### Windows (experimental — v0.0.7 supported)
+
+> **Heads-up:** the Windows installer works end-to-end (verified by
+> `install-win-e2e.yml` on `windows-latest`) but `install-windows.ps1` is
+> currently missing a `--uninstall` flag and is therefore not declared
+> v0.0.6-supported. If you're on macOS, prefer the macOS path. If you're on
+> Windows and try this anyway, you can uninstall manually:
+> `Remove-Item -Recurse $env:APPDATA\Rime\thai_phonetic.*.yaml,
+> $env:APPDATA\Rime\default.custom.yaml, $env:USERPROFILE\.smoodle`.
 
 ```powershell
 winget install Rime.Weasel                   # one-time host install (UAC required)
