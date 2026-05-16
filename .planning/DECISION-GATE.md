@@ -10,11 +10,26 @@
 ## Pre-Registration Verification (GATE-01)
 
 - [x] `docs/DECISION-GATE-CRITERIA.md` exists at HEAD
-- [x] Pre-registration commit timestamp is BEFORE earliest green E2E run
-  - macOS E2E first green: 2026-05-09 (run 25594460125)
-  - Windows E2E first green: 2026-05-10 (run 25623956809)
-  - Pre-registration: 2026-05-11
-  - **NOTE:** Pre-registration is AFTER the soak window started (E2E workflows were already green). This is a dogfood project where the founder has been using smoodle daily since before Phase 1 formally began. The pre-registration is a formality — the soak data already exists. This is documented as a known deviation.
+- [ ] Pre-registration commit timestamp is BEFORE earliest green E2E run — **FAILED**
+  - macOS E2E first green: 2026-05-09 (run 25594460125, merge commit `d01912a` 11:25)
+  - Windows E2E first green: 2026-05-09 (Phase 3 merge `04cc350` 15:52; first dispatched green run 2026-05-10)
+  - Pre-registration commit `e1d1a7a`: **2026-05-11 14:27** — 2 days AFTER both E2E greens
+
+### Pre-Registration Timing Caveat (BLOCK-3 retraction)
+
+The original gate plan (per STATE.md line 123 and PITFALLS MP-2) required that `docs/DECISION-GATE-CRITERIA.md` be committed BEFORE Phase 2/3 first-green-runs, so the criteria could not be tuned to a known-passing surface. **Git timestamps show the inverse:** the criteria document was authored 2 days after both E2E lanes turned green, meaning the soak surface was already observable when the thresholds were chosen.
+
+The MP-2 anti-survivorship-bias mitigation is therefore **not actually in force** for this gate. The author can no longer claim, for the v0.0.6 close, that the criteria are independent of the observed signal.
+
+**What survives this caveat:**
+- The verdict `stay-in-dogfood` is supported by independent evidence — specifically, zero non-founder installs were attempted (`N = 0`). This evidence requires no pre-registered threshold to interpret; any reasonable read of `N = 0` lands at stay-in-dogfood.
+- The criteria themselves (`docs/DECISION-GATE-CRITERIA.md`) are still useful as a *forward-looking* yardstick once non-founder signals begin to arrive.
+
+**What is retracted:**
+- Any claim that v0.0.6's verdict satisfies the MP-2 anti-survivorship-bias guarantee. It does not.
+- Any claim that the criteria thresholds (≥80% install success, ≥1 unsolicited signal, etc.) were chosen blind to the v0.0.6 soak surface. They were not.
+
+**Implication for v0.0.7:** The next milestone (v0.0.7-cross-platform) must pre-register its own decision criteria BEFORE any of its E2E lanes turn green, with git-log timestamp evidence verified at gate-open. If MP-2 protection matters for the cross-platform decision, it has to be re-established there from a clean start.
 
 ---
 
@@ -83,15 +98,17 @@
 
 ## Verdict (GATE-04)
 
-**Decision:** stay-in-dogfood
+**Decision:** stay-in-dogfood — **scoped to macOS only**
 
 **Rationale:**
 
-Phase 1 code is complete — all 41 REQ-IDs across 6 phases are covered. The founder has used smoodle daily throughout the development cycle with no P0 bugs observed. The macOS install path (`sawadee → สวัสดี`) works reliably on the founder's machine, verified by the live GHA E2E run on macos-15 (run 25594460125, GREEN in 1m 4s) and the Windows E2E run on windows-latest (run 25623956809, GREEN in 2m 12s).
+The macOS install path (`sawadee → สวัสดี`) works reliably on the founder's machine, verified by the live GHA E2E run on macos-15 (run 25594460125, GREEN in 1m 4s) and seven days of founder daily use during Phase 1 development.
 
-However, the dogfood circle has not yet expanded beyond the founder. Zero non-founders have attempted install, zero unsolicited signals have been received, and the install success rate among non-founders is undefined. The `stay-in-dogfood` criterion 3 (zero non-founder signals) and `inconclusive` criterion 4 (N ≤ 2) both trigger. The correct action is to remain in dogfood, recruit 2-5 diaspora-Thai friends to install, run the 7-day soak window formally, and re-evaluate.
+The Windows install path and self-hosted telemetry are **explicitly deferred to milestone v0.0.7-cross-platform** as of 2026-05-16. The audit (`.planning/v0.0.6-MILESTONE-AUDIT.md`) surfaced three real wiring failures on the Windows + telemetry surface (BLOCK-2 `install-windows.ps1` missing `--uninstall`; FLAG-5 telemetry website UUID is a placeholder; FLAG-6 forget endpoint defaults to localhost). These do not affect the macOS dogfood path but block any honest claim of cross-platform readiness for v0.0.6.
 
-The pre-registered criteria are committed at `docs/DECISION-GATE-CRITERIA.md`. When non-founders begin installing, revisit this document, fill in the Non-Founder Column, and re-run the criteria check.
+Zero non-founders have attempted install. Zero unsolicited non-founder signals have been received. The `stay-in-dogfood` criterion 3 (zero non-founder signals) and `inconclusive` criterion 4 (N ≤ 2) both trigger. The correct action is to remain in dogfood, recruit 2-5 diaspora-Thai friends with macOS machines to install, run the 7-day soak window formally, and re-evaluate.
+
+The criteria document at `docs/DECISION-GATE-CRITERIA.md` is treated as a forward-looking yardstick only, given the timing caveat above. The pre-registered MP-2 anti-survivorship-bias mitigation is retracted for this gate; the verdict survives on N=0 independent grounds.
 
 Decision is based on N=0 non-founder signals. With N≤5, this is a directional read, not a statistical one.
 
@@ -104,12 +121,15 @@ Decision is based on N=0 non-founder signals. With N≤5, this is a directional 
 
 ## Next Steps
 
-1. **Recruit 2-5 diaspora-Thai friends** to install smoodle via the README instructions
-2. **Start formal 7-day soak window** once first non-founder install attempt is logged
+1. **Recruit 2-5 diaspora-Thai friends with macOS machines** to install smoodle via the README instructions
+2. **Start formal 7-day macOS soak window** once first non-founder install attempt is logged
 3. **Collect signals** in the Non-Founder Column above
-4. **Re-evaluate** after 7 days using the pre-registered criteria in `docs/DECISION-GATE-CRITERIA.md`
+4. **Re-evaluate** after 7 days using the criteria in `docs/DECISION-GATE-CRITERIA.md` (read as forward-looking yardstick only, per the timing caveat above)
+
+Windows + telemetry signals are explicitly out-of-scope for this soak — they're tracked in milestone `v0.0.7-cross-platform` (see ROADMAP.md).
 
 ---
 *Gate opened: 2026-05-11*
-*Verdict: stay-in-dogfood*
-*Phase 1 code complete — all 41 REQ-IDs covered*
+*Verdict: stay-in-dogfood (macOS-only scope, per 2026-05-16 audit re-scope)*
+*Phase 1 macOS path complete; Windows + telemetry deferred to v0.0.7*
+*MP-2 anti-survivorship-bias mitigation retracted — see Pre-Registration Timing Caveat*
