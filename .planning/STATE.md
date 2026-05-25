@@ -178,7 +178,10 @@ None at roadmap-creation time. All blockers are surfaced at plan-phase per `Risk
 - ✅ FLAG-6 closed: `scripts/lib/telemetry-forget.{sh,ps1}` URL default = `https://forget.0dl.me/api/forget`
 - ✅ FLAG-1 closed: README has new `## Telemetry & Privacy` section documenting opt-in + opt-out + forget CLI
 - ✅ End-to-end smoke verified: opt-in install → 2 events land with hostname=NULL + ts hour-aligned → forget CLI reports "Deleted 2" → DB confirms 0
-- ⏳ Pending in W2: 90-day retention cron on dxc; admin auth on forget-api (before non-founder N>0); session_data cleanup design decision
+- ✅ Bearer-token auth on forget-api (FORGET_BEARER_TOKEN env, 5/5 cases verified: 401/403/200/400/200-public) — recruit-ready
+- ✅ Gate evidence scaffolding committed: `.planning/phases/04-telemetry/VERIFICATION.md` (W2-C1..C5 PASS, C6 pending recruit), `.planning/SOAK-LEDGER-v0.0.7.md` (R1..R5 empty rows), `.planning/phases/07-decision-gate-close/FOUNDER-HASH.txt` (founder never opted in → sentinel), `docs/RECRUIT-OUTREACH-DRAFTS.md` (3 tone templates)
+- ⏳ Pending in W2: 90-day retention cron on dxc; per-recruit bearer tokens when N > 3; session_data cleanup design decision
+- ⏳ Pending: founder pings recruits → ledger fills → first non-founder install_started lands
 
 **Commits this session (v0.0.7 W2 + pre-reg):**
 - `067d1c5` docs(gate): pre-register v0.0.7-cross-platform decision criteria (MP-2 timing anchor)
@@ -206,3 +209,4 @@ None at roadmap-creation time. All blockers are surfaced at plan-phase per `Risk
 *Updated: 2026-05-11 after Phase 5 verifier PASS (7/7 HARDEN REQ-IDs covered; release workflow live-verified green on test tag v0.0.6-test-release).*
 *Updated: 2026-05-16 after audit re-scope: v0.0.6 narrowed to macOS-only; Windows + telemetry deferred to v0.0.7-cross-platform; BLOCK-1 + BLOCK-3 closed.*
 *Updated: 2026-05-25 v0.0.7-cross-platform opened: MP-2 pre-registration anchored at `067d1c5`; W2 telemetry stack live on dxc.0dl.me (umami + forget-api via Cloudflare tunnel); FLAG-1/5/6 closed; W1/W3/W4/W5 still queued.*
+*Updated: 2026-05-25 13:30 +0700 — bearer auth on forget-api (5/5 cases verified); gate evidence scaffolding committed (Phase 4 VERIFICATION.md skeleton, SOAK-LEDGER-v0.0.7.md, FOUNDER-HASH.txt sentinel, recruit outreach drafts). W2 is recruit-ready.*
