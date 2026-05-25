@@ -9,7 +9,7 @@ set -euo pipefail
 
 INSTALL_ID_FILE="${HOME}/.smoodle/install_id"
 TELEMETRY_MARKER="${HOME}/.smoodle/telemetry-on"
-FORGET_URL="${SMOODLE_FORGET_URL:-http://localhost:8080/api/forget}"
+FORGET_URL="${SMOODLE_FORGET_URL:-https://forget.0dl.me/api/forget}"
 
 if [ ! -f "$INSTALL_ID_FILE" ]; then
   echo "No telemetry data found (no install_id)."

@@ -12,7 +12,7 @@
 # Hard 3s timeout, no retries, no daemon, never blocks installer.
 
 SMOODLE_TELEMETRY_URL="${SMOODLE_TELEMETRY_URL:-https://telemetry.0dl.me/api/send}"
-SMOODLE_TELEMETRY_WEBSITE="${SMOODLE_TELEMETRY_WEBSITE:-a1b2c3d4-e5f6-7890-abcd-ef1234567890}"
+SMOODLE_TELEMETRY_WEBSITE="${SMOODLE_TELEMETRY_WEBSITE:-88042064-eeea-465a-8658-002d978d4f9b}"
 SMOODLE_VERSION="${SMOODLE_VERSION:-0.0.6}"
 
 _smoodle_telemetry_is_opted_in() {

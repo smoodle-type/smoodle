@@ -9,7 +9,7 @@ $ErrorActionPreference = 'Stop'
 $InstallIdFile = Join-Path $env:USERPROFILE '.smoodle\install_id'
 $TelemetryMarker = Join-Path $env:USERPROFILE '.smoodle\telemetry-on'
 $ForgetUrl = if ($env:SMOODLE_FORGET_URL) { $env:SMOODLE_FORGET_URL } `
-             else { 'http://localhost:8080/api/forget' }
+             else { 'https://forget.0dl.me/api/forget' }
 
 if (-not (Test-Path $InstallIdFile)) {
     Write-Host 'No telemetry data found (no install_id).'

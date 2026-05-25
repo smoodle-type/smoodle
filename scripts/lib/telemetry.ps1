@@ -19,7 +19,11 @@ $Script:SmoodleTelemetryUrl = if ($env:SMOODLE_TELEMETRY_URL) {
     'https://telemetry.0dl.me/api/send'
 }
 
-$Script:SmoodleTelemetryWebsite = 'a1b2c3d4-e5f6-7890-abcd-ef1234567890'
+$Script:SmoodleTelemetryWebsite = if ($env:SMOODLE_TELEMETRY_WEBSITE) {
+    $env:SMOODLE_TELEMETRY_WEBSITE
+} else {
+    '88042064-eeea-465a-8658-002d978d4f9b'
+}
 $Script:SmoodleVersion = '0.0.6'
 
 function Test-SmoodleTelemetryOptedIn {
