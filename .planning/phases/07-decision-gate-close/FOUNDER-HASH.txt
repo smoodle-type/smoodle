@@ -1,0 +1,27 @@
+# Founder install_id_hash registry (for soak filter)
+
+# Purpose: identify which umami events belong to the founder vs. recruits.
+# Used by gate evaluation to compute non-founder install_success_rate per
+# the v0.0.7 decision criteria (docs/DECISION-GATE-CRITERIA-v0.0.7.md).
+
+# Filter rule applied at gate-close:
+#   founder events     = those whose data_key='install_id_hash' string_value
+#                        matches any line below (after stripping comments).
+#   non-founder events = everything else for website_id
+#                        88042064-eeea-465a-8658-002d978d4f9b after the
+#                        soak-start timestamp.
+
+# Soak start timestamp: 2026-05-25 13:00 +0700 (DB wiped pristine; bearer
+# auth added; ready to accept recruit events).
+
+# Founder status: HAS NOT OPTED IN as of soak start. No ~/.smoodle/install_id
+# exists on the founder's machine. Therefore there is no founder hash to
+# register yet, and the filter degenerates to "all events after soak start
+# are non-founder until further notice."
+
+# If the founder opts in later (e.g. to dogfood the install path themselves),
+# append the SHA-256 hash from ~/.smoodle/install_id below, one per line,
+# in this format:
+#   <64-hex-hash>  # added <ISO-date>: <why> (e.g. "founder re-installed on M2 to test")
+
+# (empty — no founder hashes registered)
