@@ -9,7 +9,15 @@ set -euo pipefail
 
 INSTALL_ID_FILE="${HOME}/.smoodle/install_id"
 TELEMETRY_MARKER="${HOME}/.smoodle/telemetry-on"
+FORGET_TOKEN_FILE="${HOME}/.smoodle/forget_token"
 FORGET_URL="${SMOODLE_FORGET_URL:-https://forget.0dl.me/api/forget}"
+
+# Bearer token: env var wins, then file, else empty (server may still accept
+# in dogfood/legacy mode where FORGET_BEARER_TOKEN is unset server-side).
+FORGET_TOKEN="${SMOODLE_FORGET_TOKEN:-}"
+if [ -z "$FORGET_TOKEN" ] && [ -f "$FORGET_TOKEN_FILE" ]; then
+  FORGET_TOKEN="$(cat "$FORGET_TOKEN_FILE")"
+fi
 
 if [ ! -f "$INSTALL_ID_FILE" ]; then
   echo "No telemetry data found (no install_id)."
@@ -22,8 +30,11 @@ INSTALL_ID_HASH="$(cat "$INSTALL_ID_FILE")"
 echo "Deleting telemetry events for this install..."
 echo "  install_id_hash: ${INSTALL_ID_HASH:0:16}..."
 
-RESPONSE=$(curl -fsS -X DELETE \
-  "${FORGET_URL}?install_id_hash=${INSTALL_ID_HASH}" 2>&1 || true)
+curl_args=(-fsS -X DELETE "${FORGET_URL}?install_id_hash=${INSTALL_ID_HASH}")
+if [ -n "$FORGET_TOKEN" ]; then
+  curl_args+=(-H "Authorization: Bearer ${FORGET_TOKEN}")
+fi
+RESPONSE=$(curl "${curl_args[@]}" 2>&1 || true)
 
 if echo "$RESPONSE" | grep -q '"deleted"'; then
   DELETED_COUNT=$(echo "$RESPONSE" | python3 -c "import sys,json; print(json.load(sys.stdin).get('deleted', 0))" 2>/dev/null || echo "?")
@@ -33,7 +44,7 @@ else
   echo "  Events may still have been deleted. Proceeding with local cleanup."
 fi
 
-# Remove local telemetry files.
-rm -f "$INSTALL_ID_FILE" "$TELEMETRY_MARKER"
+# Remove local telemetry files (install_id, opt-in marker, bearer token).
+rm -f "$INSTALL_ID_FILE" "$TELEMETRY_MARKER" "$FORGET_TOKEN_FILE"
 echo "  Local telemetry files removed."
 echo "Done."
