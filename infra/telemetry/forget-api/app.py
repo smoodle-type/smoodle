@@ -1,10 +1,26 @@
 """Sidecar HTTP server for per-install telemetry delete (TELEM-06).
 
 Accepts: DELETE /api/forget?install_id_hash=<64-char-hex>
-Runs:    DELETE FROM website_event WHERE event_name LIKE '%:<hash>'
+Runs:    DELETE FROM website_event
+         WHERE event_id IN (
+           SELECT website_event_id FROM event_data
+           WHERE data_key = 'install_id_hash' AND string_value = $1
+         )
 Returns: {"deleted": <int>}
 
+Umami v3 stores custom event data in a separate `event_data` table keyed
+on (website_event_id, data_key). The smoodle client sends install_id_hash
+as one of those rows (data_key='install_id_hash'). The previous filter
+`event_name LIKE '%:<hash>'` never matched because telemetry.{sh,ps1}
+writes event_name="install_started" without a hash suffix.
+
 Dogfood-grade — no authentication. Add basic auth before non-founder installs.
+
+Scope limitation (accepted, TELEM-06 dogfood): `session` and `session_data`
+rows are NOT deleted. Sessions in umami v3 are keyed on a request
+fingerprint (ua, screen, ip-derived) not on install_id_hash, so we
+cannot reliably attribute them. CP-3 privacy-trigger `null_hostname` +
+`round_event_timestamp` reduce session-side PII to near-zero already.
 """
 import json
 import os
@@ -32,11 +48,25 @@ class ForgetHandler(BaseHTTPRequestHandler):
         try:
             conn = psycopg2.connect(DATABASE_URL)
             cur = conn.cursor()
-            # Events stored as "event_name:<install_id_hash>" in umami's
-            # event_name field.  DELETE all matching rows.
+            # Umami v3 does NOT declare FK constraints between event_data
+            # and website_event at the DB layer (enforced in Prisma app
+            # layer only). Verified on dxc 2026-05-25: zero foreign keys
+            # on event_data. Must explicitly delete both sides in one tx.
             cur.execute(
-                "DELETE FROM website_event WHERE event_name LIKE %s",
-                (f"%:{install_id_hash}",),
+                """
+                CREATE TEMP TABLE _target_events ON COMMIT DROP AS
+                SELECT DISTINCT website_event_id AS event_id
+                FROM event_data
+                WHERE data_key = 'install_id_hash'
+                  AND string_value = %s
+                """,
+                (install_id_hash,),
+            )
+            cur.execute(
+                "DELETE FROM event_data WHERE website_event_id IN (SELECT event_id FROM _target_events)"
+            )
+            cur.execute(
+                "DELETE FROM website_event WHERE event_id IN (SELECT event_id FROM _target_events)"
             )
             deleted = cur.rowcount
             conn.commit()
