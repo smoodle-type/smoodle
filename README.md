@@ -23,9 +23,10 @@ Weasel on Windows, and fcitx5/ibus on Linux.
 - ⚠️ **Windows installer ships in-tree but is not v0.0.6-supported.** Code runs
   on `windows-latest` GHA but `install-windows.ps1` is missing a `--uninstall`
   flag (audit-flagged). Tracked for **v0.0.7-cross-platform**.
-- ⚠️ **Telemetry is opt-in and currently routes to a placeholder endpoint.**
-  Self-hosted umami deployment + production forget endpoint are tracked for
-  **v0.0.7-cross-platform**. Opting in today is a no-op.
+- ✅ **Telemetry is opt-in, default-OFF, and live** at `https://telemetry.0dl.me`
+  (self-hosted umami, no third party). Privacy triggers null the hostname and
+  round timestamps to the hour. Deletion via `bash scripts/lib/telemetry-forget.sh`
+  — see [Telemetry & Privacy](#telemetry--privacy) below.
 - ⚠️ **Linux uses unpatched system librime** — first-lookup ranking may be off
   (documented below).
 
@@ -135,6 +136,79 @@ Remove-Item "$env:USERPROFILE\.smoodle" -Recurse -Force -ErrorAction SilentlyCon
 ```bash
 bash scripts/install-linux.sh --uninstall
 ```
+
+## Telemetry & Privacy
+
+Smoodle ships an **opt-in, default-OFF** install telemetry pipeline so the
+founder can answer one question: *"is the installer actually working for
+non-founder users?"* — without phoning home about anything else.
+
+### What's collected (only if you opt in)
+
+Five fields per install event:
+- `install_id_hash` — a random 256-bit value generated on first opt-in, stored
+  at `~/.smoodle/install_id`. Never tied to your username, machine name, IP,
+  or anything else.
+- `os` — `macos`, `windows`, or `linux`
+- `smoodle_version`
+- `librime_sha_match` — whether the patched librime fork loaded cleanly
+- event name — one of `install_started`, `install_success`, `install_failed`
+
+### What's NEVER collected
+
+Hostname, username, file paths, IP addresses, MAC addresses, machine name.
+The server-side Postgres triggers null any hostname that slips through and
+round all timestamps to the nearest hour. The umami instance is self-hosted
+on `dxc.0dl.me`; no third party (Google, etc.) is in the path.
+
+### Opt in
+
+```bash
+# Either set an env var:
+SMOODLE_TELEMETRY=1 bash scripts/install.sh
+
+# Or drop a marker file so it persists across runs:
+mkdir -p ~/.smoodle && touch ~/.smoodle/telemetry-on
+```
+
+### Opt out
+
+```bash
+rm -f ~/.smoodle/telemetry-on
+unset SMOODLE_TELEMETRY
+```
+
+Opt-out is immediate. The telemetry client checks both the env var and the
+marker file before every POST; if neither is set, the client returns without
+opening a socket.
+
+### Delete events you already sent
+
+```bash
+bash scripts/lib/telemetry-forget.sh
+```
+
+On Windows:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\lib\telemetry-forget.ps1
+```
+
+Sends a `DELETE` to `https://forget.0dl.me/api/forget?install_id_hash=<your-hash>`,
+which deletes all `website_event` rows whose `event_data` references your
+hash (along with the associated `event_data` rows). The CLI then removes
+`~/.smoodle/install_id` and `~/.smoodle/telemetry-on` locally so future
+installs get a fresh random hash if you opt back in.
+
+Override the endpoint if you point smoodle at your own umami:
+
+```bash
+SMOODLE_FORGET_URL=https://your-server/api/forget bash scripts/lib/telemetry-forget.sh
+```
+
+See [`infra/telemetry/README.md`](./infra/telemetry/README.md) for the full
+infrastructure description, privacy triggers, retention policy, and forget-API
+SQL semantics.
 
 ## Test
 
