@@ -208,11 +208,21 @@ See `.planning/REQUIREMENTS.md` Traceability table — all 41 v1 REQ-IDs mapped 
 
 ---
 
-## Next Milestone Preview: v0.0.7-cross-platform
+## Active Milestone: v0.0.7-cross-platform (opened 2026-05-25 — light scaffold)
 
-**Created (preview only):** 2026-05-16 (post v0.0.6 audit re-scope)
-**Status:** placeholder — formalize via `/gsd-new-milestone v0.0.7-cross-platform` after macOS soak signals are collected
-**Goal:** finish what v0.0.6 deferred — Windows install path, telemetry deployment, Linux E2E disclosure — such that smoodle can credibly be claimed cross-platform.
+**Opened:** 2026-05-25 with MP-2 pre-registration anchored at commit `067d1c5` (`docs/DECISION-GATE-CRITERIA-v0.0.7.md`).
+**Status:** IN PROGRESS — W2 telemetry live; W1/W3/W4/W5 still queued. Formal `/gsd-new-milestone` discuss-flow deferred until macOS soak signals begin to arrive; the scaffold here is enough to land W2 fixes without leaving them as orphaned work on `main`.
+**Goal:** finish what v0.0.6 deferred — Windows install path, telemetry deployment, Linux E2E disclosure, cross-repo HARDEN-03, audit-trail backfill — such that smoodle can credibly be claimed cross-platform.
+
+### Workstream status
+
+| WS | Status | Closed gaps | Remaining |
+|----|--------|-------------|-----------|
+| W1 Windows finish | queued | — | port `--uninstall` from `install-linux.sh:25-72` → `install-windows.ps1`; re-run win E2E |
+| W2 Telemetry deployment | **partially closed** | FLAG-5 (real site_id `88042064-…`), FLAG-6 (`https://forget.0dl.me/api/forget`), FLAG-1 (README Telemetry & Privacy section), forget-api SQL correctness, privacy triggers on dxc, end-to-end smoke verified | 90-day retention cron on dxc; forget-api auth before non-founder N>0; session_data cleanup design |
+| W3 Linux disclosure | queued | — | FLAG-4: formalize or remove `.github/workflows/install-linux-e2e.yml` |
+| W4 Cross-repo HARDEN-03 | queued | — | universal dylib lipo-join in `smoodle-type/librime` `smoodle-build.yml` |
+| W5 Audit-trail backfill | queued | — | retroactive `.planning/phases/0{4,5,6,7}-*/VERIFICATION.md` |
 
 ### Inherited gaps to close
 
@@ -235,12 +245,13 @@ See `.planning/REQUIREMENTS.md` Traceability table — all 41 v1 REQ-IDs mapped 
 - **W4: Cross-repo HARDEN-03** — track upstream `smoodle-type/librime` PR for universal dylib lipo-join.
 - **W5: Audit-trail backfill** — write `0[4567]-VERIFICATION.md` for v0.0.6 phases that closed without one.
 
-### Decision gate for v0.0.7 (pre-register before any E2E lane goes green)
+### Decision gate for v0.0.7 (pre-registered)
 
-- Trigger: any of {first non-founder Windows install attempt, telemetry going live, first 5 cross-platform installs}.
-- Criteria: TBD — must be committed to `docs/DECISION-GATE-CRITERIA-v0.0.7.md` BEFORE the gate's E2E surface turns green (MP-2 reinstated).
+- Trigger: any of {first non-founder Windows install attempt, telemetry going live, first 5 cross-platform installs}. **Telemetry-live trigger fired 2026-05-25** — first event landed on dxc.0dl.me 04:51 UTC.
+- Criteria: COMMITTED at `docs/DECISION-GATE-CRITERIA-v0.0.7.md` commit `067d1c5` (2026-05-25 12:14 +0700). All subsequent v0.0.7 E2E-green events MUST be timestamped after this anchor to honor MP-2.
 
 ---
 *Roadmap created: 2026-05-08*
 *Re-scoped: 2026-05-16 (v0.0.6 narrowed to macOS-only; v0.0.7-cross-platform queued)*
+*v0.0.7 opened: 2026-05-25 (W2 telemetry live on dxc.0dl.me; MP-2 pre-reg anchored at 067d1c5)*
 *Next: recruit 2-5 diaspora-Thai macOS users; collect signals; then `/gsd-new-milestone v0.0.7-cross-platform`*

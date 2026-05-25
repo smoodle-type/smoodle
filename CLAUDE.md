@@ -40,19 +40,19 @@ Thai phonetic input method built on Rime/librime. Type `sawadee` → `สวั�
 | 1 | F (lint + CI fast path) | ✅ shipped (verifier PASS) |
 | 2 | E1 (mac E2E) | ✅ shipped (live mac run 25594460125 GREEN) |
 | 3 | E2 (win E2E) | ⚠️ code in-tree, **deferred → v0.0.7** (BLOCK-2: no `--uninstall`) |
-| 4 | T (telemetry) | ⚠️ code in-tree, **deferred → v0.0.7** (FLAG-5/6: placeholder UUID + localhost) |
+| 4 | T (telemetry) | ⚠️ macOS-shipped via v0.0.7 W2 (live on dxc.0dl.me; FLAG-1/5/6 closed 2026-05-25) — milestone-level claim still v0.0.7 |
 | 5 | S (Sparkle + release) | ✅ shipped macOS-side (HARDEN-03 cross-repo → v0.0.7) |
 | 6 | R (README + docs) | ✅ shipped macOS-side (DOCS-04 Windows portion → v0.0.7) |
 | 7 | G (Decision Gate) | ✅ shipped macOS-scoped (BLOCK-3 timing caveat documented; verdict: stay-in-dogfood) |
 
-## v0.0.7-cross-platform queue (formalize after macOS soak signal arrives)
+## v0.0.7-cross-platform queue (opened 2026-05-25 — light scaffold)
 
-Run `/gsd-new-milestone v0.0.7-cross-platform` when ready. Pre-register decision criteria BEFORE any v0.0.7 E2E lane goes green (MP-2 reinstatement).
+MP-2 pre-registration anchored at `docs/DECISION-GATE-CRITERIA-v0.0.7.md` commit `067d1c5` (2026-05-25 12:14 +0700) BEFORE any v0.0.7 E2E surface went green. Formal `/gsd-new-milestone` discuss-flow remains deferred; the scaffold here is enough to land W2 fixes without leaving them orphaned on `main`.
 
 | Workstream | What it closes |
 |---|---|
 | W1 Windows finish | BLOCK-2 (port `--uninstall` from `install-linux.sh:25-72` into `install-windows.ps1`); re-run win E2E |
-| W2 Telemetry deployment | FLAG-5 real umami site_id; FLAG-6 prod `FORGET_URL`; FLAG-1 README privacy subsection |
+| W2 Telemetry deployment | **PARTIALLY CLOSED 2026-05-25** — FLAG-5 (site_id `88042064-…` wired), FLAG-6 (`https://forget.0dl.me/api/forget` wired), FLAG-1 (README Telemetry & Privacy section), forget-api SQL fixed, privacy triggers live on dxc.0dl.me, end-to-end smoke green. Remaining: 90-day retention cron, forget-api auth before non-founder N>0, session_data cleanup design. |
 | W3 Linux disclosure | FLAG-4 (`install-linux-e2e.yml` — keep + formalize, or remove) |
 | W4 Cross-repo HARDEN-03 | universal dylib lipo-join in `smoodle-type/librime` `smoodle-build.yml` |
 | W5 Audit-trail backfill | retroactive `0[4567]-VERIFICATION.md` for v0.0.6 phases that closed without one |
@@ -101,6 +101,7 @@ Mode is yolo (auto-approve). Parallelization enabled. Quality model profile (opu
 - `.env` (gitignored) holds the `crs.0dl.me` Anthropic relay credentials for dict regen.
 
 ---
-*Last updated: 2026-05-16 after audit re-scope (v0.0.6 narrowed to macOS-only; v0.0.7-cross-platform queued).*
+*Last updated: 2026-05-25 — v0.0.7-cross-platform opened (light scaffold); W2 telemetry deployment live on dxc.0dl.me (umami + forget-api via Cloudflare tunnel); FLAG-1/5/6 closed.*
+*Previously updated: 2026-05-16 after audit re-scope (v0.0.6 narrowed to macOS-only; v0.0.7-cross-platform queued).*
 *Audit artifacts: `.planning/v0.0.6-MILESTONE-AUDIT.md`, `.planning/INTEGRATION-CHECK-v0.0.6.md`.*
 *Previously updated: 2026-05-08 after `/gsd-new-project` (Phase 1 finish initialization).*

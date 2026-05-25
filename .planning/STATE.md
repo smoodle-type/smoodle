@@ -1,7 +1,7 @@
 # Project State: Smoodle Phase 1 Finish
 
-**Last updated:** 2026-05-16 (audit-driven re-scope)
-**Status:** PHASE-1-MACOS-SHIPPABLE — milestone v0.0.6 narrowed to macOS-only dogfood; Windows + telemetry surfaces deferred to milestone v0.0.7-cross-platform. Verdict (macOS-scoped): stay-in-dogfood — recruit 2-5 diaspora-Thai friends with macOS machines for formal 7-day soak.
+**Last updated:** 2026-05-25 (v0.0.7-cross-platform opened; W2 telemetry partially closed)
+**Status:** PHASE-1-MACOS-SHIPPABLE + v0.0.7-cross-platform IN PROGRESS — v0.0.6 macOS verdict (stay-in-dogfood) holds; W2 telemetry deployment is live on `dxc.0dl.me` (umami + forget-api behind Cloudflare tunnel; FLAG-5 + FLAG-6 + FLAG-1 closed). W1 Windows + W3 Linux disclosure + W4 cross-repo dylib + W5 audit-trail backfill still queued. MP-2 pre-registration anchor: commit `067d1c5` 2026-05-25 12:14 +0700.
 **Mode:** yolo
 
 ## 2026-05-16 Audit Re-Scope (binding)
@@ -165,9 +165,24 @@ None at roadmap-creation time. All blockers are surfaced at plan-phase per `Risk
 3. If a plan was in-flight, re-read its PLAN-N.md.
 4. Next action is `/gsd-plan-phase <next-phase>` per Current Position.
 
-**Active milestone:** phase-1-finish (v0.0.6) — macOS-only scope after 2026-05-16 audit re-scope
-**Active phase:** all 7 phases closed at milestone level for macOS scope; v0.0.7-cross-platform queued for Windows + telemetry finish-work
-**Active plans:** none in flight in v0.0.6; v0.0.7 not yet opened (gated on macOS soak signal)
+**Active milestone:** v0.0.7-cross-platform (opened 2026-05-25, light scaffold — formal `/gsd-new-milestone` deferred). v0.0.6 stays closed at macOS-only scope per 2026-05-16 audit.
+**Active phase:** W2 telemetry — partially closed (live deploy + clients wired). W1, W3, W4, W5 pending.
+**Active plans:** none formally scoped; W2 work tracked via DECISION-GATE-CRITERIA-v0.0.7.md (pre-registered `067d1c5` 2026-05-25 12:14 +0700).
+
+**v0.0.7 W2 telemetry progress (live as of 2026-05-25 12:31 +0700):**
+- ✅ umami v3.1.0 + postgres 15 deployed on `dxc.0dl.me` (`/opt/umami/`)
+- ✅ Public TLS via Cloudflare tunnel: `telemetry.0dl.me` → 10.0.10.180:3001 ; `forget.0dl.me` → 10.0.10.180:8080
+- ✅ Privacy triggers active on `website_event` (null_hostname + round_event_timestamp); session ts also rounded; session.hostname trigger dropped (umami v3 schema doesn't carry the column)
+- ✅ forget-api container `umami-forget-api` live; SQL rewritten to JOIN event_data on `data_key='install_id_hash'` (previous `event_name LIKE` filter was broken-by-design)
+- ✅ FLAG-5 closed: `scripts/lib/telemetry.{sh,ps1}` site_id default = `88042064-eeea-465a-8658-002d978d4f9b`
+- ✅ FLAG-6 closed: `scripts/lib/telemetry-forget.{sh,ps1}` URL default = `https://forget.0dl.me/api/forget`
+- ✅ FLAG-1 closed: README has new `## Telemetry & Privacy` section documenting opt-in + opt-out + forget CLI
+- ✅ End-to-end smoke verified: opt-in install → 2 events land with hostname=NULL + ts hour-aligned → forget CLI reports "Deleted 2" → DB confirms 0
+- ⏳ Pending in W2: 90-day retention cron on dxc; admin auth on forget-api (before non-founder N>0); session_data cleanup design decision
+
+**Commits this session (v0.0.7 W2 + pre-reg):**
+- `067d1c5` docs(gate): pre-register v0.0.7-cross-platform decision criteria (MP-2 timing anchor)
+- (next 3 commits land below this state update)
 
 **Phase 5 commits (10 total, all on main):**
 - `c8a487e` feat(05-01): add scripts/verify-librime.sh -- manual hash-drift checker (HARDEN-01)
@@ -190,3 +205,4 @@ None at roadmap-creation time. All blockers are surfaced at plan-phase per `Risk
 *Updated: 2026-05-10 after Phase 3 verifier PASS (5/5 SC, 5/5 REQ, 8/8 STRIDE, zero gaps; live windows-latest run 25623956809 GREEN 2m12s).*
 *Updated: 2026-05-11 after Phase 5 verifier PASS (7/7 HARDEN REQ-IDs covered; release workflow live-verified green on test tag v0.0.6-test-release).*
 *Updated: 2026-05-16 after audit re-scope: v0.0.6 narrowed to macOS-only; Windows + telemetry deferred to v0.0.7-cross-platform; BLOCK-1 + BLOCK-3 closed.*
+*Updated: 2026-05-25 v0.0.7-cross-platform opened: MP-2 pre-registration anchored at `067d1c5`; W2 telemetry stack live on dxc.0dl.me (umami + forget-api via Cloudflare tunnel); FLAG-1/5/6 closed; W1/W3/W4/W5 still queued.*
