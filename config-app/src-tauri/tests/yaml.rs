@@ -50,3 +50,20 @@ fn atomic_write_leaves_bak_on_simulated_failure() {
     // Original is preserved
     assert_eq!(fs::read_to_string(&path).unwrap(), "original\n");
 }
+
+#[test]
+fn backup_preserves_full_filename_for_hidden_file() {
+    let dir = tempdir().unwrap();
+    let path = dir.path().join(".squirrelrc");
+    fs::write(&path, "x").unwrap();
+    let bak = yaml::backup(&path).unwrap().unwrap();
+    let name = bak.file_name().unwrap().to_string_lossy().to_string();
+    assert!(name.starts_with(".squirrelrc.bak."), "got {}", name);
+}
+
+#[test]
+fn backup_returns_none_for_missing_file() {
+    let dir = tempdir().unwrap();
+    let path = dir.path().join("does-not-exist.yaml");
+    assert!(yaml::backup(&path).unwrap().is_none());
+}
