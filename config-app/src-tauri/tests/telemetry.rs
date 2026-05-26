@@ -16,6 +16,10 @@ impl MockForgetRunner {
     fn ok(n: u64) -> Self {
         Self { result: Ok(n) }
     }
+
+    fn new(result: Result<u64, ForgetError>) -> Self {
+        Self { result }
+    }
 }
 
 impl ForgetRunner for MockForgetRunner {
@@ -133,4 +137,37 @@ fn forget_calls_runner_and_removes_local_files() {
         !dir.path().join("forget_token").exists(),
         "forget_token should be removed after forget"
     );
+}
+
+// ---------------------------------------------------------------------------
+// Test 6: forget returns Err when install_id file is missing
+// ---------------------------------------------------------------------------
+
+#[test]
+fn forget_returns_err_when_install_id_missing() {
+    let dir = tempdir().unwrap();
+    let runner = MockForgetRunner::new(Ok(0));
+    let result = forget_at(dir.path(), &runner, "http://test");
+    assert!(matches!(result, Err(_)));
+    let msg = result.unwrap_err().to_lowercase();
+    assert!(msg.contains("install_id") || msg.contains("nothing"));
+}
+
+// ---------------------------------------------------------------------------
+// Test 7: forget preserves local files when runner returns an error
+// ---------------------------------------------------------------------------
+
+#[test]
+fn forget_preserves_local_files_when_runner_errs() {
+    let dir = tempdir().unwrap();
+    fs::write(dir.path().join("install_id"), "abc123").unwrap();
+    fs::write(dir.path().join("telemetry-on"), "").unwrap();
+    fs::write(dir.path().join("forget_token"), "tok").unwrap();
+    let runner = MockForgetRunner::new(Err(ForgetError::Network("simulated".into())));
+    let result = forget_at(dir.path(), &runner, "http://test");
+    assert!(result.is_err());
+    // All 3 files MUST still exist — local state is preserved on server failure
+    assert!(dir.path().join("install_id").exists());
+    assert!(dir.path().join("telemetry-on").exists());
+    assert!(dir.path().join("forget_token").exists());
 }
