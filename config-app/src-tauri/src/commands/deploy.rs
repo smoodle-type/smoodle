@@ -1,7 +1,4 @@
 //! Apple Event "Deploy" shim — tells Smoodle.app to rebuild Rime data.
-//!
-//! NOTE: deploy_squirrel is NOT yet wired into Tauri invoke_handler —
-//! that happens in Task 8.
 
 use std::process::Command;
 

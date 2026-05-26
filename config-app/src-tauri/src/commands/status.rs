@@ -3,8 +3,6 @@
 //! - smoodle_running       → Status tab "Running" indicator + version badge
 //! - schema_compile_log    → Status tab "Compile log" textarea (last 5 lines)
 //! - dict_counts           → Status tab "Entries" row (base + user + total)
-//!
-//! NOTE: commands not yet wired into Tauri invoke_handler — Task 8.
 
 use std::fs;
 use std::path::{Path, PathBuf};

@@ -1,7 +1,4 @@
 //! Settings tab: read/write default.custom.yaml patch, open Rime folder, reset.
-//!
-//! NOTE: Commands are NOT yet wired into the Tauri `invoke_handler` —
-//! that happens in Task 8 (`commands::register_all(lib.rs)`).
 
 use std::fs;
 use std::path::{Path, PathBuf};

@@ -1,9 +1,6 @@
 //! User-dict CRUD: read_user_dict, add_user_word, delete_user_word.
 //!
-//! NOTE 1: Commands are NOT yet wired into the Tauri `invoke_handler` —
-//! that happens in Task 8 (`commands::register_all(lib.rs)`).
-//!
-//! NOTE 2: `write_entries_at` always emits the canonical `HEADER`. User
+//! NOTE: `write_entries_at` always emits the canonical `HEADER`. User
 //! edits to the front-matter or mid-file comments are NOT preserved.
 //! This file is Tauri-owned; manual edits are intentionally discouraged.
 

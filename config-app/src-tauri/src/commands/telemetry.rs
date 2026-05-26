@@ -8,9 +8,6 @@
 //!   - `telemetry-on`  — empty marker file; present iff currently opted-in
 //!   - `forget_token`  — bearer token (single line); present iff token was saved
 //!
-//! NOTE: Commands are NOT yet wired into the Tauri `invoke_handler` —
-//! that happens in Task 8 (`commands::register_all(lib.rs)`).
-
 use std::fs;
 use std::path::{Path, PathBuf};
 
