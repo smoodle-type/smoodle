@@ -19,13 +19,16 @@ broke. Don't pitch features — pitch friction relief.
 > drag-install (v0.0.8a DMG):
 > https://github.com/smoodle-type/smoodle-app/releases/latest/download/Smoodle-v0.0.8a-universal.dmg
 >
-> open the DMG, drag Smoodle.app to /Applications. first launch:
-> right-click → Open (macOS warns it's unsigned, that's expected).
-> then System Settings → Keyboard → Input Sources → + → Thai →
-> Smoodle. type `sawadee` to test.
+> open the DMG, drag Smoodle.app onto the "Input Methods" shortcut
+> inside it (macOS will ask for your password to authorize the
+> /Library/Input Methods install). first launch: right-click → Open
+> (Gatekeeper warns it's unsigned — that's expected). then System
+> Settings → Keyboard → Input Sources → + → Thai → Smoodle. type
+> `sawadee` to test.
 >
-> if anything weird: menubar S → Quit, drag /Applications/Smoodle.app
-> to Trash, message me with what happened. opt-in telemetry is OFF by
+> if anything weird: System Settings → Keyboard → Input Sources → -
+> (remove Smoodle), then `sudo rm -rf "/Library/Input Methods/Smoodle.app"`,
+> message me with what happened. opt-in telemetry is OFF by
 > default — flip it on by hand-editing `~/.smoodle/telemetry-on` +
 > `echo "<BEARER_TOKEN>" > ~/.smoodle/forget_token` if you want to be
 > able to delete your data later.
@@ -54,7 +57,9 @@ broke. Don't pitch features — pitch friction relief.
 >
 > 1. Download the DMG:
 >    https://github.com/smoodle-type/smoodle-app/releases/latest/download/Smoodle-v0.0.8a-universal.dmg
-> 2. Open the DMG, drag Smoodle.app into /Applications.
+> 2. Open the DMG. Drag Smoodle.app onto the "Input Methods" folder
+>    shortcut shown inside the DMG. macOS will ask for your password
+>    — that's authorizing the install into /Library/Input Methods.
 > 3. First launch: right-click Smoodle.app → Open → Open. macOS will
 >    warn it's unsigned — that's expected for the v0.0.8 dogfood
 >    build (Apple notarization comes in v0.1.0).
@@ -96,9 +101,11 @@ before installing arbitrary scripts.
 > Hey @<name> — built a Latin-spelling → Thai IME for macOS,
 > dogfooding with 5 friends. Wanna be one of them?
 > https://github.com/smoodle-type/smoodle-app/releases/latest/download/Smoodle-v0.0.8a-universal.dmg
-> — drag Smoodle.app to /Applications, right-click → Open (Gatekeeper
-> warning is expected, unsigned). Then Settings → Keyboard → Input
-> Sources → + → Thai → Smoodle. DM me if anything blows up. Opt-in
+> — open DMG, drag Smoodle.app onto the "Input Methods" shortcut
+> inside (macOS prompts for password — installs into /Library/Input
+> Methods), right-click → Open (Gatekeeper warning is expected,
+> unsigned). Then Settings → Keyboard → Input Sources → + → Thai →
+> Smoodle. DM me if anything blows up. Opt-in
 > telemetry token if you want it: `<BEARER_TOKEN>`
 
 **When to use:** loose tie, async channel, copy-paste fast.
