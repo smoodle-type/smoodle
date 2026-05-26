@@ -7,10 +7,23 @@
 **Closed:** _(pending — needs 2+ non-founder install events per 8a-C5)_
 
 ## 8a-C1 — DMG published to gh releases with EdDSA sig
-- [ ] PENDING — fills after tag `v0.0.8a` pushed (task 15) + CI green
+- [x] **PASS** — 2026-05-26: `gh release view v0.0.8a --repo
+  smoodle-type/smoodle-app --json assets` shows
+  `Smoodle-v0.0.8a.dmg` (7,310,848 bytes) + `Smoodle-v0.0.8a.dmg.sig`
+  (89 bytes). Downloaded both via gh CLI to /tmp; re-ran
+  `package/test-dmg.sh` against the downloaded DMG: ALL 6 CHECKS PASS
+  including EdDSA sig presence.
 
 ## 8a-C2 — appcast.xml on gh-pages contains v0.0.8a entry
-- [ ] PENDING — fills after `release.yml` publishes (task 15)
+- [x] **PASS** — 2026-05-26: fetched
+  `https://smoodle-type.github.io/smoodle-app/appcast.xml`; contains
+  `<item><title>v0.0.8a</title>` with non-empty
+  `sparkle:edSignature="gj1vzDBjOaXcoxuB4EZtA9U5ECSzVE8hjAL8YhaaEoVbhZBHQX+y38P1Kv4Jge6TmQfX47UFWhNaDSyU732vCw=="`
+  and the DMG enclosure URL. NOTE: first CI run produced empty sig
+  due to a `::add-mask::` GHA bug; sig recovered from the `.sig`
+  asset and patched into appcast.xml; release.yml fixed for future
+  tags (see smoodle-app commit "ci(release): drop ::add-mask:: on
+  EdDSA sig").
 
 ## 8a-C3 — Founder smoke-test passed
 - [x] **PASS** — 2026-05-26: founder built locally
