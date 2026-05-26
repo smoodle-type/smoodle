@@ -1,98 +1,162 @@
 # Resume v0.0.8 implementation
 
-**Created:** 2026-05-26 (end of brainstorm + writing-plans session)
+**Updated:** 2026-05-26 ~15:05 +0700 (end of v0.0.8a shipping session)
 **Use:** open new Claude Code session, paste the "Resume prompt" block below as first message.
 
 ---
 
-## Where things stand
+## TL;DR — where we are now
 
-### Decisions locked (in spec + plans)
+**v0.0.8a SHIPPED publicly.** DMG live at `https://github.com/smoodle-type/smoodle-app/releases/tag/v0.0.8a`. Appcast live at `https://smoodle-type.github.io/smoodle-app/appcast.xml` (with valid EdDSA sig). Founder smoke-tested green.
 
-- v0.0.8 phased: **v0.0.8a** (DMG + Sparkle, ~1.5 weeks) → **v0.0.8b** (Tauri Config app, ~2 weeks)
-- Two `.app` bundles in one DMG: `Smoodle.app` (IMK) + `Smoodle Config.app` (Tauri 2 + Svelte 5)
-- Schema via git submodule: `smoodle-app/vendor/smoodle/` pinned to tag (`data/plum/*.yaml` gitignored, regenerated at build time)
-- Sparkle auto-update both apps, EdDSA-signed, daily background check, user approves each install
-- Hosting: GitHub Releases (DMG) + GitHub Pages (appcast.xml)
-- Unsigned (Apple notarization deferred to v0.1.0); recruits accept Gatekeeper warning
-- Telemetry surface unchanged from v0.0.7 (DMG install does NOT fire install events; v0.0.9 may add runtime telemetry)
-- 14 Tauri commands across 5 surfaces (user_dict, deploy, status, settings, telemetry)
+**5 of 6 v0.0.8a gate criteria PASS:**
 
-### Spec + plans (read these first in new session)
+| ID | Status | Evidence |
+|---|---|---|
+| 8a-C1 DMG + .sig published | ✅ | `gh release view v0.0.8a --repo smoodle-type/smoodle-app` |
+| 8a-C2 appcast.xml contains v0.0.8a | ✅ | `curl https://smoodle-type.github.io/smoodle-app/appcast.xml` |
+| 8a-C3 founder smoke | ✅ | `.planning/phases/08a-dmg-sparkle/VERIFICATION.md` |
+| 8a-C4 librime patch in binary | ✅ | symbol layout fingerprint via `package/test-dmg.sh` |
+| 8a-C5 ≥2 non-founder recruits | ⏳ | **THIS IS THE LAST BLOCKER** — needs Task 19 step 5 + soak |
+| 8a-C6 Sparkle synthetic test | ✅ | green in `release` CI workflow |
 
-```
-docs/superpowers/specs/2026-05-26-v0.0.8-installer-ux-design.md   (468 lines, 36KB — the design)
-docs/superpowers/plans/2026-05-26-v0.0.8a-dmg-sparkle.md          (21 tasks, ~1770 lines)
-docs/superpowers/plans/2026-05-26-v0.0.8b-config-app.md           (20 tasks, ~1870 lines)
-```
+**18 of 22 plan tasks + Task 13a (build chain fix) complete.** Remaining:
 
-### Git state at end of session
+- **Task 19 step 5 (MANUAL — founder)**: send `docs/RECRUIT-OUTREACH-DRAFTS.md` Templates A/B/C to 2-5 diaspora-Thai macOS friends. Drafts ALREADY refreshed for DMG install path (Input Methods, not /Applications) + Gatekeeper instructions + bearer token slot.
+- **Task 20 (MINE — when recruits respond)**: fill `.planning/SOAK-LEDGER-v0.0.7.md`, flip 8a-C5 PASS at N≥2, tag `v0.0.8a-closed`, emit verdict.
 
-- `smoodle` repo (`/Users/lex/Dev/my_repos/experiment/smoodle`): on `main`, clean tree, all commits pushed to `origin/main`. Last commit: plans landed.
-- `smoodle-app` repo (`/Users/lex/Dev/my_repos/experiment/smoodle-app`): on `master`, **1 commit ahead of origin/master** — `1a0314c fix(librime): re-pin submodule to smoodle-type/librime@1.16.0-smoodle.1`. **NOT PUSHED YET.** First task in v0.0.8a plan (Task 0) pushes it.
+## MP-2 timing anchor (audit-relevant)
 
-Verify with:
+- Pre-registration commit `8f4439c` @ **2026-05-26 13:36:24 +0700** — `docs/DECISION-GATE-CRITERIA-v0.0.8.md`
+- First-green CI run on v0.0.8a tag: ~14:52 +0700 (76 min after anchor)
+- All E2E green surfaces post-date the anchor commit ✓
+
+---
+
+## Git state (end of session — both repos clean + pushed)
+
+- `smoodle/main` → in sync with `origin/main`
+- `smoodle-app/master` → in sync with `origin/master`
+- `smoodle-app/gh-pages` → in sync; appcast live with valid sig
+- Tag `v0.0.8a` → live on origin smoodle-app + gh release published
+- Tag `v0.0.8a-schema` → live on smoodle (`65fbe2c`) — used by `vendor/smoodle` submodule pin
+
+Verify:
 ```bash
-cd /Users/lex/Dev/my_repos/experiment/smoodle && git status && git log --oneline -5
-cd /Users/lex/Dev/my_repos/experiment/smoodle-app && git status && git log --oneline origin/master..HEAD
+cd /Users/lex/Dev/my_repos/experiment/smoodle && git status && git log --oneline -3
+cd /Users/lex/Dev/my_repos/experiment/smoodle-app && git status && git log --oneline -3
+gh release view v0.0.8a --repo smoodle-type/smoodle-app --json assets --jq '.assets[].name'
 ```
 
-### Open tasks from prior milestone (v0.0.7) — still valid, do in parallel if you want
+---
 
-- `.planning/SOAK-LEDGER-v0.0.7.md` rows R1-R5 are empty. Founder needs to ping 2-5 diaspora-Thai macOS recruits using `docs/RECRUIT-OUTREACH-DRAFTS.md`. v0.0.7 GATE-02 closes when ≥2 install. Note: v0.0.8a task 19 reuses the same outreach surface but with new DMG link instead of `bash scripts/install.sh`.
-- Shared bearer token in `/tmp/umami-deploy/forget_token.txt` (regenerate with `openssl rand -hex 32` if leaked or stale).
+## Plan-vs-reality adaptations shipped this session (DO NOT REVERT)
 
-### Critical context (don't re-discover)
+| # | Symptom | Fix |
+|---|---|---|
+| 1 | `package/add_data_files` sed `-i ''` + multi-line `a\` exits 2 on current macOS even on success | Patched to awk equivalent (in `smoodle-app` commit `b834a0e`) |
+| 2 | `action-install.sh` `copy-rime-binaries` overwrites smoodle librime with upstream from rime-1.16.1 archive → patch never reaches binary | Added force `rm + make download-librime` after copy-rime-binaries |
+| 3 | `SQUIRREL_BUNDLED_RECIPES` unset → plum installs all default packages (bopomofo/cangjie/luna-pinyin/…) | Defaulted to `"prelude essay"` in action-install.sh |
+| 4 | test-dmg.sh `grep -c sorted_initial_` always 0 — that's a private member, not a symbol in release-stripped builds | Replaced with Peek-offset symbol-layout fingerprint check (smoodle Peek at `0x93948`, upstream at `0x93940`) |
+| 5 | `release.yml` `::add-mask::` on EdDSA sig swallowed value across job-output boundary → appcast got empty `edSignature=""` | Removed mask; EdDSA sigs are public (literally in appcast.xml) |
+| 6 | `gh release create` HTTP 403 | Added `permissions: contents: write` to build-dmg job in release.yml |
+| 7 | Schema-copy in `build-dmg.sh` (plan said) is too late — Xcode bundles `data/plum/*` via `add_data_files` BEFORE DMG construction | Moved schema-copy to `action-build.sh` (before make release) |
+| 8 | `package/test-*` gitignore rule would swallow `package/test-dmg.sh` | Added `!package/test-dmg.sh` negation in `.gitignore` |
+| 9 | Sparkle 2.x `sign_update --verify -p <pubkey>` doesn't exist | Use stdin pipe `printf %s "$KEY" \| sign_update --ed-key-file -` for sign + Keychain or env for verify |
+| 10 | `smoodle-app` + `smoodle` both private — Pages requires public on free org plan, CI submodule clone of vendor/smoodle 404'd | Flipped BOTH repos to public via `gh api -X PATCH visibility=public` |
+| 11 | First appcast.xml CI commit had empty sig | Manual patch on gh-pages worktree (sig recovered from `.sig` release asset) |
 
-- **librime patch was missing from existing DMG** — `dist/Smoodle-v0.1.0.dmg` in smoodle-app was built before the submodule re-pin. Must be rebuilt before any release. Task 13 in 08a plan does this.
-- **Telemetry stack live on dxc.0dl.me** — `umami` at `telemetry.0dl.me`, `forget-api` at `forget.0dl.me`, both behind cloudflared. Site_id `88042064-eeea-465a-8658-002d978d4f9b`. Bearer-auth enforced. DB pristine since 2026-05-25 13:00 +0700.
-- **MP-2 anti-survivorship-bias discipline applies to v0.0.8 too** — Task 1 in 08a plan pre-registers `docs/DECISION-GATE-CRITERIA-v0.0.8.md` BEFORE any v0.0.8 E2E surface goes green. The commit timestamp is the audit anchor. Don't skip.
-- **`smoodle-app` Squirrel fork is real and mature** — full Xcode project, Sparkle vendored, DMG builder ready, GHA workflows exist. Don't accidentally "rewrite from scratch" — read existing scripts in `smoodle-app/package/` first.
-- **Tag `1.16.0-smoodle.1` DOES exist on `smoodle-type/librime`** — verified 2026-05-26. Don't trust the earlier session's "tag doesn't exist" claim (that was a truncated `git ls-remote | head -10` output).
+## Known v0.0.8a limitation (deferred to v0.0.8b)
+
+**`default.custom.yaml` is NOT bundled in `Smoodle.app`** because it was never wired into `Squirrel.xcodeproj/project.pbxproj`. Fresh-machine recruits will see luna-pinyin Chinese candidates until they hand-create `~/Library/Rime/default.custom.yaml`:
+
+```yaml
+patch:
+  schema_list:
+    - schema: thai_phonetic
+```
+
+…then menubar S → Deploy. Documented in INSTALL.md + VERIFICATION.md. Founder smoke worked because the founder's ~/Library/Rime/ already had this from prior install.sh runs.
+
+**If recruits report this is a blocker**, options:
+- (a) **Patch `project.pbxproj`** to wire default.custom.yaml as a "Copy Shared Support Files" build phase entry. ~30 min surgical edit. Need new UUIDs in 4 places matching the existing pattern (see other entries like `default.yaml`).
+- (b) **Wait for v0.0.8b** — Config app's "Set as default Thai input" button does this on click.
+
+Recommendation: ship v0.0.8a as-is, see if it's an actual problem. If ≥1 recruit reports it, do (a) ASAP.
+
+---
+
+## Optional cleanups (non-blocking)
+
+- **Legacy `release-ci.yml`** triggers on every tag + fails (was red before our work — independent bug in .pkg build path). Either disable (`gh workflow disable release-ci.yml --repo smoodle-type/smoodle-app`) or restrict its `tags` pattern to exclude `v0.0.8*`. Just CI noise right now.
+- **Telemetry 90-day retention cron** on dxc.0dl.me (v0.0.7 W2 punch list item, partial close). DB grows unbounded until then.
+- **forget-api per-recruit bearer tokens** when N > 3 (currently single shared token in `/tmp/umami-deploy/forget_token.txt`).
+
+---
+
+## v0.0.7 W2 telemetry — still live + healthy
+
+- umami at `https://telemetry.0dl.me` (admin password rotated; founder has)
+- forget-api at `https://forget.0dl.me/api/forget` (bearer-auth enforced)
+- Site_id `88042064-eeea-465a-8658-002d978d4f9b`
+- DB pristine since 2026-05-25 13:00 +0700 (no events yet)
+- Shared bearer token in `/tmp/umami-deploy/forget_token.txt` — regenerate `openssl rand -hex 32` if leaked
+
+DMG install does NOT fire install events (v0.0.7 telemetry was install.sh-side). v0.0.9 may add runtime telemetry from Smoodle.app process.
+
+---
+
+## v0.0.8b plan still queued
+
+After v0.0.8a closes (Task 20), execute:
+
+```
+docs/superpowers/plans/2026-05-26-v0.0.8b-config-app.md  (20 tasks, ~2 weeks)
+```
+
+Builds the Tauri 2 + Svelte 5 Config.app: 14 commands across user_dict/deploy/status/settings/telemetry. Ships via Sparkle auto-update to existing v0.0.8a installs (no second drag-install required).
+
+Verify Tauri toolchain installed before starting (`cargo install tauri-cli --version "^2.0" --locked`).
 
 ---
 
 ## Resume prompt (paste this in new session)
 
 ```
-I'm continuing v0.0.8 implementation. Context cheat-sheet lives at .planning/RESUME-v0.0.8.md — read that first.
+I'm continuing v0.0.8 implementation. Context cheat-sheet at .planning/RESUME-v0.0.8.md — read that first.
 
-Spec: docs/superpowers/specs/2026-05-26-v0.0.8-installer-ux-design.md
-Plans:
-  - docs/superpowers/plans/2026-05-26-v0.0.8a-dmg-sparkle.md  (do this first, prerequisite)
-  - docs/superpowers/plans/2026-05-26-v0.0.8b-config-app.md   (after 08a closes)
+v0.0.8a is SHIPPED publicly (DMG + appcast live). 5 of 6 gate criteria PASS; only 8a-C5 (≥2 non-founder recruits installed) is pending. Per session-start instructions from prior session, the founder is sending outreach drafts manually — when ≥2 ledger rows show install_success=Y AND v0.0.8a install=Y, close the gate (Task 20 in docs/superpowers/plans/2026-05-26-v0.0.8a-dmg-sparkle.md).
 
-Plans were produced by superpowers:writing-plans. Both have explicit task checkboxes (`- [ ]`) with full code blocks per step — no placeholders, ready to execute.
+Next actions in priority order:
+1. Check .planning/SOAK-LEDGER-v0.0.7.md — if ≥2 rows have v0.0.8a install=Y + install_success=Y, execute Task 20 (flip 8a-C5 PASS in .planning/phases/08a-dmg-sparkle/VERIFICATION.md, tag v0.0.8a-closed in smoodle repo, push).
+2. If recruits haven't responded yet, ask the founder for status and stand by.
+3. If recruits hit the default.custom.yaml gap (no Thai candidates show up), consider patching Squirrel.xcodeproj/project.pbxproj to bundle default.custom.yaml as a "Copy Shared Support Files" entry (see "Known v0.0.8a limitation" section of RESUME doc).
 
-Start with v0.0.8a Task 0 (push the staged librime fix in /Users/lex/Dev/my_repos/experiment/smoodle-app — verify locally first that exactly one commit is ahead of origin/master). Then continue through Task 1 (pre-register decision criteria), Task 2 (tag schema), etc.
+Other things you might be asked to start:
+- v0.0.8b execution (docs/superpowers/plans/2026-05-26-v0.0.8b-config-app.md) — can start in parallel with v0.0.8a soak; doesn't block on gate.
+- Optional cleanups (disable legacy release-ci.yml, telemetry 90-day cron) — non-blocking.
 
-Execute via superpowers:subagent-driven-development (recommended — fresh subagent per task, review between tasks) OR superpowers:executing-plans (inline batch execution). Pick the right skill based on how independent the tasks feel.
+Caveman mode (full) active in this project — drop articles/filler, fragments OK, technical accuracy preserved. Use superpowers:subagent-driven-development for plan execution; superpowers:executing-plans for inline batch.
 
-Stop at any task that needs human input (Task 14 founder smoke test, Task 15 recruit outreach, Task 19 founder e2e). Surface what you need from me clearly.
+Verify environment before doing work:
+  cd /Users/lex/Dev/my_repos/experiment/smoodle && git status
+  cd /Users/lex/Dev/my_repos/experiment/smoodle-app && git status
+  gh release view v0.0.8a --repo smoodle-type/smoodle-app --json assets --jq '.assets[].name'
 
-Caveman mode (full) is active in this project — drop articles/filler, fragments OK, technical accuracy preserved.
+If anything looks unexpected, ask the founder before acting.
 ```
-
----
-
-## If the new session asks "which task am I on"
-
-Each plan task starts with `## Task N: <name>`. Track progress by which checkboxes are flipped (`- [x]`) inside the plan file. Re-read the file to see current state.
-
-After completing a task, the next agent should:
-1. Update the task's checkboxes inline in the plan file
-2. Commit with the conventional commit message shown in that task's last "Commit" step
-3. Move to next task
 
 ---
 
 ## If something goes wrong
 
-- **librime patch not in shipped binary** → `otool -tV /Applications/Smoodle.app/Contents/Frameworks/librime.1.dylib | grep sorted_initial_` should return ≥1 line. If 0, the submodule re-pin didn't take effect — verify `cd smoodle-app/librime && git describe --tags` returns `1.16.0-smoodle.1`.
-- **Sparkle CI fails on EdDSA sign** → check `SPARKLE_PRIVATE_KEY` secret is set on `smoodle-type/smoodle-app` repo (`gh secret list --repo smoodle-type/smoodle-app`); regenerate via Task 6 if leaked.
-- **GitHub Pages 404 on appcast.xml** → Pages may need re-enabling: `gh api repos/smoodle-type/smoodle-app/pages` should show `"status":"built"`; if not, redo Task 12 Step 5.
-- **Tauri build fails on macOS** → likely missing `cargo install tauri-cli --version "^2.0" --locked` OR Xcode CLI tools not present (`xcode-select --install`).
-- **Recruits report Gatekeeper blocks them** → expected for v0.0.8 (unsigned). Right-click → Open is the workaround; documented in `INSTALL.md`. If a recruit can't do this, ad-hoc-sign as a fallback (`codesign --force --deep --sign - /Applications/Smoodle.app`) — still triggers Gatekeeper but proves provenance.
+- **gh release v0.0.8a missing** → CI workflow `release` (.github/workflows/release.yml in smoodle-app) didn't complete. Check `gh run list --repo smoodle-type/smoodle-app --workflow=release.yml --limit 3`.
+- **appcast.xml has empty edSignature** → repeat of the `::add-mask::` bug; sig fix already shipped (commit removing the mask). If recurs, recover sig from `.sig` asset + patch on gh-pages worktree. See VERIFICATION.md note for procedure.
+- **librime patch not in shipped binary** → run `package/test-dmg.sh` on the DMG; symbol-layout fingerprint check will report. Don't trust the obsolete `grep sorted_initial_` check from earlier plan text.
+- **Pages 404** → smoodle-app must be public (`gh api repos/smoodle-type/smoodle-app --jq '.visibility'`). Pages require public on free org plan.
+- **CI submodule clone 404 on vendor/smoodle** → smoodle repo must also be public (flipped 2026-05-26).
+- **Sparkle CI fails on EdDSA sign** → check `gh secret list --repo smoodle-type/smoodle-app` has SPARKLE_PRIVATE_KEY. Regenerate via Task 6 in 08a plan if leaked.
+- **Recruit reports "I see Chinese candidates"** → `default.custom.yaml` gap. Send the hand-edit snippet + Deploy instruction. Consider patching project.pbxproj if it happens twice.
 
 ---
 
@@ -101,7 +165,9 @@ After completing a task, the next agent should:
 - Open v0.0.9 milestone (likely: runtime telemetry from Smoodle.app, per-recruit bearer tokens, more Settings tab surfaces — theme, hotkeys)
 - Revisit Apple Developer ID notarization for v0.1.0 public-launch
 - Schema regen / dict expansion still gated (out of scope per CLAUDE.md until v0.2 LLM plugin lands)
+- Cross-repo HARDEN-03 (universal dylib lipo-join in smoodle-type/librime smoke-build.yml) — v0.0.7 W4
+- Audit-trail backfill (retroactive `0[4567]-VERIFICATION.md` for v0.0.6 phases) — v0.0.7 W5
 
 ---
 
-*Resume artifact written 2026-05-26 13:50 +0700 at end of brainstorm + writing-plans session. Self-contained; new session needs only this file + the spec + the plans.*
+*Resume artifact rewritten 2026-05-26 15:05 +0700 after v0.0.8a shipped publicly. Self-contained; new session needs only this file + the spec + the v0.0.8b plan (08a plan can be skimmed since most tasks done).*
