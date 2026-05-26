@@ -1,4 +1,11 @@
 //! User-dict CRUD: read_user_dict, add_user_word, delete_user_word.
+//!
+//! NOTE 1: Commands are NOT yet wired into the Tauri `invoke_handler` —
+//! that happens in Task 8 (`commands::register_all(lib.rs)`).
+//!
+//! NOTE 2: `write_entries_at` always emits the canonical `HEADER`. User
+//! edits to the front-matter or mid-file comments are NOT preserved.
+//! This file is Tauri-owned; manual edits are intentionally discouraged.
 
 use std::path::{Path, PathBuf};
 use crate::yaml;
@@ -12,24 +19,43 @@ pub struct DictEntry {
 
 const HEADER: &str = "# Rime user dictionary\n---\nname: thai_phonetic.user\nversion: \"1\"\nsort: by_weight\n...\n";
 
-fn user_dict_path() -> PathBuf {
-    dirs::home_dir().expect("$HOME").join("Library/Rime/thai_phonetic.user.dict.yaml")
+fn user_dict_path() -> Result<PathBuf, yaml::YamlError> {
+    dirs::home_dir()
+        .map(|h| h.join("Library/Rime/thai_phonetic.user.dict.yaml"))
+        .ok_or_else(|| yaml::YamlError::Io(std::io::Error::new(
+            std::io::ErrorKind::NotFound, "$HOME not set"
+        )))
+}
+
+fn validate_single_line(s: &str, field: &str) -> Result<(), String> {
+    if s.contains('\t') || s.contains('\n') || s.contains('\r') {
+        return Err(format!(
+            "{}: must not contain tab, newline, or carriage return", field
+        ));
+    }
+    Ok(())
 }
 
 /// Public Tauri command (registered via tauri::generate_handler).
 #[tauri::command]
 pub fn read_user_dict() -> Result<Vec<DictEntry>, String> {
-    read_user_dict_at(&user_dict_path()).map_err(|e| e.to_string())
+    let path = user_dict_path().map_err(|e| e.to_string())?;
+    read_user_dict_at(&path).map_err(|e| e.to_string())
 }
 
 #[tauri::command]
 pub fn add_user_word(word: String, romanization: String, weight: i32) -> Result<(), String> {
-    add_user_word_at(&user_dict_path(), &word, &romanization, weight).map_err(|e| e.to_string())
+    validate_single_line(&word, "word")?;
+    validate_single_line(&romanization, "romanization")?;
+    let path = user_dict_path().map_err(|e| e.to_string())?;
+    add_user_word_at(&path, &word, &romanization, weight)
+        .map_err(|e| e.to_string())
 }
 
 #[tauri::command]
 pub fn delete_user_word(line_id: usize) -> Result<(), String> {
-    delete_user_word_at(&user_dict_path(), line_id).map_err(|e| e.to_string())
+    let path = user_dict_path().map_err(|e| e.to_string())?;
+    delete_user_word_at(&path, line_id).map_err(|e| e.to_string())
 }
 
 // --- testable inner helpers ---
@@ -88,9 +114,10 @@ pub fn add_user_word_at(path: &Path, word: &str, romanization: &str, weight: i32
 
 pub fn delete_user_word_at(path: &Path, line_id: usize) -> Result<(), yaml::YamlError> {
     let mut entries = read_user_dict_at(path)?;
-    if line_id < entries.len() {
-        entries.remove(line_id);
+    if line_id >= entries.len() {
+        return Ok(()); // out-of-range: no-op, skip the write
     }
+    entries.remove(line_id);
     write_entries_at(path, &entries)
 }
 

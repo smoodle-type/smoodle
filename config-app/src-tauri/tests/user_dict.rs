@@ -74,3 +74,19 @@ fn delete_by_index_removes_and_preserves_others() {
     assert_eq!(entries.len(), 1);
     assert_eq!(entries[0].word, "สมูดเดิล");
 }
+
+// Note: tests the *inner* helper with raw inputs to confirm what corruption looks
+// like without the Tauri-command guard. The guard is tested via the public command
+// path in integration tests later (Task 8+).
+#[test]
+fn write_entries_at_tab_or_newline_in_word_corrupts_file_on_read() {
+    let dir = tempdir().unwrap();
+    let path = dir.path().join("user.dict.yaml");
+    std::fs::write(&path, SAMPLE_DICT).unwrap();
+    // The inner helper does NOT validate — round-trip will lose the bad entry.
+    add_user_word_at(&path, "bad\tword", "x", 1).unwrap();
+    let entries = read_user_dict_at(&path).unwrap();
+    // The original 2 entries survive; "bad\tword" is dropped on re-read
+    // because parts[2] cannot parse as i32.
+    assert_eq!(entries.len(), 2);
+}
