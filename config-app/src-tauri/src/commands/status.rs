@@ -1,11 +1,17 @@
-//! Status tab queries: smoodle_running, schema_compile_log, dict_counts.
+//! Status tab queries.
 //!
-//! NOTE: Commands are NOT yet wired into the Tauri `invoke_handler` —
-//! that happens in Task 8 (`commands::register_all(lib.rs)`).
+//! - smoodle_running       → Status tab "Running" indicator + version badge
+//! - schema_compile_log    → Status tab "Compile log" textarea (last 5 lines)
+//! - dict_counts           → Status tab "Entries" row (base + user + total)
+//!
+//! NOTE: commands not yet wired into Tauri invoke_handler — Task 8.
 
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::process::Command;
+
+const SMOODLE_PLIST: &str =
+    "/Library/Input Methods/Smoodle.app/Contents/Info.plist";
 
 #[derive(serde::Serialize)]
 pub struct SmoodleStatus {
@@ -34,7 +40,11 @@ fn plutil_version(plist: &str) -> Result<String, String> {
         .output()
         .map_err(|e| e.to_string())?;
     if !output.status.success() {
-        return Err("plutil failed".into());
+        return Err(format!(
+            "plutil failed (exit {}): {}",
+            output.status,
+            String::from_utf8_lossy(&output.stderr).trim()
+        ));
     }
     Ok(String::from_utf8_lossy(&output.stdout).trim().to_string())
 }
@@ -49,8 +59,11 @@ pub fn smoodle_running() -> Result<SmoodleStatus, String> {
         .output()
         .map(|o| o.status.success())
         .unwrap_or(false);
+    // Known TOCTOU: if Smoodle.app quits between pgrep and plutil, this returns
+    // SmoodleStatus { running: true, version: None }. Bounded, non-crashing —
+    // acceptable for v0.0.8b dogfood. v0.0.9 async refactor candidate.
     let version = if running {
-        plutil_version("/Applications/Smoodle.app/Contents/Info.plist").ok()
+        plutil_version(SMOODLE_PLIST).ok()
     } else {
         None
     };
@@ -72,7 +85,12 @@ pub fn schema_compile_log_at(path: &Path) -> Result<String, String> {
     let content = fs::read_to_string(path).map_err(|e| e.to_string())?;
     let lines: Vec<&str> = content.lines().collect();
     let start = lines.len().saturating_sub(5);
-    Ok(lines[start..].join("\n"))
+    Ok(lines[start..]
+        .iter()
+        .filter(|l| !l.trim().is_empty())
+        .copied()
+        .collect::<Vec<_>>()
+        .join("\n"))
 }
 
 /// Return entry counts for the base dict, user dict, and their sum.
