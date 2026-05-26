@@ -2,6 +2,21 @@
    Will be split per-component once svelte-plugin/Vite scoped-style
    preprocess bug (PartialEnvironment Proxy) is resolved upstream. */
 
+body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+
+/* App shell */
+.app { display: flex; flex-direction: column; min-height: 100vh; }
+.app header { display: flex; align-items: baseline; gap: 8px; padding: 8px 16px; border-bottom: 1px solid #ddd; }
+.app header h1 { font-size: 16px; margin: 0; }
+.app header .version { color: #888; font-size: 12px; }
+.app nav { display: flex; border-bottom: 1px solid #ddd; }
+.app nav button { background: none; border: none; padding: 8px 16px; cursor: pointer; border-bottom: 2px solid transparent; }
+.app nav button.active { border-bottom-color: #1976d2; color: #1976d2; font-weight: 600; }
+.app main { flex: 1; overflow: auto; }
+.app footer { display: flex; align-items: center; gap: 6px; padding: 6px 16px; border-top: 1px solid #ddd; font-size: 12px; color: #555; }
+.app footer .status-dot { color: #b71c1c; }
+.app footer .status-dot.on { color: #1b5e20; }
+
 /* Words tab */
 .words { padding: 16px; }
 .words table { width: 100%; border-collapse: collapse; }
