@@ -20,13 +20,13 @@ non-founder candidate.
 
 ## Ledger
 
-| ID | Pinged | Channel | OS | Bearer issued | Install attempt | hash (last 8) | install_success | forget-tested | Unsolicited feedback | Notes |
-|----|--------|---------|----|---------------|------------------|---------------|------------------|----------------|----------------------|-------|
-| R1 | — | — | macOS | — | — | — | — | — | — | — |
-| R2 | — | — | macOS | — | — | — | — | — | — | — |
-| R3 | — | — | macOS | — | — | — | — | — | — | — |
-| R4 | — | — | macOS | — | — | — | — | — | — | — |
-| R5 | — | — | macOS | — | — | — | — | — | — | — |
+| ID | Pinged | Channel | OS | Bearer issued | Install attempt | v0.0.8a install | hash (last 8) | install_success | forget-tested | Unsolicited feedback | Notes |
+|----|--------|---------|----|---------------|------------------|------------------|---------------|------------------|----------------|----------------------|-------|
+| R1 | — | — | macOS | — | — | — | — | — | — | — | — |
+| R2 | — | — | macOS | — | — | — | — | — | — | — | — |
+| R3 | — | — | macOS | — | — | — | — | — | — | — | — |
+| R4 | — | — | macOS | — | — | — | — | — | — | — | — |
+| R5 | — | — | macOS | — | — | — | — | — | — | — | — |
 
 ### Column legend
 
@@ -40,6 +40,12 @@ non-founder candidate.
   on the founder machine — issue per-recruit tokens when N > 3.)
 - **Install attempt:** ISO date the recruit ran `bash scripts/install.sh`
   (their report or first telemetry event timestamp).
+- **v0.0.8a install:** `Y` if recruit installed via the v0.0.8a DMG
+  (drag to Applications) AND the menubar S appears. `N` if they tried
+  and it failed. `—` if they installed via the legacy `install.sh`
+  path (v0.0.7 scripts) or haven't installed yet. Both paths count
+  toward v0.0.7 GATE-02, but only `v0.0.8a install=Y` counts toward
+  v0.0.8a-C5.
 - **hash (last 8):** last 8 hex chars of the recruit's `install_id_hash`
   (sufficient for joining ledger row to umami DB rows; 32 bits of
   attribution is plenty at N ≤ 5).
