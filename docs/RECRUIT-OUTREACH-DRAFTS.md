@@ -16,18 +16,19 @@ broke. Don't pitch features — pitch friction relief.
 > hey! built a thing — type Thai by spelling it in latin (like
 > "sawadee" → สวัสดี). want to dogfood it on your mac?
 >
-> 5-min install:
+> drag-install (v0.0.8a DMG):
+> https://github.com/smoodle-type/smoodle-app/releases/latest/download/Smoodle-v0.0.8a-universal.dmg
 >
-> ```
-> git clone https://github.com/smoodle-type/smoodle && cd smoodle
-> bash scripts/install.sh
-> ```
+> open the DMG, drag Smoodle.app to /Applications. first launch:
+> right-click → Open (macOS warns it's unsigned, that's expected).
+> then System Settings → Keyboard → Input Sources → + → Thai →
+> Smoodle. type `sawadee` to test.
 >
-> if anything goes weird, hit me back. one-liner to wipe everything:
-> `bash scripts/install.sh --uninstall`. opt-in telemetry is OFF by
-> default — flip it on with `SMOODLE_TELEMETRY=1` before install +
-> `mkdir -p ~/.smoodle && echo "<BEARER_TOKEN>" > ~/.smoodle/forget_token`
-> if you want to be able to delete your data later.
+> if anything weird: menubar S → Quit, drag /Applications/Smoodle.app
+> to Trash, message me with what happened. opt-in telemetry is OFF by
+> default — flip it on by hand-editing `~/.smoodle/telemetry-on` +
+> `echo "<BEARER_TOKEN>" > ~/.smoodle/forget_token` if you want to be
+> able to delete your data later.
 
 **When to use:** close friend, fast medium, low ceremony.
 
@@ -49,15 +50,21 @@ broke. Don't pitch features — pitch friction relief.
 > is install it, type Thai for ~5 minutes over the next week, and
 > message me if anything is weird.
 >
-> Install (≈5 minutes including librime download):
+> Install (≈2 minutes — drag and click):
 >
->     git clone https://github.com/smoodle-type/smoodle
->     cd smoodle
->     bash scripts/install.sh
+> 1. Download the DMG:
+>    https://github.com/smoodle-type/smoodle-app/releases/latest/download/Smoodle-v0.0.8a-universal.dmg
+> 2. Open the DMG, drag Smoodle.app into /Applications.
+> 3. First launch: right-click Smoodle.app → Open → Open. macOS will
+>    warn it's unsigned — that's expected for the v0.0.8 dogfood
+>    build (Apple notarization comes in v0.1.0).
+> 4. System Settings → Keyboard → Input Sources → + → Thai → Smoodle.
+> 5. Switch to Smoodle from the menubar input picker. Type `sawadee`.
 >
 > Uninstall (any time):
 >
->     bash scripts/install.sh --uninstall
+>     # System Settings → Keyboard → Input Sources → select Smoodle → "−"
+>     sudo rm -rf "/Library/Input Methods/Smoodle.app"
 >
 > There's an opt-in, no-PII telemetry pipe (4 fields: OS, version,
 > success/fail, a random per-install hash) so I can tell whether the
@@ -86,12 +93,13 @@ before installing arbitrary scripts.
 
 ## Template C — Discord / Slack one-liner
 
-> Hey @<name> — built a Latin-spelling → Thai IME for macOS, dogfooding
-> with 5 friends. Wanna be one of them? `git clone
-> https://github.com/smoodle-type/smoodle && cd smoodle && bash
-> scripts/install.sh` — uninstall is `bash scripts/install.sh
-> --uninstall`. DM me if anything blows up. Opt-in telemetry token if
-> you want it: `<BEARER_TOKEN>`
+> Hey @<name> — built a Latin-spelling → Thai IME for macOS,
+> dogfooding with 5 friends. Wanna be one of them?
+> https://github.com/smoodle-type/smoodle-app/releases/latest/download/Smoodle-v0.0.8a-universal.dmg
+> — drag Smoodle.app to /Applications, right-click → Open (Gatekeeper
+> warning is expected, unsigned). Then Settings → Keyboard → Input
+> Sources → + → Thai → Smoodle. DM me if anything blows up. Opt-in
+> telemetry token if you want it: `<BEARER_TOKEN>`
 
 **When to use:** loose tie, async channel, copy-paste fast.
 
