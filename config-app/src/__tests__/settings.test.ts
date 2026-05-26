@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/svelte';
 import Settings from '../routes/settings.svelte';
 
@@ -14,6 +14,8 @@ vi.mock('@tauri-apps/api/core', () => ({
 }));
 
 describe('Settings tab', () => {
+  beforeEach(() => { vi.clearAllMocks(); });
+
   it('renders candidate_count from read_default_custom', async () => {
     render(Settings);
     // The radio for value 5 should be checked after load

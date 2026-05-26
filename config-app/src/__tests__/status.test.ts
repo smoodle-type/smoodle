@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/svelte';
 import Status from '../routes/status.svelte';
 
@@ -15,6 +15,8 @@ vi.mock('@tauri-apps/api/core', () => ({
 }));
 
 describe('Status tab', () => {
+  beforeEach(() => { vi.clearAllMocks(); });
+
   it('renders running state, version, and dict counts after mount', async () => {
     render(Status);
     expect(await screen.findByText(/0\.0\.6/)).toBeTruthy();

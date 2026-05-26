@@ -37,7 +37,7 @@
       const deleted = await api.telemetryForget();
       toast = { msg: `Deleted ${deleted} telemetry record(s) ✓`, type: 'ok' };
     } catch (e) {
-      toast = { msg: `No install_id — nothing to forget`, type: 'err' };
+      toast = { msg: `Forget failed: ${e}`, type: 'err' };
     }
   }
 
