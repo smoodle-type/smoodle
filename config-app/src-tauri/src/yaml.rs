@@ -15,6 +15,8 @@ pub enum YamlError {
     Io(#[from] std::io::Error),
     #[error("yaml parse error: {0}")]
     Parse(#[from] serde_yaml::Error),
+    #[error("missing 'patch:' root in default.custom.yaml")]
+    MissingPatchRoot,
 }
 
 pub type Result<T> = std::result::Result<T, YamlError>;
@@ -43,6 +45,20 @@ pub fn read<T: serde::de::DeserializeOwned>(path: &Path) -> Result<T> {
     let content = fs::read_to_string(path)?;
     let value = serde_yaml::from_str(&content)?;
     Ok(value)
+}
+
+/// Copy `src` to `dst` atomically (same-fs rename via NamedTempFile).
+/// Useful when the source may be binary (no String round-trip).
+pub fn atomic_copy(src: &Path, dst: &Path) -> Result<()> {
+    let parent = dst.parent().ok_or_else(|| {
+        std::io::Error::new(std::io::ErrorKind::InvalidInput, "dst has no parent")
+    })?;
+    let mut tmp = tempfile::NamedTempFile::new_in(parent)?;
+    let bytes = fs::read(src)?;
+    std::io::Write::write_all(tmp.as_file_mut(), &bytes)?;
+    tmp.as_file().sync_all()?;
+    tmp.persist(dst).map_err(|e| e.error)?;
+    Ok(())
 }
 
 /// Backup an existing file to `<full-filename>.bak.<ISO>`. Returns `Ok(None)` if

@@ -1,6 +1,7 @@
 use smoodle_config_lib::commands::settings::{
     read_default_custom_at, write_default_custom_at, DefaultCustomPatch, reset_to_defaults_with,
 };
+use smoodle_config_lib::yaml;
 use tempfile::tempdir;
 use std::fs;
 
@@ -51,4 +52,18 @@ fn reset_copies_bundled_files_but_preserves_user_dict() {
     assert_eq!(fs::read_to_string(rime.join("thai_phonetic.schema.yaml")).unwrap(), "bundled-schema-content");
     // user.dict preserved!
     assert_eq!(fs::read_to_string(rime.join("thai_phonetic.user.dict.yaml")).unwrap(), "user-words-here");
+}
+
+#[test]
+fn write_returns_error_when_patch_root_absent() {
+    let dir = tempdir().unwrap();
+    let path = dir.path().join("bad.yaml");
+    fs::write(&path, "not_a_patch_key: true\n").unwrap();
+    let patch = DefaultCustomPatch { candidate_count: Some(5), schema_list: vec![] };
+    let result = write_default_custom_at(&path, &patch);
+    assert!(result.is_err());
+    assert!(
+        format!("{}", result.unwrap_err()).contains("patch"),
+        "error message should mention 'patch'"
+    );
 }

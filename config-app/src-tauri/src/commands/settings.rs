@@ -15,10 +15,17 @@ pub struct DefaultCustomPatch {
 }
 
 // Smoodle.app is an IME — installs to /Library/Input Methods/Smoodle.app
+#[cfg(target_os = "macos")]
 const BUNDLED_DIR: &str = "/Library/Input Methods/Smoodle.app/Contents/Resources/plum";
 
+#[cfg(target_os = "macos")]
 fn bundled_dir() -> PathBuf {
     PathBuf::from(BUNDLED_DIR)
+}
+
+#[cfg(not(target_os = "macos"))]
+fn bundled_dir() -> PathBuf {
+    PathBuf::from("/non-macos/path") // placeholder; reset_to_defaults will fail with file-not-found
 }
 
 fn rime_dir() -> Result<PathBuf, String> {
@@ -40,13 +47,23 @@ pub fn write_default_custom(patch: DefaultCustomPatch) -> Result<(), String> {
 #[tauri::command]
 pub fn open_rime_folder() -> Result<(), String> {
     let path = rime_dir()?;
-    Command::new("/usr/bin/open").arg(&path).status().map_err(|e| e.to_string())?;
+    let status = Command::new("/usr/bin/open").arg(&path).status().map_err(|e| e.to_string())?;
+    if !status.success() {
+        return Err(format!("/usr/bin/open exited with {}", status));
+    }
     Ok(())
 }
 
+#[cfg(target_os = "macos")]
 #[tauri::command]
 pub fn reset_to_defaults() -> Result<(), String> {
     reset_to_defaults_with(&bundled_dir(), &rime_dir()?).map_err(|e| e.to_string())
+}
+
+#[cfg(not(target_os = "macos"))]
+#[tauri::command]
+pub fn reset_to_defaults() -> Result<(), String> {
+    Err("reset_to_defaults is only supported on macOS".to_string())
 }
 
 // --- testable inner helpers ---
@@ -86,21 +103,22 @@ pub fn write_default_custom_at(path: &Path, patch: &DefaultCustomPatch) -> Resul
     let patch_map = v
         .get_mut("patch")
         .and_then(|p| p.as_mapping_mut())
-        .ok_or_else(|| {
-            yaml::YamlError::Parse(
-                serde_yaml::from_str::<serde_yaml::Value>("patch root missing").unwrap_err(),
-            )
-        })?;
+        .ok_or(yaml::YamlError::MissingPatchRoot)?;
+    // TODO(v0.0.9): candidate_count=None means "don't touch existing key" — there
+    // is currently no way to explicitly delete the key (revert to Rime default).
+    // Frontend should treat None as "no change" until a Reset action exists.
     if let Some(n) = patch.candidate_count {
         patch_map.insert("menu/page_size".into(), (n as u64).into());
     }
-    let mut sl = serde_yaml::Sequence::new();
-    for name in &patch.schema_list {
-        let mut m = serde_yaml::Mapping::new();
-        m.insert("schema".into(), name.clone().into());
-        sl.push(serde_yaml::Value::Mapping(m));
+    if !patch.schema_list.is_empty() {
+        let mut sl = serde_yaml::Sequence::new();
+        for name in &patch.schema_list {
+            let mut m = serde_yaml::Mapping::new();
+            m.insert("schema".into(), name.clone().into());
+            sl.push(serde_yaml::Value::Mapping(m));
+        }
+        patch_map.insert("schema_list".into(), serde_yaml::Value::Sequence(sl));
     }
-    patch_map.insert("schema_list".into(), serde_yaml::Value::Sequence(sl));
     let s = serde_yaml::to_string(&v)?;
     yaml::atomic_write_str(path, &s)
 }
@@ -120,11 +138,17 @@ pub fn reset_to_defaults_with(bundled: &Path, rime: &Path) -> Result<(), yaml::Y
         let src = bundled.join(f);
         let dst = rime.join(f);
         if src.exists() {
-            fs::copy(&src, &dst)?;
+            yaml::atomic_copy(&src, &dst)?;
         }
     }
     if let Some(content) = user_backup {
-        fs::write(&user_dict, content)?;
+        let parent = user_dict.parent().ok_or_else(|| {
+            std::io::Error::new(std::io::ErrorKind::InvalidInput, "user_dict has no parent")
+        })?;
+        let mut tmp = tempfile::NamedTempFile::new_in(parent)?;
+        std::io::Write::write_all(tmp.as_file_mut(), &content)?;
+        tmp.as_file().sync_all()?;
+        tmp.persist(&user_dict).map_err(|e| e.error)?;
     }
     Ok(())
 }
