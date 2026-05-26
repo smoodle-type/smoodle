@@ -1,10 +1,10 @@
 [package]
 name = "app"
-version = "0.1.0"
-description = "A Tauri App"
+version = "0.0.8"
+description = "Smoodle Config — settings GUI for Smoodle Thai phonetic IME"
 authors = ["Apinant U-suwantim <apinant.usu@gmail.com>"]
 license = "MIT"
-repository = ""
+repository = "https://github.com/smoodle-type/smoodle"
 edition = "2021"
 rust-version = "1.77.2"
 
@@ -15,7 +15,7 @@ name = "smoodle_config_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
 [build-dependencies]
-tauri-build = { version = "2.6.2" }
+tauri-build = { version = "2.6.2", features = [] }
 
 [dependencies]
 serde_json = "1"
