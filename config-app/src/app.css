@@ -11,3 +11,17 @@
 .toast { margin-top: 12px; padding: 8px 12px; border-radius: 4px; }
 .toast.ok { background: #e8f5e9; color: #1b5e20; }
 .toast.err { background: #ffebee; color: #b71c1c; }
+
+/* Status tab */
+.status { padding: 16px; }
+.status section { margin-bottom: 16px; }
+.status pre { background: #f5f5f5; padding: 8px; font-size: 12px; max-height: 120px; overflow: auto; }
+.status .indicator { font-weight: bold; }
+.status .indicator.on { color: #1b5e20; }
+.status .indicator.off { color: #b71c1c; }
+
+/* Settings tab */
+.settings { padding: 16px; }
+.settings fieldset { margin-bottom: 16px; }
+.settings ul { list-style: none; padding: 0; }
+.settings .buttons { display: flex; gap: 8px; margin-top: 12px; }
