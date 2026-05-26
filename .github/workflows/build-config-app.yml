@@ -61,10 +61,16 @@ jobs:
         run: cargo tauri build --target universal-apple-darwin
 
       - name: Verify universal binary
+        # Cargo package name is "app" (Tauri default), so the binary inside
+        # the .app bundle is named `app`, not `Smoodle Config`. Info.plist's
+        # CFBundleExecutable matches. Find dynamically.
         run: |
-          BIN="config-app/src-tauri/target/universal-apple-darwin/release/bundle/macos/Smoodle Config.app/Contents/MacOS/Smoodle Config"
+          APP="config-app/src-tauri/target/universal-apple-darwin/release/bundle/macos/Smoodle Config.app"
+          BIN_NAME="$(plutil -extract CFBundleExecutable raw "$APP/Contents/Info.plist")"
+          BIN="$APP/Contents/MacOS/$BIN_NAME"
+          echo "Binary: $BIN"
           lipo -info "$BIN"
-          lipo -info "$BIN" | grep -q "x86_64 arm64\|arm64 x86_64"
+          lipo -info "$BIN" | grep -qE "(x86_64 arm64|arm64 x86_64)"
 
       - name: Package as tarball
         if: startsWith(github.ref, 'refs/tags/')
