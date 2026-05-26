@@ -16,8 +16,8 @@ broke. Don't pitch features — pitch friction relief.
 > hey! built a thing — type Thai by spelling it in latin (like
 > "sawadee" → สวัสดี). want to dogfood it on your mac?
 >
-> drag-install (v0.0.8a DMG):
-> https://github.com/smoodle-type/smoodle-app/releases/latest/download/Smoodle-v0.0.8a-universal.dmg
+> drag-install (latest DMG — grab `Smoodle-v*.dmg`):
+> https://github.com/smoodle-type/smoodle-app/releases/latest
 >
 > open the DMG, drag Smoodle.app onto the "Input Methods" shortcut
 > inside it (macOS will ask for your password to authorize the
@@ -55,8 +55,8 @@ broke. Don't pitch features — pitch friction relief.
 >
 > Install (≈2 minutes — drag and click):
 >
-> 1. Download the DMG:
->    https://github.com/smoodle-type/smoodle-app/releases/latest/download/Smoodle-v0.0.8a-universal.dmg
+> 1. Download the DMG (grab `Smoodle-v*.dmg` — the most recent one):
+>    https://github.com/smoodle-type/smoodle-app/releases/latest
 > 2. Open the DMG. Drag Smoodle.app onto the "Input Methods" folder
 >    shortcut shown inside the DMG. macOS will ask for your password
 >    — that's authorizing the install into /Library/Input Methods.
@@ -100,7 +100,7 @@ before installing arbitrary scripts.
 
 > Hey @<name> — built a Latin-spelling → Thai IME for macOS,
 > dogfooding with 5 friends. Wanna be one of them?
-> https://github.com/smoodle-type/smoodle-app/releases/latest/download/Smoodle-v0.0.8a-universal.dmg
+> https://github.com/smoodle-type/smoodle-app/releases/latest (grab `Smoodle-v*.dmg`)
 > — open DMG, drag Smoodle.app onto the "Input Methods" shortcut
 > inside (macOS prompts for password — installs into /Library/Input
 > Methods), right-click → Open (Gatekeeper warning is expected,

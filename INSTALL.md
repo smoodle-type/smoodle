@@ -4,7 +4,7 @@
 
 ### Drag-install
 
-1. Download `Smoodle-v0.0.8a-universal.dmg` from
+1. Download the latest `Smoodle-v*.dmg` from
    [GitHub Releases](https://github.com/smoodle-type/smoodle-app/releases/latest).
 2. Open the DMG. Drag `Smoodle.app` onto the **Input Methods** folder
    shortcut. (You may be asked for your password — that's macOS
@@ -27,7 +27,24 @@ When a new version is available, you'll see a small dialog asking
 whether to install. You can also check manually via the menubar S icon
 → **Check for updates...**
 
-### Custom words (v0.0.8a hand-edit workaround)
+### Default schema (auto-wired since v0.0.8a.1)
+
+`default.custom.yaml` is now bundled and copied to
+`~/Library/Rime/default.custom.yaml` on first deploy, wiring
+`thai_phonetic` as the primary schema. If you're on v0.0.8a (the
+original tag) and never see Thai candidates, either auto-update to
+v0.0.8a.1+ via menubar S → **Check for updates...**, or hand-create
+`~/Library/Rime/default.custom.yaml`:
+
+```yaml
+patch:
+  schema_list:
+    - schema: thai_phonetic
+```
+
+Then menubar S → **Deploy**.
+
+### Custom words (v0.0.8a.1 hand-edit workaround)
 
 The graphical config app for adding personal vocabulary arrives in
 v0.0.8b (auto-updates via Sparkle when it lands). Until then, you can

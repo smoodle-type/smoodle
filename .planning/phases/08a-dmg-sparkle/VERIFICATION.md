@@ -73,28 +73,26 @@ Discovered during Task 13 local build — committed as part of
    `prelude essay` (the minimum smoodle needs).
 4. **test-dmg.sh `sorted_initial_` check**: private member, not a
    symbol. Replaced with Peek-offset symbol-layout fingerprint.
+5. **add_data_files anchor silent no-op (v0.0.8a.1 patch fix)**: Upstream
+   Squirrel's `anchor=(80 65 terra_pinyin.schema.yaml)` referenced
+   entries that do not exist in the fork's pbxproj. awk in `add_line`
+   never matched, every "adding X" log line lied, pbxproj was
+   byte-identical after the script ran. v0.0.8a shipped without
+   `default.custom.yaml` because of this. Fix in smoodle-app commit
+   `cf3247e` (`fix(bundle): wire default.custom.yaml into pbxproj;
+   harden add_data_files`): manual 4-place pbxproj wire, anchor moved
+   to `(83 84 thai_phonetic.dict.yaml)`, anchor_lib disabled,
+   `require_anchor_present` hard-fail guard added. Shipped as
+   v0.0.8a.1 (gh release + appcast updated).
 
-## Known v0.0.8a limitation
+## Known v0.0.8a limitation — RESOLVED in v0.0.8a.1
 
-`default.custom.yaml` is not in `Squirrel.xcodeproj/project.pbxproj`
-→ not bundled in `.app` → DMG installs need a manual one-time step
-to wire smoodle as the default schema. Founder smoke worked because
-the founder's `~/Library/Rime/default.custom.yaml` was already set
-from prior `install.sh` runs. Fresh-machine recruits will need to
-either run the legacy `install.sh` once OR hand-create
-`~/Library/Rime/default.custom.yaml` with:
-
-```yaml
-patch:
-  schema_list:
-    - schema: thai_phonetic
-```
-
-Documented as known issue; v0.0.8b's Config app makes this a
-one-click "Set as default Thai input" button. If recruit reports
-indicate this is a blocker (≥2 N rows in soak ledger), consider
-patching `project.pbxproj` to bundle `default.custom.yaml` before
-v0.0.8b ships.
+(Previously: `default.custom.yaml` not bundled; recruits needed
+hand-edit to see Thai candidates.) Closed by smoodle-app
+`cf3247e` + `fe03ec5`; v0.0.8a.1 DMG verified to ship
+`Smoodle.app/Contents/SharedSupport/default.custom.yaml` (510 B
+matching `vendor/smoodle/schema/default.custom.yaml`). Sparkle will
+auto-deliver v0.0.8a.1 to any existing v0.0.8a install on next check.
 
 ---
 

@@ -7,7 +7,7 @@
 
 ## TL;DR — where we are now
 
-**v0.0.8a SHIPPED publicly.** DMG live at `https://github.com/smoodle-type/smoodle-app/releases/tag/v0.0.8a`. Appcast live at `https://smoodle-type.github.io/smoodle-app/appcast.xml` (with valid EdDSA sig). Founder smoke-tested green.
+**v0.0.8a SHIPPED publicly + v0.0.8a.1 PATCH SHIPPED.** DMGs live at `https://github.com/smoodle-type/smoodle-app/releases` (latest tag: `v0.0.8a.1`). Appcast live at `https://smoodle-type.github.io/smoodle-app/appcast.xml` (both items with valid 88-char EdDSA sigs). Founder smoke-tested green on v0.0.8a; v0.0.8a.1 fixes default.custom.yaml bundling.
 
 **5 of 6 v0.0.8a gate criteria PASS:**
 
@@ -66,30 +66,20 @@ gh release view v0.0.8a --repo smoodle-type/smoodle-app --json assets --jq '.ass
 | 10 | `smoodle-app` + `smoodle` both private — Pages requires public on free org plan, CI submodule clone of vendor/smoodle 404'd | Flipped BOTH repos to public via `gh api -X PATCH visibility=public` |
 | 11 | First appcast.xml CI commit had empty sig | Manual patch on gh-pages worktree (sig recovered from `.sig` release asset) |
 
-## Known v0.0.8a limitation (deferred to v0.0.8b)
+## Known v0.0.8a limitation — RESOLVED in v0.0.8a.1 (2026-05-26 ~16:50 +0700)
 
-**`default.custom.yaml` is NOT bundled in `Smoodle.app`** because it was never wired into `Squirrel.xcodeproj/project.pbxproj`. Fresh-machine recruits will see luna-pinyin Chinese candidates until they hand-create `~/Library/Rime/default.custom.yaml`:
+Originally: `default.custom.yaml` not bundled → fresh-machine recruits saw luna-pinyin Chinese candidates until they hand-edited `~/Library/Rime/default.custom.yaml`.
 
-```yaml
-patch:
-  schema_list:
-    - schema: thai_phonetic
-```
+**Closed by smoodle-app commits `cf3247e` (fix) + `fe03ec5` (version bump) + tag `v0.0.8a.1`.** Root cause: `package/add_data_files`'s anchor `(80 65 terra_pinyin.schema.yaml)` referenced pbxproj entries that don't exist in this fork → awk in `add_line()` matched nothing → tmp file byte-identical to original → mv was no-op → "adding default.custom.yaml" log lied. Verified shipped v0.0.8a.1 DMG contains `Smoodle.app/Contents/SharedSupport/default.custom.yaml` (510 B); appcast updated with valid 88-char EdDSA sig; Sparkle auto-update will deliver v0.0.8a.1 to existing v0.0.8a installs on next 24h check (or manual menubar S → Check for updates...).
 
-…then menubar S → Deploy. Documented in INSTALL.md + VERIFICATION.md. Founder smoke worked because the founder's ~/Library/Rime/ already had this from prior install.sh runs.
-
-**If recruits report this is a blocker**, options:
-- (a) **Patch `project.pbxproj`** to wire default.custom.yaml as a "Copy Shared Support Files" build phase entry. ~30 min surgical edit. Need new UUIDs in 4 places matching the existing pattern (see other entries like `default.yaml`).
-- (b) **Wait for v0.0.8b** — Config app's "Set as default Thai input" button does this on click.
-
-Recommendation: ship v0.0.8a as-is, see if it's an actual problem. If ≥1 recruit reports it, do (a) ASAP.
+Hardening shipped: anchor moved to `(83 84 thai_phonetic.dict.yaml)`; `anchor_lib` disabled (no rime plugins bundled); `require_anchor_present()` hard-fail guard prevents future silent failures.
 
 ---
 
 ## Optional cleanups (non-blocking)
 
-- **Legacy `release-ci.yml`** triggers on every tag + fails (was red before our work — independent bug in .pkg build path). Either disable (`gh workflow disable release-ci.yml --repo smoodle-type/smoodle-app`) or restrict its `tags` pattern to exclude `v0.0.8*`. Just CI noise right now.
-- **Telemetry 90-day retention cron** on dxc.0dl.me (v0.0.7 W2 punch list item, partial close). DB grows unbounded until then.
+- **Legacy `release-ci.yml`** — ✅ disabled 2026-05-26 (`gh workflow disable release-ci.yml`). Won't fire on future tags.
+- **Telemetry 90-day retention cron** on dxc.0dl.me (v0.0.7 W2 punch list item, partial close). DB grows unbounded until then. BLOCKED on SSH access — founder must run, or authorize use of shared password.
 - **forget-api per-recruit bearer tokens** when N > 3 (currently single shared token in `/tmp/umami-deploy/forget_token.txt`).
 
 ---
