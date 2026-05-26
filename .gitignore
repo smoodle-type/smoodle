@@ -10,6 +10,9 @@
 # macOS
 .DS_Store
 
+# Node / pnpm
+node_modules/
+
 # Build artifacts (v0.2+)
 build/
 dist/
