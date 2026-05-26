@@ -1,7 +1,115 @@
 # Resume v0.0.8 implementation
 
-**Updated:** 2026-05-26 ~15:05 +0700 (end of v0.0.8a shipping session)
+**Updated:** 2026-05-26 ~19:35 +0700 (end of v0.0.8a.1 patch + v0.0.8b partial backend session)
 **Use:** open new Claude Code session, paste the "Resume prompt" block below as first message.
+
+---
+
+## Latest snapshot (2026-05-26 evening)
+
+### v0.0.8a.1 PATCH SHIPPED PUBLICLY (closes the default.custom.yaml gap)
+- DMG: `https://github.com/smoodle-type/smoodle-app/releases/tag/v0.0.8a.1` (DMG + .sig, both verified)
+- Appcast updated; Sparkle auto-updates existing v0.0.8a installs on next 24h check
+- Root cause shipped + documented: `add_data_files` anchor was bogus → silent no-op; fixed by anchor change + manual pbxproj wire + `require_anchor_present` guard
+- Outreach drafts URLs fixed (point at `/releases/latest` not a broken hardcoded filename)
+- Legacy `release-ci.yml` workflow disabled
+
+### v0.0.8b — 9 of 20 tasks shipped (BACKEND COMPLETE + WIRED, Words tab live)
+
+| Task | Status | Highlight |
+|---|---|---|
+| 1 Scaffold | ✅ | Tauri 2 + Svelte 5 project @ `config-app/`. `identifier=me.0dl.smoodle-config`. |
+| 2 yaml.rs | ✅ | `atomic_write_str` (NamedTempFile), `read<T>`, `backup` (preserves full filename incl. hidden), `atomic_copy`, `YamlError::MissingPatchRoot`. 5 tests. |
+| 3 user_dict | ✅ | 3 commands + tab/newline IPC validation + $HOME-Result. 6 tests. |
+| 4 deploy | ✅ | osascript Apple Event 'Deploy' shim + DeployRunner trait for mocking. 2 tests. |
+| 5 status | ✅ | smoodle_running + schema_compile_log + dict_counts. CRITICAL fix: `/Library/Input Methods/...` plist path (Smoodle is an IME, not /Applications/). 3 tests. |
+| 6 settings | ✅ | 4 commands inc. serde_yaml::Value merge for default.custom.yaml. Atomic copy via yaml::atomic_copy. cfg(target_os = "macos") on reset_to_defaults. 4 tests. |
+| 7 telemetry | ✅ | 3 commands. reqwest blocking + 10s connect + 15s total timeout. forget_token chmod 0600. Hardcoded URL (Tauri GUI doesn't inherit shell env). ForgetRunner trait for mocking. 7 tests. |
+| 8 wire lib.rs | ✅ | All 14 Tauri commands registered via `invoke_handler!`. Stale Task-8-pending NOTEs scrubbed from each module. |
+| 9 Words tab | ✅ | `src/lib/api.ts` typed bindings + `src/routes/words.svelte` (Svelte 5 runes, add/delete/deploy-on-save) + 2 Vitest cases. |
+
+**Test totals: 27 cargo tests pass (5 yaml + 6 user_dict + 2 deploy + 3 status + 4 settings + 7 telemetry). 2 vitest tests pass.**
+
+### v0.0.8b — 11 tasks remain
+
+| Task | What |
+|---|---|
+| 10 Status + Settings Svelte tabs | Same shape as Words tab; reuse api.ts. WILL HIT the Vite 6 + svelte plugin v5 PartialEnvironment-Proxy CSS preprocess bug — pre-emptively move scoped `<style>` blocks to `src/app.css`. |
+| 11 App shell + tab navigation | `App.svelte` becomes a 3-tab router. Bottom status bar wires smoodle_running + dict_counts. |
+| 12 Local universal build | `cargo tauri build --target universal-apple-darwin`. Produces `Smoodle Config.app`. |
+| 13 build-config-app.yml | GHA workflow tag-driven build + sign + release artifact upload. |
+| 14 Tag + publish Smoodle Config.app | Independent release; goes into the v0.0.8b smoodle-app DMG via Task 15. |
+| 15 build-dmg.sh fetches Config.app | smoodle-app side. Pulls latest Config.app release into the v0.0.8b DMG. |
+| 16 Enable menubar shim + Apple Event handler | smoodle-app `SquirrelInputController.swift`: enable "Open Smoodle Config…", wire «event RimeRdpl» handler that re-deploys Rime. |
+| 17 Bump vendor/smoodle + v0.0.8b version | smoodle-app side. |
+| 18 Tag v0.0.8b + verify CI | Push tag, watch release.yml, verify appcast updated, founder smoke-test the auto-update from v0.0.8a.1 → v0.0.8b. |
+| 19 MANUAL Founder smoke | Verify Config.app launches from menubar, all tabs functional, no crashes. |
+| 20 MANUAL Recruit follow-up | Ping recruits with `Template D` from docs/RECRUIT-OUTREACH-DRAFTS.md (when added) after Sparkle delivers v0.0.8b to their v0.0.8a.1 install. |
+
+### v0.0.8b adaptations that MUST persist (don't revert)
+
+| # | Symptom | Fix |
+|---|---|---|
+| 1 | `add_data_files` anchor `(80 65 terra_pinyin.schema.yaml)` doesn't exist in fork's pbxproj → silent no-op | Anchor changed to `(83 84 thai_phonetic.dict.yaml)`; `require_anchor_present()` guard added; anchor_lib disabled |
+| 2 | `dirs::home_dir().expect("$HOME")` would crash the whole Tauri process | Every `home_dir`-using helper returns `Result<PathBuf, String>` via `ok_or_else`; commands propagate with `?` |
+| 3 | `Command::new("osascript")` / `"open"` / `"pgrep"` / `"plutil"` rely on $PATH — Tauri app bundle has minimal PATH | All shell-outs use absolute paths (`/usr/bin/...`) |
+| 4 | Plan said `/Applications/Smoodle.app` — wrong; Smoodle is an IME at `/Library/Input Methods/Smoodle.app` | `const SMOODLE_PLIST` + `const BUNDLED_DIR` extracted; `#[cfg(target_os = "macos")]` guard added on reset_to_defaults |
+| 5 | reqwest no timeout → Tauri thread pool starvation if forget endpoint hangs | `Client::builder().connect_timeout(10s).timeout(15s)` |
+| 6 | `forget_token` written 0644 → world-readable on multi-user macOS | `#[cfg(unix)]` chmod 0600 after write |
+| 7 | `BadResponse` error reflected server body into Tauri Err payload | Hardcoded message; never reflect server data |
+| 8 | `SMOODLE_FORGET_URL` env override silently fails in Tauri GUI (no shell env) | Dropped; hardcoded URL |
+| 9 | Telemetry tests need install_id missing + runner-err paths | Added; total 7 telemetry tests |
+| 10 | Plan's `TelemetryState { install_id_hash: string\|null }` doesn't match Rust struct `{ has_install_id: bool }` | api.ts uses the Rust shape (booleans) |
+| 11 | Vite 6 + `@sveltejs/vite-plugin-svelte` v5 throws `PartialEnvironment Proxy` on scoped `<style>` preprocess inside vitest | Move scoped `<style>` to `src/app.css` (global) + `$lib` alias added in vite.config.ts. **Apply pre-emptively to Status + Settings tabs in Task 10.** |
+| 12 | settings.rs `write_default_custom_at` was overwriting `schema_list` with empty Vec, deleting user-added schemas | Guard with `if !patch.schema_list.is_empty()` |
+| 13 | yaml.rs `backup()` mangled hidden-file stems (`.squirrelrc` → `.bak.<ts>`, stem lost) | Use `with_file_name(format!("{}.bak.{}", full_filename, ts))` |
+
+### Hot commits (smoodle repo, main)
+
+```
+[Task 9]  feat(config-app): Words tab Svelte component + Vitest + typed api.ts
+[Task 8]  feat(config-app): wire all 14 Tauri commands in lib.rs (Task 8)
+[Task 7] fix(config-app): telemetry.rs post-review — timeouts, perms, hardcoded URL, missing tests
+[Task 7]  feat(config-app): telemetry.rs — state/set_opt_in/forget
+[Task 6] fix(config-app): settings.rs + yaml.rs post-review — proper error variant, atomic_copy, schema_list guard
+[Task 6]  feat(config-app): settings.rs — 4 commands
+[Task 5] fix(config-app): status.rs post-review — plist path + stderr propagation + log polish
+[Task 5]  feat(config-app): status.rs — smoodle_running + compile_log + dict_counts
+[Task 4] polish(config-app): deploy.rs review notes
+[Task 4]  feat(config-app): deploy.rs — osascript Apple Event 'Deploy' shim
+[Task 3] fix(config-app): user_dict post-review — IPC validation, $HOME fallback, OOB skip
+[Task 3]  feat(config-app): user_dict commands — read/add/delete
+[Task 2] fix(config-app): yaml.rs post-review — backup() hidden-file bug + doc gaps
+[Task 2]  feat(config-app): yaml.rs — atomic_write_str + read + backup
+[Task 1] fix(config-app): post-review hardening — CSP, single-instance, gitignore, metadata
+[Task 1]  feat(config-app): scaffold Tauri 2 + Svelte 5 project
+```
+
+### Resume prompt for v0.0.8b continuation
+
+```
+I'm continuing v0.0.8b implementation. Context cheat-sheet at .planning/RESUME-v0.0.8.md — read that first.
+
+v0.0.8b state:
+- 9 of 20 tasks shipped + pushed (backend complete + wired, Words tab live)
+- 27 cargo tests pass; 2 vitest tests pass; both pnpm + cargo build clean
+- 11 tasks remain (frontend Status+Settings+shell, build, CI, smoodle-app DMG integration, manual smoke)
+
+Apply the 13 documented adaptations pre-emptively — they're in the RESUME doc's "v0.0.8b adaptations that MUST persist" table. Especially #11 (move scoped <style> to src/app.css before writing any new .svelte file with styling).
+
+Resume at Task 10 (Status + Settings tabs) per docs/superpowers/plans/2026-05-26-v0.0.8b-config-app.md.
+
+Caveman mode (full) active project-wide. Use superpowers:subagent-driven-development for plan execution. Be aware the Task 9 subagent stalled on the CSS preprocess bug; for Tasks 10-11 brief the subagent UPFRONT to put styles in app.css from the start.
+
+Verify environment first:
+  cd /Users/lex/Dev/my_repos/experiment/smoodle && git status
+  cargo test --manifest-path config-app/src-tauri/Cargo.toml 2>&1 | tail -3   # expect: 27 passed
+  pnpm --dir config-app test --run 2>&1 | tail -5                              # expect: 2 passed
+
+v0.0.8a.1 is publicly shipped; recruits not yet pinged. Soak gate (8a-C5) still pending.
+```
+
+
 
 ---
 
