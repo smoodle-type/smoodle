@@ -1,0 +1,13 @@
+/* Smoodle Config global styles.
+   Will be split per-component once svelte-plugin/Vite scoped-style
+   preprocess bug (PartialEnvironment Proxy) is resolved upstream. */
+
+/* Words tab */
+.words { padding: 16px; }
+.words table { width: 100%; border-collapse: collapse; }
+.words th,
+.words td { padding: 6px 8px; text-align: left; border-bottom: 1px solid #ddd; }
+.words form { display: flex; gap: 8px; margin-top: 16px; }
+.toast { margin-top: 12px; padding: 8px 12px; border-radius: 4px; }
+.toast.ok { background: #e8f5e9; color: #1b5e20; }
+.toast.err { background: #ffebee; color: #b71c1c; }

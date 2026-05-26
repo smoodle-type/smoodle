@@ -1,9 +1,20 @@
 import { defineConfig } from "vite";
 import { svelte } from "@sveltejs/vite-plugin-svelte";
+import { svelteTesting } from "@testing-library/svelte/vite";
+import path from "node:path";
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [svelte()],
+  plugins: [svelte(), svelteTesting()],
+  resolve: {
+    alias: {
+      $lib: path.resolve(__dirname, "./src/lib"),
+    },
+  },
+  test: {
+    environment: 'jsdom',
+    globals: true,
+  },
   // Prevent vite from obscuring Rust errors
   clearScreen: false,
   // Tauri expects a fixed port, fail if that port is not available
