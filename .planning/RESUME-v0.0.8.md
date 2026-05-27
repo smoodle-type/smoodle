@@ -7,22 +7,28 @@
 
 ## Latest snapshot (2026-05-27 mid-morning)
 
-### v0.0.8b SHIPPED PUBLICLY (Smoodle Config.app first ship)
+### v0.0.8b SHIPPED + v0.0.8b.1 CRITICAL PATCH SHIPPED
 
-- DMG: `https://github.com/smoodle-type/smoodle-app/releases/tag/v0.0.8b` (Smoodle-v0.0.8b.dmg 17.2MB + .sig)
-- Appcast: 3 entries (8a, 8a.1, 8b) all with valid 88-char EdDSA sigs at `https://smoodle-type.github.io/smoodle-app/appcast.xml`
-- Sparkle will auto-update v0.0.8a/v0.0.8a.1 installs → v0.0.8b on next 24h check (or manual menubar S → Check for Updates)
-- Smoodle Config.app (Tauri 2 + Svelte 5, universal arm64+x86_64, ~22MB) bundled into DMG alongside Smoodle.app — recruits drag-install Config.app to /Applications themselves (Sparkle doesn't deliver new .app bundles)
+- v0.0.8b DMG (17.2MB) + Config.app bundled — but Sparkle NEVER ARMED. Detected via founder local smoke 2026-05-27: `Frameworks/` had only librime.1.dylib, no Sparkle.framework, no SPUUpdater symbols. v0.0.8a/8a.1/8b all shipped Info.plist SUFeedURL+SUPublicEDKey but pbxproj never linked Sparkle.framework and Swift never instantiated SPUStandardUpdaterController. Auto-update was decoratively configured, never functional.
+- **v0.0.8b.1 SHIPPED PUBLICLY (Sparkle finally wired):**
+  - DMG: `https://github.com/smoodle-type/smoodle-app/releases/tag/v0.0.8b.1`
+  - Appcast: 4 entries (8a, 8a.1, 8b, 8b.1) all valid 88-char sigs
+  - Smoodle.app binary now actually links Sparkle.framework via `@rpath`; SPUStandardUpdaterController lazy-init in `applicationWillFinishLaunching` arms the 24h check on launch
+  - CFBundleShortVersionString = `0.0.8b.1` (was missing → Config Status tab "version" displayed "—" before patch)
+  - tests/sparkle-update-test.sh now has hard-fail guard: mount DMG → assert Sparkle.framework present + linked via otool. Prevents regression of the original Task 7 gap. nm symbol check warning-only (Release strips Swift mangled symbols).
+- Smoodle Config.app (Tauri 2 + Svelte 5, universal, ~22MB) bundled into DMG alongside Smoodle.app — recruits drag-install Config.app to /Applications themselves (Sparkle scope is in-place IME update only)
 - 14 IPC commands across user_dict / deploy / status / settings / telemetry surfaces (27 cargo tests pass + 6 vitest tests pass)
 - Menubar "Open Smoodle Config…" enabled + Apple Event handler «event RimeRdpl» registered
 - vendor/smoodle pinned at v0.0.8b-schema (content unchanged from v0.0.8a-schema)
-- All 18 plan tasks DONE (T0-T18); 19-20 are MANUAL (founder smoke + recruit follow-up)
 
-### Known limitations carried into v0.0.8b (not blockers)
+**Critical recruit communication caveat:** Recruits on v0.0.8a/8a.1/8b will NOT auto-update to v0.0.8b.1 (Sparkle never armed in those builds). They MUST manually re-download from `https://github.com/smoodle-type/smoodle-app/releases/latest`. Once on v0.0.8b.1+, future updates work via Sparkle.
+
+### Known limitations carried forward (not blockers)
 
 1. Smoodle Config.app binary inside bundle named `app` not `Smoodle Config` (Cargo package name is `app`, Tauri default). Cosmetic — Info.plist's CFBundleExecutable matches. Defer rename to v0.0.9.
 2. Settings tab schema_list has no drag-reorder yet — list + remove only. Defer drag to v0.0.9.
 3. Apple Event «event RimeRdpl» MAY not fire for IME-class apps (Smoodle is an input method, not standard NSApplication). Untested in the wild. If `deploy_squirrel` errors, fallback is manual menubar Deploy. Tauri returns osascript stderr in the toast for diagnostics.
+4. Sparkle 2.x runtime behavior on IME-class apps untested. Plist-armed scheduled-update timer may not fire if AppKit run loop differs from standard NSApplication. Founder + recruits will discover during soak. If broken: manual Check-for-Updates menubar click should still work (direct call path).
 
 ### v0.0.8a.1 PATCH SHIPPED PUBLICLY (closes the default.custom.yaml gap)
 - DMG: `https://github.com/smoodle-type/smoodle-app/releases/tag/v0.0.8a.1` (DMG + .sig, both verified)
