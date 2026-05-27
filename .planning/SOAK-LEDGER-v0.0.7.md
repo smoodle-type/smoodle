@@ -20,13 +20,13 @@ non-founder candidate.
 
 ## Ledger
 
-| ID | Pinged | Channel | OS | Bearer issued | Install attempt | v0.0.8a install | hash (last 8) | install_success | forget-tested | Unsolicited feedback | Notes |
-|----|--------|---------|----|---------------|------------------|------------------|---------------|------------------|----------------|----------------------|-------|
-| R1 | — | — | macOS | — | — | — | — | — | — | — | — |
-| R2 | — | — | macOS | — | — | — | — | — | — | — | — |
-| R3 | — | — | macOS | — | — | — | — | — | — | — | — |
-| R4 | — | — | macOS | — | — | — | — | — | — | — | — |
-| R5 | — | — | macOS | — | — | — | — | — | — | — | — |
+| ID | Pinged | Channel | OS | Bearer issued | Install attempt | v0.0.8a install | hash (last 8) | install_success | forget-tested | auto-updated-to-0.0.8b | Config-opened | Words-added | Settings-changed | forget-tested-via-GUI | Unsolicited feedback | Notes |
+|----|--------|---------|----|---------------|------------------|------------------|---------------|------------------|----------------|------------------------|---------------|-------------|------------------|------------------------|----------------------|-------|
+| R1 | — | — | macOS | — | — | — | — | — | — | — | — | 0 | — | — | — | — |
+| R2 | — | — | macOS | — | — | — | — | — | — | — | — | 0 | — | — | — | — |
+| R3 | — | — | macOS | — | — | — | — | — | — | — | — | 0 | — | — | — | — |
+| R4 | — | — | macOS | — | — | — | — | — | — | — | — | 0 | — | — | — | — |
+| R5 | — | — | macOS | — | — | — | — | — | — | — | — | 0 | — | — | — | — |
 
 ### Column legend
 
