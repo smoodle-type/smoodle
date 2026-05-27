@@ -146,27 +146,35 @@ to localize blast radius. Tracked as future v0.0.7 W2 hardening.
 
 ---
 
-## Template D — v0.0.8b follow-up (Sparkle has delivered Config)
+## Template D — v0.0.8b.1 follow-up (manual re-download required)
 
-For recruits already on v0.0.8a / v0.0.8a.1 after Sparkle auto-updates
-them to v0.0.8b. Send a day or two after the v0.0.8b tag ships so the
-24h check has had a chance to fire.
+For recruits already on v0.0.8a / v0.0.8a.1.
 
-> hey! smoodle update landed — you should've seen a dialog
-> "Smoodle 0.0.8b available, install?" If not, click menubar S
-> → Check for Updates.
+> **IMPORTANT BUG NOTE:** v0.0.8a/8a.1/8b shipped with Sparkle
+> configured in the plist but the framework was never actually linked
+> — so auto-update does NOT work on those builds. Recruits MUST manually
+> re-download once to get to v0.0.8b.1. From v0.0.8b.1+ onward Sparkle
+> works (verified: framework linked, SPUStandardUpdaterController armed
+> on launch, otool -L proves linkage).
+
+> hey — heads up, the smoodle build you have has a broken auto-updater
+> (Sparkle wasn't actually linked into the binary, only the plist keys
+> were there — silent dud). need you to download once manually to get
+> to v0.0.8b.1. from there auto-update will work going forward.
 >
-> v0.0.8b adds Smoodle Config.app — a settings GUI. The auto-update
-> only refreshes the IME itself, NOT the Config app. To get Config:
-> grab the fresh DMG, drag Smoodle Config.app to /Applications.
 > https://github.com/smoodle-type/smoodle-app/releases/latest
+> grab Smoodle-v0.0.8b.1.dmg
+> open the DMG, drag Smoodle.app onto the Input Methods shortcut
+> (will overwrite the existing install — password prompt). also
+> drag Smoodle Config.app to /Applications (that's new: settings GUI).
 >
-> Then click menubar S → "Open Smoodle Config…" — adds your own Thai
-> words, see status, change candidate count, opt-in/out telemetry.
-> lmk what's broken.
+> first launch of new Smoodle.app: right-click → Open (Gatekeeper still
+> unsigned). then click menubar S → "Open Smoodle Config…" — add Thai
+> words, see status, change candidate count. lmk what's broken.
 
-**When to use:** day-2 or day-3 after Sparkle auto-update, by same
-medium you used initially (Telegram if Template A, email if B, etc.).
+**When to use:** as soon as recruit can manually re-download. Earlier
+the better, since the broken Sparkle means they're stuck on whatever
+version they have until they manually upgrade.
 
 After they reply, fill the v0.0.8b columns in SOAK-LEDGER-v0.0.7.md:
 `auto-updated-to-0.0.8b`, `Config-opened`, `Words-added count`,
