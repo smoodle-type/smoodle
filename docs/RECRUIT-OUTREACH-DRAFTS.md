@@ -146,5 +146,34 @@ to localize blast radius. Tracked as future v0.0.7 W2 hardening.
 
 ---
 
+## Template D — v0.0.8b follow-up (Sparkle has delivered Config)
+
+For recruits already on v0.0.8a / v0.0.8a.1 after Sparkle auto-updates
+them to v0.0.8b. Send a day or two after the v0.0.8b tag ships so the
+24h check has had a chance to fire.
+
+> hey! smoodle update landed — you should've seen a dialog
+> "Smoodle 0.0.8b available, install?" If not, click menubar S
+> → Check for Updates.
+>
+> v0.0.8b adds Smoodle Config.app — a settings GUI. The auto-update
+> only refreshes the IME itself, NOT the Config app. To get Config:
+> grab the fresh DMG, drag Smoodle Config.app to /Applications.
+> https://github.com/smoodle-type/smoodle-app/releases/latest
+>
+> Then click menubar S → "Open Smoodle Config…" — adds your own Thai
+> words, see status, change candidate count, opt-in/out telemetry.
+> lmk what's broken.
+
+**When to use:** day-2 or day-3 after Sparkle auto-update, by same
+medium you used initially (Telegram if Template A, email if B, etc.).
+
+After they reply, fill the v0.0.8b columns in SOAK-LEDGER-v0.0.7.md:
+`auto-updated-to-0.0.8b`, `Config-opened`, `Words-added count`,
+`Settings-changed`, `forget-tested-via-GUI`.
+
+---
+
 *Drafts created: 2026-05-25 13:25 +0700 (post bearer-auth landing).*
+*Template D added: 2026-05-27 (v0.0.8b ship).*
 *Refine after sending the first one — record what tone actually worked.*
