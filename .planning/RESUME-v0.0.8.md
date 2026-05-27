@@ -1,11 +1,28 @@
 # Resume v0.0.8 implementation
 
-**Updated:** 2026-05-26 ~19:35 +0700 (end of v0.0.8a.1 patch + v0.0.8b partial backend session)
+**Updated:** 2026-05-27 ~11:45 +0700 (v0.0.8b SHIPPED publicly — DMG + appcast live)
 **Use:** open new Claude Code session, paste the "Resume prompt" block below as first message.
 
 ---
 
-## Latest snapshot (2026-05-26 evening)
+## Latest snapshot (2026-05-27 mid-morning)
+
+### v0.0.8b SHIPPED PUBLICLY (Smoodle Config.app first ship)
+
+- DMG: `https://github.com/smoodle-type/smoodle-app/releases/tag/v0.0.8b` (Smoodle-v0.0.8b.dmg 17.2MB + .sig)
+- Appcast: 3 entries (8a, 8a.1, 8b) all with valid 88-char EdDSA sigs at `https://smoodle-type.github.io/smoodle-app/appcast.xml`
+- Sparkle will auto-update v0.0.8a/v0.0.8a.1 installs → v0.0.8b on next 24h check (or manual menubar S → Check for Updates)
+- Smoodle Config.app (Tauri 2 + Svelte 5, universal arm64+x86_64, ~22MB) bundled into DMG alongside Smoodle.app — recruits drag-install Config.app to /Applications themselves (Sparkle doesn't deliver new .app bundles)
+- 14 IPC commands across user_dict / deploy / status / settings / telemetry surfaces (27 cargo tests pass + 6 vitest tests pass)
+- Menubar "Open Smoodle Config…" enabled + Apple Event handler «event RimeRdpl» registered
+- vendor/smoodle pinned at v0.0.8b-schema (content unchanged from v0.0.8a-schema)
+- All 18 plan tasks DONE (T0-T18); 19-20 are MANUAL (founder smoke + recruit follow-up)
+
+### Known limitations carried into v0.0.8b (not blockers)
+
+1. Smoodle Config.app binary inside bundle named `app` not `Smoodle Config` (Cargo package name is `app`, Tauri default). Cosmetic — Info.plist's CFBundleExecutable matches. Defer rename to v0.0.9.
+2. Settings tab schema_list has no drag-reorder yet — list + remove only. Defer drag to v0.0.9.
+3. Apple Event «event RimeRdpl» MAY not fire for IME-class apps (Smoodle is an input method, not standard NSApplication). Untested in the wild. If `deploy_squirrel` errors, fallback is manual menubar Deploy. Tauri returns osascript stderr in the toast for diagnostics.
 
 ### v0.0.8a.1 PATCH SHIPPED PUBLICLY (closes the default.custom.yaml gap)
 - DMG: `https://github.com/smoodle-type/smoodle-app/releases/tag/v0.0.8a.1` (DMG + .sig, both verified)
