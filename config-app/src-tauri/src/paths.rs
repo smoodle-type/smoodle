@@ -50,10 +50,11 @@ pub fn resolve(user_dir: &Path, shared_dir: &Path, name: &str) -> PathBuf {
     }
 }
 
-/// Smoodle.app's Rime INFO log: glog keeps `rime.squirrel.INFO` pointing at
-/// the current process's log file inside `$TMPDIR/rime.squirrel`.
-pub fn rime_log_file() -> PathBuf {
-    user_temp_dir().join("rime.squirrel/rime.squirrel.INFO")
+/// Smoodle.app's Rime log directory, `$TMPDIR/rime.squirrel`. glog keeps
+/// `rime.squirrel.INFO` and `rime.squirrel.ERROR` pointing at the current
+/// process's log files there.
+pub fn rime_log_dir() -> PathBuf {
+    user_temp_dir().join("rime.squirrel")
 }
 
 /// Per-user temp dir, the same one Swift's `FileManager.temporaryDirectory`

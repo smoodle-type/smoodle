@@ -4,6 +4,7 @@
 //! - schema_compile_log    → Status tab deploy report (last deploy + log lines)
 //! - dict_counts           → Status tab "Entries" row (base + user + total)
 
+use std::collections::BTreeSet;
 use std::fs;
 use std::path::Path;
 use std::process::Command;
@@ -72,26 +73,35 @@ pub fn smoodle_running() -> Result<SmoodleStatus, String> {
 #[tauri::command]
 pub fn schema_compile_log() -> Result<String, String> {
     let user_yaml = paths::rime_user_dir()?.join("user.yaml");
-    Ok(compile_report(&user_yaml, &paths::rime_log_file()))
+    Ok(compile_report(&user_yaml, &paths::rime_log_dir()))
 }
 
-/// Testable inner helper for `schema_compile_log`. glog buffers INFO lines,
-/// so they can trail a deploy by up to ~30s; warnings and errors are written
-/// at once. The "Last deploy" line comes from user.yaml and is always current.
-pub fn compile_report(user_yaml: &Path, log: &Path) -> String {
+/// Testable inner helper for `schema_compile_log`: the last deploy time from
+/// user.yaml, then the last deploy-related lines of Smoodle's Rime log.
+/// glog buffers `rime.squirrel.INFO` — even warnings and errors reach it only
+/// on its next flush — but flushes `rime.squirrel.WARNING` (warnings and
+/// errors) line by line, so both files are merged by timestamp.
+pub fn compile_report(user_yaml: &Path, log_dir: &Path) -> String {
     let mut out = match last_build_time(user_yaml).and_then(format_local) {
         Some(when) => format!("Last deploy: {}", when),
         None => "Last deploy: never".to_string(),
     };
-    match fs::read_to_string(log) {
-        Ok(content) => {
-            let lines: Vec<String> = content.lines().filter_map(deploy_line).collect();
-            for line in &lines[lines.len().saturating_sub(LOG_LINES)..] {
-                out.push('\n');
-                out.push_str(line);
-            }
+    let mut entries = BTreeSet::new();
+    let mut found_log = false;
+    for name in ["rime.squirrel.INFO", "rime.squirrel.WARNING"] {
+        if let Ok(content) = fs::read_to_string(log_dir.join(name)) {
+            found_log = true;
+            entries.extend(content.lines().filter_map(deploy_line));
         }
-        Err(_) => out.push_str("\nNo Rime log yet — Smoodle writes one once it starts."),
+    }
+    if !found_log {
+        out.push_str("\nNo Rime log yet — Smoodle writes one once it starts.");
+        return out;
+    }
+    let lines: Vec<(String, String)> = entries.into_iter().collect();
+    for (_, text) in &lines[lines.len().saturating_sub(LOG_LINES)..] {
+        out.push('\n');
+        out.push_str(text);
     }
     out
 }
@@ -109,17 +119,18 @@ fn format_local(epoch_secs: i64) -> Option<String> {
     Some(utc.with_timezone(&chrono::Local).format("%Y-%m-%d %H:%M:%S").to_string())
 }
 
-/// A glog line from a deploy task or any warning/error, reformatted as
-/// `HH:MM:SS <severity> <message>`. Engine start/stop and config loads are
-/// dropped. Input: `I20260923 13:31:42.310823 0x1f1356180 deployment_tasks.cc:83] msg`
-fn deploy_line(line: &str) -> Option<String> {
+/// A glog line from a deploy task, or any warning/error, as
+/// (sortable `yyyymmdd hh:mm:ss.uuuuuu`, display `HH:MM:SS <severity> <message>`).
+/// Engine start/stop and config loads are dropped.
+/// Input: `I20260923 13:31:42.310823 0x1f1356180 deployment_tasks.cc:83] msg`
+fn deploy_line(line: &str) -> Option<(String, String)> {
     let severity = line.chars().next()?;
     if !matches!(severity, 'I' | 'W' | 'E' | 'F') {
         return None;
     }
     let mut fields = line.splitn(5, ' ');
-    let _date = fields.next()?;
-    let time = fields.next()?.get(..8)?;
+    let date = fields.next()?.get(1..)?;
+    let time = fields.next()?;
     let _thread = fields.next()?;
     let source = fields.next()?;
     let message = fields.next()?;
@@ -129,7 +140,7 @@ fn deploy_line(line: &str) -> Option<String> {
     if severity == 'I' && !from_deploy {
         return None;
     }
-    Some(format!("{} {} {}", time, severity, message))
+    Some((format!("{} {}", date, time), format!("{} {} {}", time.get(..8)?, severity, message)))
 }
 
 /// Return entry counts for the base dict, user dict, and their sum — the

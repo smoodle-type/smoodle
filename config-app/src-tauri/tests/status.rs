@@ -18,12 +18,11 @@ I20260923 13:31:43.100000 0x1f1356180 engine.cc:72] starting engine.
 #[test]
 fn compile_report_shows_last_deploy_and_only_deploy_lines() {
     let dir = tempdir().unwrap();
-    let log = dir.path().join("rime.squirrel.INFO");
     let user_yaml = dir.path().join("user.yaml");
-    fs::write(&log, LOG).unwrap();
+    fs::write(dir.path().join("rime.squirrel.INFO"), LOG).unwrap();
     fs::write(&user_yaml, "var:\n  last_build_time: 1790145102\n").unwrap();
 
-    let report = compile_report(&user_yaml, &log);
+    let report = compile_report(&user_yaml, dir.path());
     let lines: Vec<&str> = report.lines().collect();
 
     assert!(lines[0].starts_with("Last deploy: ") && !lines[0].contains("never"), "{report}");
@@ -35,9 +34,41 @@ fn compile_report_shows_last_deploy_and_only_deploy_lines() {
 }
 
 #[test]
+fn errors_show_before_glog_flushes_the_info_log() {
+    // glog buffers rime.squirrel.INFO (even error lines) but flushes
+    // rime.squirrel.WARNING per line; right after a failed deploy only the
+    // latter has the error. Once INFO catches up, the line must not repeat.
+    let dir = tempdir().unwrap();
+    let info = "I20260923 13:59:08.900000 0x1 deployment_tasks.cc:167] updating workspace.\n";
+    let warning = "\
+W20260923 13:59:09.026540 0x16d5ff000 config_data.cc:70] nonexistent config file 'build/luna_pinyin.schema.yaml'.
+E20260923 13:59:09.026550 0x16d5ff000 deployment_tasks.cc:212] missing input schema: luna_pinyin
+";
+    fs::write(dir.path().join("rime.squirrel.INFO"), info).unwrap();
+    fs::write(dir.path().join("rime.squirrel.WARNING"), warning).unwrap();
+    let user_yaml = dir.path().join("user.yaml");
+
+    let report = compile_report(&user_yaml, dir.path());
+    let lines: Vec<&str> = report.lines().skip(1).collect();
+    assert_eq!(
+        lines,
+        [
+            "13:59:08 I updating workspace.",
+            "13:59:09 W nonexistent config file 'build/luna_pinyin.schema.yaml'.",
+            "13:59:09 E missing input schema: luna_pinyin",
+        ],
+        "{report}"
+    );
+
+    fs::write(dir.path().join("rime.squirrel.INFO"), format!("{info}{warning}")).unwrap();
+    let flushed = compile_report(&user_yaml, dir.path());
+    assert_eq!(flushed.matches("missing input schema").count(), 1, "{flushed}");
+}
+
+#[test]
 fn compile_report_before_any_deploy_or_log() {
     let dir = tempdir().unwrap();
-    let report = compile_report(&dir.path().join("user.yaml"), &dir.path().join("missing.INFO"));
+    let report = compile_report(&dir.path().join("user.yaml"), dir.path());
     assert!(report.starts_with("Last deploy: never"), "{report}");
     assert!(report.contains("No Rime log yet"), "{report}");
 }
