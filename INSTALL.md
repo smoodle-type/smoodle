@@ -9,6 +9,8 @@
 2. Open the DMG. Drag `Smoodle.app` onto the **Input Methods** folder
    shortcut. (You may be asked for your password — that's macOS
    authorizing the install into `/Library/Input Methods`.)
+   Also drag `Smoodle Config.app` onto the **Applications** shortcut — it
+   is the settings window for custom words and the candidate count.
 3. First launch will be blocked by Gatekeeper ("cannot verify
    developer"). This is expected — smoodle is unsigned for v0.0.8.
    Right-click `Smoodle.app` → **Open** → click **Open** in the dialog.
@@ -22,68 +24,66 @@
 
 ### Auto-update
 
-Smoodle.app checks for updates daily in the background via Sparkle.
-When a new version is available, you'll see a small dialog asking
-whether to install. You can also check manually via the menubar S icon
-→ **Check for updates...**
+Smoodle.app v0.0.8b.1 and later check for updates daily in the background
+via Sparkle. When a new version is available, you'll see a small dialog
+asking whether to install. You can also check manually via the menubar S
+icon → **Check for updates...**
 
-### Default schema (auto-wired since v0.0.8a.1)
+v0.0.8a, v0.0.8a.1 and v0.0.8b cannot update themselves (Sparkle was not
+wired in). Download the latest DMG once and drag-install it; updates work
+from then on.
 
-`default.custom.yaml` is now bundled and copied to
-`~/Library/Rime/default.custom.yaml` on first deploy, wiring
-`thai_phonetic` as the primary schema. If you're on v0.0.8a (the
-original tag) and never see Thai candidates, either auto-update to
-v0.0.8a.1+ via menubar S → **Check for updates...**, or hand-create
-`~/Library/Rime/default.custom.yaml`:
+Smoodle Config.app is not updated by Sparkle — drag the copy from each new
+DMG onto **Applications**.
+
+### Where Smoodle keeps your data
+
+Smoodle.app runs its own Rime setup, separate from Squirrel:
+
+- `/Library/Input Methods/Smoodle.app/Contents/SharedSupport/` — schema,
+  dictionary and default settings shipped with the app (replaced on update).
+- `~/Library/Rime/Smoodle/` — your custom words
+  (`thai_phonetic.user.dict.yaml`), your settings (`default.custom.yaml`,
+  once you change one) and the words Smoodle learns from your typing.
+  A file here takes precedence over the bundled file of the same name.
+
+`~/Library/Rime/` itself belongs to Squirrel (the v0.0.6 install path);
+Smoodle.app does not read it.
+
+### Custom words
+
+Open the menubar S icon → **Open Smoodle Config…** → **Words**. Add the Thai
+word, the romanization you want to type, and a weight (100 is normal, 1000 is
+very common). With **Deploy on save** checked, the word is usable as soon as
+the toast says "deployed". Needs v0.0.8b.3 or later — earlier builds never
+loaded custom words.
+
+To edit by hand instead, open `~/Library/Rime/Smoodle/thai_phonetic.user.dict.yaml`
+(Config creates it; you can also create it with the header below), add one
+line per word, then menubar S → **Deploy**:
 
 ```yaml
-patch:
-  schema_list:
-    - schema: thai_phonetic
+# Rime user dictionary
+---
+name: thai_phonetic.user
+version: "1"
+sort: by_weight
+...
+ลีเอ็กซ์	lex	100
 ```
 
-Then menubar S → **Deploy**.
-
-### Custom words (v0.0.8a.1 hand-edit workaround)
-
-The graphical config app for adding personal vocabulary arrives in
-v0.0.8b (auto-updates via Sparkle when it lands). Until then, you can
-hand-edit:
-
-1. Open Finder. Press **⌘⇧G**. Type `~/Library/Rime/` and Enter.
-2. If `thai_phonetic.user.dict.yaml` doesn't exist, create it with this
-   header in any text editor:
-
-   ```yaml
-   # Rime user dictionary
-   ---
-   name: thai_phonetic.user
-   version: "1"
-   sort: by_weight
-   ...
-   ```
-
-3. After the `...` line, add one line per word:
-
-   ```
-   ลีเอ็กซ์	lex	100
-   ```
-
-   Format is `<thai>\t<romanization>\t<weight>` (tabs, not spaces).
-   Weights are log frequencies — 100 is normal, 1000 is very common.
-
-4. Click the menubar S icon → **Deploy**. Your word will be usable in
-   ~2 seconds.
+Format is `<thai>\t<romanization>\t<weight>` (tabs, not spaces). Smoodle
+Config rewrites this file on every change and drops comments you add.
 
 ### Uninstall
 
 1. Quit Smoodle.app (menubar S icon → Quit).
 2. System Settings → Keyboard → Input Sources → select Smoodle → "−".
 3. `sudo rm -rf /Library/Input\ Methods/Smoodle.app`
-4. Optional: delete `~/Library/Rime/thai_phonetic.{schema,dict}.yaml`
-   and `~/Library/Rime/default.custom.yaml` if you don't want the
-   schema available even after reinstalling Squirrel.
-5. Optional: delete `~/.smoodle/` (telemetry opt-in state + bearer
+4. `rm -rf "/Applications/Smoodle Config.app"` if you installed it.
+5. Optional: `rm -rf ~/Library/Rime/Smoodle` — removes your custom words,
+   settings and learned history.
+6. Optional: delete `~/.smoodle/` (telemetry opt-in state + bearer
    token cache).
 
 ## Windows (legacy install script — v0.0.7 path)
