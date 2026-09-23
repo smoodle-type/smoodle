@@ -1,11 +1,51 @@
 # Resume v0.0.8 implementation
 
-**Updated:** 2026-05-27 ~11:45 +0700 (v0.0.8b SHIPPED publicly — DMG + appcast live)
+**Updated:** 2026-09-23 (v0.0.8b.3 SHIPPED — custom words load, clean deploys, Config.app fixed)
 **Use:** open new Claude Code session, paste the "Resume prompt" block below as first message.
 
 ---
 
-## Latest snapshot (2026-05-27 mid-morning)
+## Latest snapshot (2026-09-23)
+
+### v0.0.8b.3 SHIPPED (smoodle-app `v0.0.8b.3`, Config.app `config-app-v0.0.8b.3`)
+
+Fixes, each reproduced on the shipped v0.0.8b.2 first:
+- Config.app read/wrote `~/Library/Rime` (Squirrel's dir); Smoodle.app uses
+  `~/Library/Rime/Smoodle` + bundle `SharedSupport`. Now `config-app/src-tauri/src/paths.rs`.
+- Custom words never loaded (base dict has no `import_tables`). Bundle-only
+  fix in smoodle-app `data/smoodle/`: `thai_phonetic.custom.yaml` →
+  `thai_phonetic.extended.dict.yaml` (imports `thai_phonetic` +
+  `thai_phonetic.user`) + empty user-dict fallback. vendor/smoodle schema and
+  legacy installers untouched.
+- Every deploy reported failure (bundled default.custom.yaml listed
+  luna_pinyin/luna_pinyin_simp/bopomofo). Bundle now ships its own
+  schema list: `thai_phonetic` only.
+- Deploy used an Apple Event that stalls 120s behind TCC consent; now
+  `Smoodle --reload` + wait for `user.yaml` `last_build_time`.
+- Reset copied from nonexistent `Contents/Resources/plum`; now moves
+  user-dir overrides aside (`*.bak.<UTC>`).
+- Status log read nonexistent `build/deploy.log`; now last deploy time +
+  deploy/error lines from `$TMPDIR/rime.squirrel` INFO+WARNING (glog buffers INFO).
+
+Verified: cargo 33 / vitest 8 green; librime from the built bundle: deploy
+success, `lex` → ลีเอ็กซ์; CI `package/test-dmg.sh` new checks 8+9 pass on
+v0.0.8b.3 (fail on v0.0.8b.2); appcast has v0.0.8b.3 with EdDSA sig.
+
+NOT verified: manual checklist rows 1–18 (`tests/manual/v0.0.8b-e2e.md`).
+Founder Mac state: Smoodle **v0.0.8b.2** installed as the Sparkle baseline
+(dev build + `~/Library/Rime/Smoodle` backed up in `~/smoodle-backups/2026-09-23/`),
+Config.app 0.0.8b.3 in /Applications. Sparkle's launch-time check works in
+the IME (SULastCheckTime set at launch); the manual 8b.2 → 8b.3 update via
+menu "Check for updates..." has not been exercised — Smoodle menu items only
+act while a text field has focus with Smoodle active. Synthetic key events
+(NSTextInputContext.handleEvent) do not reach IMK input methods, so rows
+need real typing.
+
+Pre-existing, untouched: smoodle-app `commit ci` red at pkgbuild
+(`package/make_package` still packages `Squirrel.app`); `package/add_data_files`
+logs "adding X" but inserts nothing (every bundled file is wired by hand).
+
+## Snapshot (2026-05-27 mid-morning)
 
 ### v0.0.8b SHIPPED + v0.0.8b.1 CRITICAL PATCH SHIPPED
 
