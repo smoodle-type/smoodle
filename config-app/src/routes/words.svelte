@@ -1,13 +1,14 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { api, type DictEntry } from '$lib/api';
+  import { deployAndReport, type Toast } from '$lib/deploy';
 
   let entries = $state<DictEntry[]>([]);
   let newWord = $state('');
   let newRom = $state('');
   let newWeight = $state(100);
   let deployOnSave = $state(true);
-  let toast = $state<{ msg: string; type: 'ok' | 'err' } | null>(null);
+  let toast = $state<Toast | null>(null);
 
   async function load() {
     try { entries = await api.readUserDict(); }
@@ -15,24 +16,25 @@
   }
 
   async function add() {
+    const word = newWord;
     try {
       const t0 = performance.now();
-      await api.addUserWord(newWord, newRom, newWeight);
-      if (deployOnSave) await api.deploySquirrel();
-      const dt = ((performance.now() - t0) / 1000).toFixed(1);
-      toast = { msg: `Added '${newWord}' · deployed in ${dt}s ✓`, type: 'ok' };
+      await api.addUserWord(word, newRom, newWeight);
       newWord = ''; newRom = ''; newWeight = 100;
       await load();
+      toast = await deployAndReport(`Added '${word}'`, t0, deployOnSave);
     } catch (e) {
       toast = { msg: `Add failed: ${e}`, type: 'err' };
     }
   }
 
   async function remove(idx: number) {
+    const word = entries[idx]?.word ?? '';
     try {
+      const t0 = performance.now();
       await api.deleteUserWord(idx);
-      if (deployOnSave) await api.deploySquirrel();
       await load();
+      toast = await deployAndReport(`Deleted '${word}'`, t0, deployOnSave);
     } catch (e) { toast = { msg: `Delete failed: ${e}`, type: 'err' }; }
   }
 

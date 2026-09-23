@@ -1,11 +1,12 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { api, type DefaultCustomPatch } from '$lib/api';
+  import { deployAndReport, type Toast } from '$lib/deploy';
 
   let candidateCount = $state<number>(5);
   let schemaList = $state<string[]>([]);
   let deployOnSave = $state(true);
-  let toast = $state<{ msg: string; type: 'ok' | 'err' } | null>(null);
+  let toast = $state<Toast | null>(null);
 
   async function load() {
     try {
@@ -23,10 +24,10 @@
 
   async function save() {
     try {
+      const t0 = performance.now();
       const patch: DefaultCustomPatch = { candidate_count: candidateCount, schema_list: schemaList };
       await api.writeDefaultCustom(patch);
-      if (deployOnSave) await api.deploySquirrel();
-      toast = { msg: 'Settings saved ✓', type: 'ok' };
+      toast = await deployAndReport('Settings saved', t0, deployOnSave);
     } catch (e) {
       toast = { msg: `Save failed: ${e}`, type: 'err' };
     }
@@ -38,11 +39,12 @@
   }
 
   async function resetDefaults() {
-    if (!window.confirm('Reset all settings to defaults?')) return;
+    if (!window.confirm('Reset candidate count and schema list to Smoodle defaults? Your custom words are kept.')) return;
     try {
+      const t0 = performance.now();
       await api.resetToDefaults();
       await load();
-      toast = { msg: 'Reset to defaults ✓', type: 'ok' };
+      toast = await deployAndReport('Reset to defaults', t0, deployOnSave);
     } catch (e) {
       toast = { msg: `Reset failed: ${e}`, type: 'err' };
     }

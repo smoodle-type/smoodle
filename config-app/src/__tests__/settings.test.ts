@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/svelte';
+import { invoke } from '@tauri-apps/api/core';
 import Settings from '../routes/settings.svelte';
 
 vi.mock('@tauri-apps/api/core', () => ({
@@ -24,7 +25,6 @@ describe('Settings tab', () => {
   });
 
   it('save button calls write_default_custom then deploy_squirrel', async () => {
-    const { invoke } = await import('@tauri-apps/api/core');
     render(Settings);
     await screen.findByDisplayValue('5');
     fireEvent.click(screen.getByRole('button', { name: /save/i }));
@@ -32,5 +32,18 @@ describe('Settings tab', () => {
       expect(invoke).toHaveBeenCalledWith('write_default_custom', { patch: { candidate_count: 5, schema_list: ['thai_phonetic'] } });
       expect(invoke).toHaveBeenCalledWith('deploy_squirrel');
     });
+  });
+
+  it('reset asks first, then resets and deploys so the defaults take effect', async () => {
+    const confirm = vi.spyOn(window, 'confirm').mockReturnValue(true);
+    render(Settings);
+    await screen.findByDisplayValue('5');
+    fireEvent.click(screen.getByRole('button', { name: /reset to defaults/i }));
+    await vi.waitFor(() => {
+      expect(invoke).toHaveBeenCalledWith('reset_to_defaults');
+      expect(invoke).toHaveBeenCalledWith('deploy_squirrel');
+    });
+    expect(confirm).toHaveBeenCalledOnce();
+    confirm.mockRestore();
   });
 });
