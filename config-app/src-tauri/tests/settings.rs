@@ -1,7 +1,6 @@
 use smoodle_config_lib::commands::settings::{
-    read_default_custom_at, write_default_custom_at, DefaultCustomPatch, reset_to_defaults_with,
+    read_default_custom_at, reset_to_defaults_in, write_default_custom_at, DefaultCustomPatch,
 };
-use smoodle_config_lib::yaml;
 use tempfile::tempdir;
 use std::fs;
 
@@ -29,7 +28,7 @@ fn write_round_trips_and_preserves_unknown_keys() {
     // Pre-existing file has an unknown key that we should preserve
     fs::write(&path, "patch:\n  menu/page_size: 5\n  unrelated_key: true\n").unwrap();
     let patch = DefaultCustomPatch { candidate_count: Some(9), schema_list: vec!["thai_phonetic".into()] };
-    write_default_custom_at(&path, &patch).unwrap();
+    write_default_custom_at(&path, &dir.path().join("no-bundle.yaml"), &patch).unwrap();
     let new_content = fs::read_to_string(&path).unwrap();
     assert!(new_content.contains("menu/page_size: 9"));
     assert!(new_content.contains("unrelated_key: true"), "unknown keys must be preserved");
@@ -37,21 +36,42 @@ fn write_round_trips_and_preserves_unknown_keys() {
 }
 
 #[test]
-fn reset_copies_bundled_files_but_preserves_user_dict() {
+fn first_write_starts_from_bundled_copy_so_schema_list_survives() {
+    // A user-dir default.custom.yaml replaces the bundled one wholesale. If the
+    // first save dropped the bundled schema_list, Rime would fall back to
+    // default.yaml's stock schemas and Smoodle would lose its Thai schema.
     let dir = tempdir().unwrap();
-    let rime = dir.path().join("rime");
-    let bundled = dir.path().join("bundled");
-    fs::create_dir_all(&rime).unwrap();
-    fs::create_dir_all(&bundled).unwrap();
-    fs::write(bundled.join("thai_phonetic.schema.yaml"), "bundled-schema-content").unwrap();
-    fs::write(bundled.join("thai_phonetic.dict.yaml"), "bundled-dict-content").unwrap();
-    fs::write(bundled.join("default.custom.yaml"), "bundled-custom").unwrap();
-    fs::write(rime.join("thai_phonetic.schema.yaml"), "old").unwrap();
-    fs::write(rime.join("thai_phonetic.user.dict.yaml"), "user-words-here").unwrap();
-    reset_to_defaults_with(&bundled, &rime).unwrap();
-    assert_eq!(fs::read_to_string(rime.join("thai_phonetic.schema.yaml")).unwrap(), "bundled-schema-content");
-    // user.dict preserved!
-    assert_eq!(fs::read_to_string(rime.join("thai_phonetic.user.dict.yaml")).unwrap(), "user-words-here");
+    let bundled = dir.path().join("SharedSupport/default.custom.yaml");
+    let target = dir.path().join("Rime/Smoodle/default.custom.yaml");
+    fs::create_dir_all(bundled.parent().unwrap()).unwrap();
+    fs::write(&bundled, SAMPLE).unwrap();
+    let patch = DefaultCustomPatch { candidate_count: Some(3), schema_list: vec![] };
+    write_default_custom_at(&target, &bundled, &patch).unwrap();
+    let written = read_default_custom_at(&target).unwrap();
+    assert_eq!(written.candidate_count, Some(3));
+    assert_eq!(written.schema_list, vec!["thai_phonetic".to_string()]);
+    assert_eq!(fs::read_to_string(&bundled).unwrap(), SAMPLE, "bundled copy must stay untouched");
+}
+
+#[test]
+fn reset_moves_overrides_aside_and_keeps_custom_words() {
+    let dir = tempdir().unwrap();
+    let user = dir.path();
+    fs::write(user.join("default.custom.yaml"), SAMPLE).unwrap();
+    fs::write(user.join("thai_phonetic.custom.yaml"), "patch: {}\n").unwrap();
+    fs::write(user.join("thai_phonetic.user.dict.yaml"), "user-words-here").unwrap();
+    fs::create_dir_all(user.join("thai_phonetic.userdb")).unwrap();
+
+    let moved = reset_to_defaults_in(user).unwrap();
+
+    assert_eq!(moved.len(), 2);
+    assert!(!user.join("default.custom.yaml").exists(), "override still shadows the bundled file");
+    assert!(!user.join("thai_phonetic.custom.yaml").exists(), "override still shadows the bundled file");
+    for bak in &moved {
+        assert!(bak.exists(), "backup {} missing", bak.display());
+    }
+    assert_eq!(fs::read_to_string(user.join("thai_phonetic.user.dict.yaml")).unwrap(), "user-words-here");
+    assert!(user.join("thai_phonetic.userdb").is_dir(), "learned history must survive a reset");
 }
 
 #[test]
@@ -60,7 +80,7 @@ fn write_returns_error_when_patch_root_absent() {
     let path = dir.path().join("bad.yaml");
     fs::write(&path, "not_a_patch_key: true\n").unwrap();
     let patch = DefaultCustomPatch { candidate_count: Some(5), schema_list: vec![] };
-    let result = write_default_custom_at(&path, &patch);
+    let result = write_default_custom_at(&path, &dir.path().join("no-bundle.yaml"), &patch);
     assert!(result.is_err());
     assert!(
         format!("{}", result.unwrap_err()).contains("patch"),

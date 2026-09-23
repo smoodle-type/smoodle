@@ -47,23 +47,10 @@ pub fn read<T: serde::de::DeserializeOwned>(path: &Path) -> Result<T> {
     Ok(value)
 }
 
-/// Copy `src` to `dst` atomically (same-fs rename via NamedTempFile).
-/// Useful when the source may be binary (no String round-trip).
-pub fn atomic_copy(src: &Path, dst: &Path) -> Result<()> {
-    let parent = dst.parent().ok_or_else(|| {
-        std::io::Error::new(std::io::ErrorKind::InvalidInput, "dst has no parent")
-    })?;
-    let mut tmp = tempfile::NamedTempFile::new_in(parent)?;
-    let bytes = fs::read(src)?;
-    std::io::Write::write_all(tmp.as_file_mut(), &bytes)?;
-    tmp.as_file().sync_all()?;
-    tmp.persist(dst).map_err(|e| e.error)?;
-    Ok(())
-}
-
-/// Backup an existing file to `<full-filename>.bak.<ISO>`. Returns `Ok(None)` if
-/// `path` does not exist (no-op, not an error).
-pub fn backup(path: &Path) -> Result<Option<std::path::PathBuf>> {
+/// Rename `path` to `<full-filename>.bak.<UTC timestamp>` in the same
+/// directory. Returns `Ok(None)` if `path` does not exist (no-op, not an
+/// error). Rime ignores the renamed file, so the bundled default applies.
+pub fn move_aside(path: &Path) -> Result<Option<std::path::PathBuf>> {
     if !path.exists() {
         return Ok(None);
     }
@@ -75,6 +62,6 @@ pub fn backup(path: &Path) -> Result<Option<std::path::PathBuf>> {
             std::io::Error::new(std::io::ErrorKind::InvalidInput, "path has no filename")
         })?;
     let bak = path.with_file_name(format!("{}.bak.{}", fname, ts));
-    fs::copy(path, &bak)?;
+    fs::rename(path, &bak)?;
     Ok(Some(bak))
 }

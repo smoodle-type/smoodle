@@ -70,7 +70,7 @@
   </section>
 
   <section>
-    <div>Last deploy log (5 lines):</div>
+    <div>Deploy log:</div>
     <pre>{log}</pre>
   </section>
 

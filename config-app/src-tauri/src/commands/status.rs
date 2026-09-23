@@ -1,15 +1,16 @@
 //! Status tab queries.
 //!
 //! - smoodle_running       → Status tab "Running" indicator + version badge
-//! - schema_compile_log    → Status tab "Compile log" textarea (last 5 lines)
+//! - schema_compile_log    → Status tab deploy report (last deploy + log lines)
 //! - dict_counts           → Status tab "Entries" row (base + user + total)
 
 use std::fs;
-use std::path::{Path, PathBuf};
+use std::path::Path;
 use std::process::Command;
+use crate::paths;
 
-const SMOODLE_PLIST: &str =
-    "/Library/Input Methods/Smoodle.app/Contents/Info.plist";
+/// Deploy-related Rime log lines shown under "Last deploy".
+const LOG_LINES: usize = 5;
 
 #[derive(serde::Serialize)]
 pub struct SmoodleStatus {
@@ -24,17 +25,11 @@ pub struct DictCounts {
     pub total: usize,
 }
 
-/// Returns `~/Library/Rime` as a `PathBuf`, or a descriptive error string.
-fn rime_dir() -> Result<PathBuf, String> {
-    dirs::home_dir()
-        .map(|h| h.join("Library/Rime"))
-        .ok_or_else(|| "$HOME not set — cannot resolve Rime directory".to_string())
-}
-
 /// Extract CFBundleShortVersionString from a plist via `/usr/bin/plutil`.
-fn plutil_version(plist: &str) -> Result<String, String> {
+fn plutil_version(plist: &Path) -> Result<String, String> {
     let output = Command::new("/usr/bin/plutil")
-        .args(["-extract", "CFBundleShortVersionString", "raw", plist])
+        .args(["-extract", "CFBundleShortVersionString", "raw"])
+        .arg(plist)
         .output()
         .map_err(|e| e.to_string())?;
     if !output.status.success() {
@@ -47,57 +42,106 @@ fn plutil_version(plist: &str) -> Result<String, String> {
     Ok(String::from_utf8_lossy(&output.stdout).trim().to_string())
 }
 
-/// Query whether Smoodle.app is running and, if so, its version string.
-#[tauri::command]
-pub fn smoodle_running() -> Result<SmoodleStatus, String> {
-    // pgrep -x: exact-match process name; -x avoids matching processes like "SmoodleConfig"
-    let running = Command::new("/usr/bin/pgrep")
+/// Is a process named exactly `Smoodle` running? (`pgrep -x` so
+/// "Smoodle Config" does not count.)
+pub fn is_smoodle_running() -> bool {
+    Command::new("/usr/bin/pgrep")
         .arg("-x")
         .arg("Smoodle")
         .output()
         .map(|o| o.status.success())
-        .unwrap_or(false);
+        .unwrap_or(false)
+}
+
+/// Query whether Smoodle.app is running and, if so, its version string.
+#[tauri::command]
+pub fn smoodle_running() -> Result<SmoodleStatus, String> {
+    let running = is_smoodle_running();
     // Known TOCTOU: if Smoodle.app quits between pgrep and plutil, this returns
     // SmoodleStatus { running: true, version: None }. Bounded, non-crashing —
     // acceptable for v0.0.8b dogfood. v0.0.9 async refactor candidate.
     let version = if running {
-        plutil_version(SMOODLE_PLIST).ok()
+        plutil_version(&paths::info_plist()).ok()
     } else {
         None
     };
     Ok(SmoodleStatus { running, version })
 }
 
-/// Return last 5 lines of the Rime deploy log (`~/Library/Rime/build/deploy.log`).
+/// When Rime last finished a deploy, and the deploy lines of Smoodle's log.
 #[tauri::command]
 pub fn schema_compile_log() -> Result<String, String> {
-    let path = rime_dir()?.join("build/deploy.log");
-    schema_compile_log_at(&path)
+    let user_yaml = paths::rime_user_dir()?.join("user.yaml");
+    Ok(compile_report(&user_yaml, &paths::rime_log_file()))
 }
 
-/// Testable inner helper — reads the log at `path` and returns last 5 lines.
-pub fn schema_compile_log_at(path: &Path) -> Result<String, String> {
-    if !path.exists() {
-        return Ok("Deploy log not yet present — run Smoodle.app menubar → Deploy first.".into());
+/// Testable inner helper for `schema_compile_log`. glog buffers INFO lines,
+/// so they can trail a deploy by up to ~30s; warnings and errors are written
+/// at once. The "Last deploy" line comes from user.yaml and is always current.
+pub fn compile_report(user_yaml: &Path, log: &Path) -> String {
+    let mut out = match last_build_time(user_yaml).and_then(format_local) {
+        Some(when) => format!("Last deploy: {}", when),
+        None => "Last deploy: never".to_string(),
+    };
+    match fs::read_to_string(log) {
+        Ok(content) => {
+            let lines: Vec<String> = content.lines().filter_map(deploy_line).collect();
+            for line in &lines[lines.len().saturating_sub(LOG_LINES)..] {
+                out.push('\n');
+                out.push_str(line);
+            }
+        }
+        Err(_) => out.push_str("\nNo Rime log yet — Smoodle writes one once it starts."),
     }
-    let content = fs::read_to_string(path).map_err(|e| e.to_string())?;
-    let lines: Vec<&str> = content.lines().collect();
-    let start = lines.len().saturating_sub(5);
-    Ok(lines[start..]
-        .iter()
-        .filter(|l| !l.trim().is_empty())
-        .copied()
-        .collect::<Vec<_>>()
-        .join("\n"))
+    out
 }
 
-/// Return entry counts for the base dict, user dict, and their sum.
+/// `var/last_build_time` from Rime's user.yaml: seconds since the epoch at
+/// which the last deploy finished. None if Rime has never deployed.
+pub fn last_build_time(user_yaml: &Path) -> Option<i64> {
+    let content = fs::read_to_string(user_yaml).ok()?;
+    let v: serde_yaml::Value = serde_yaml::from_str(&content).ok()?;
+    v.get("var")?.get("last_build_time")?.as_i64()
+}
+
+fn format_local(epoch_secs: i64) -> Option<String> {
+    let utc = chrono::DateTime::from_timestamp(epoch_secs, 0)?;
+    Some(utc.with_timezone(&chrono::Local).format("%Y-%m-%d %H:%M:%S").to_string())
+}
+
+/// A glog line from a deploy task or any warning/error, reformatted as
+/// `HH:MM:SS <severity> <message>`. Engine start/stop and config loads are
+/// dropped. Input: `I20260923 13:31:42.310823 0x1f1356180 deployment_tasks.cc:83] msg`
+fn deploy_line(line: &str) -> Option<String> {
+    let severity = line.chars().next()?;
+    if !matches!(severity, 'I' | 'W' | 'E' | 'F') {
+        return None;
+    }
+    let mut fields = line.splitn(5, ' ');
+    let _date = fields.next()?;
+    let time = fields.next()?.get(..8)?;
+    let _thread = fields.next()?;
+    let source = fields.next()?;
+    let message = fields.next()?;
+    let from_deploy = ["deployment_tasks.cc:", "dict_compiler.cc:", "deployer.cc:"]
+        .iter()
+        .any(|s| source.starts_with(s));
+    if severity == 'I' && !from_deploy {
+        return None;
+    }
+    Some(format!("{} {} {}", time, severity, message))
+}
+
+/// Return entry counts for the base dict, user dict, and their sum — the
+/// files Rime actually compiles (user-dir copy first, else the bundled one).
 #[tauri::command]
 pub fn dict_counts() -> Result<DictCounts, String> {
-    let rime = rime_dir()?;
-    let base = rime.join("thai_phonetic.dict.yaml");
-    let user = rime.join("thai_phonetic.user.dict.yaml");
-    dict_counts_at(&base, &user)
+    let user = paths::rime_user_dir()?;
+    let shared = paths::shared_data_dir();
+    dict_counts_at(
+        &paths::resolve(&user, &shared, paths::BASE_DICT_FILE),
+        &paths::resolve(&user, &shared, paths::USER_DICT_FILE),
+    )
 }
 
 /// Testable inner helper — counts tab-separated entries after the `...` separator

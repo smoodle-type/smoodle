@@ -6,6 +6,9 @@
     "module": "ESNext",
     "resolveJsonModule": true,
     "baseUrl": ".",
+    "paths": {
+      "$lib/*": ["./src/lib/*"]
+    },
     "allowJs": true,
     "checkJs": true,
     "isolatedModules": true,

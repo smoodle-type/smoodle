@@ -1,4 +1,5 @@
 pub mod yaml;
+pub mod paths;
 pub mod commands;
 
 use commands::{deploy, settings, status, telemetry, user_dict};

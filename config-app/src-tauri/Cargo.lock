@@ -81,6 +81,7 @@ version = "0.0.8"
 dependencies = [
  "chrono",
  "dirs 5.0.1",
+ "libc",
  "log",
  "reqwest 0.12.28",
  "serde",

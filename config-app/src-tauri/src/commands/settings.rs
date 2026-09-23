@@ -1,9 +1,15 @@
-//! Settings tab: read/write default.custom.yaml patch, open Rime folder, reset.
+//! Settings tab: candidate count + schema list (default.custom.yaml), Rime
+//! folder, reset to defaults.
+//!
+//! Rime reads `default.custom.yaml` from ~/Library/Rime/Smoodle when present
+//! and otherwise the copy bundled in Smoodle.app. Reads resolve the same way.
+//! A user-dir file replaces the bundled one wholesale, so the first write
+//! starts from the bundled copy and keeps its schema list.
 
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::process::Command;
-use crate::yaml;
+use crate::{paths, yaml};
 
 #[derive(serde::Serialize, serde::Deserialize, Debug, Clone)]
 pub struct DefaultCustomPatch {
@@ -11,39 +17,34 @@ pub struct DefaultCustomPatch {
     pub schema_list: Vec<String>,
 }
 
-// Smoodle.app is an IME — installs to /Library/Input Methods/Smoodle.app
-#[cfg(target_os = "macos")]
-const BUNDLED_DIR: &str = "/Library/Input Methods/Smoodle.app/Contents/Resources/plum";
-
-#[cfg(target_os = "macos")]
-fn bundled_dir() -> PathBuf {
-    PathBuf::from(BUNDLED_DIR)
-}
-
-#[cfg(not(target_os = "macos"))]
-fn bundled_dir() -> PathBuf {
-    PathBuf::from("/non-macos/path") // placeholder; reset_to_defaults will fail with file-not-found
-}
-
-fn rime_dir() -> Result<PathBuf, String> {
-    dirs::home_dir()
-        .map(|h| h.join("Library/Rime"))
-        .ok_or_else(|| "$HOME not set".to_string())
-}
+/// User-dir files that replace a file bundled in Smoodle.app. Reset moves
+/// them aside so the bundled copies apply again. Custom words
+/// (thai_phonetic.user.dict.yaml) and learned history are left alone.
+pub const OVERRIDES: [&str; 4] = [
+    "default.custom.yaml",
+    "thai_phonetic.custom.yaml",
+    "thai_phonetic.schema.yaml",
+    "thai_phonetic.dict.yaml",
+];
 
 #[tauri::command]
 pub fn read_default_custom() -> Result<DefaultCustomPatch, String> {
-    read_default_custom_at(&rime_dir()?.join("default.custom.yaml")).map_err(|e| e.to_string())
+    let user = paths::rime_user_dir()?;
+    let path = paths::resolve(&user, &paths::shared_data_dir(), paths::DEFAULT_CUSTOM_FILE);
+    read_default_custom_at(&path).map_err(|e| e.to_string())
 }
 
 #[tauri::command]
 pub fn write_default_custom(patch: DefaultCustomPatch) -> Result<(), String> {
-    write_default_custom_at(&rime_dir()?.join("default.custom.yaml"), &patch).map_err(|e| e.to_string())
+    let target = paths::rime_user_dir()?.join(paths::DEFAULT_CUSTOM_FILE);
+    let bundled = paths::shared_data_dir().join(paths::DEFAULT_CUSTOM_FILE);
+    write_default_custom_at(&target, &bundled, &patch).map_err(|e| e.to_string())
 }
 
 #[tauri::command]
 pub fn open_rime_folder() -> Result<(), String> {
-    let path = rime_dir()?;
+    let path = paths::rime_user_dir()?;
+    fs::create_dir_all(&path).map_err(|e| e.to_string())?;
     let status = Command::new("/usr/bin/open").arg(&path).status().map_err(|e| e.to_string())?;
     if !status.success() {
         return Err(format!("/usr/bin/open exited with {}", status));
@@ -51,16 +52,11 @@ pub fn open_rime_folder() -> Result<(), String> {
     Ok(())
 }
 
-#[cfg(target_os = "macos")]
 #[tauri::command]
 pub fn reset_to_defaults() -> Result<(), String> {
-    reset_to_defaults_with(&bundled_dir(), &rime_dir()?).map_err(|e| e.to_string())
-}
-
-#[cfg(not(target_os = "macos"))]
-#[tauri::command]
-pub fn reset_to_defaults() -> Result<(), String> {
-    Err("reset_to_defaults is only supported on macOS".to_string())
+    reset_to_defaults_in(&paths::rime_user_dir()?)
+        .map(|_| ())
+        .map_err(|e| e.to_string())
 }
 
 // --- testable inner helpers ---
@@ -90,12 +86,23 @@ pub fn read_default_custom_at(path: &Path) -> Result<DefaultCustomPatch, yaml::Y
     Ok(DefaultCustomPatch { candidate_count, schema_list })
 }
 
-pub fn write_default_custom_at(path: &Path, patch: &DefaultCustomPatch) -> Result<(), yaml::YamlError> {
-    // Merge-patch: read existing yaml (preserving unknown keys), mutate the ones we care about, write back.
-    let mut v: serde_yaml::Value = if path.exists() {
-        serde_yaml::from_str(&fs::read_to_string(path)?)?
+/// Merge `patch` into `target` (the user-dir file), preserving keys the UI
+/// does not edit. A missing `target` starts from `bundled`.
+pub fn write_default_custom_at(
+    target: &Path,
+    bundled: &Path,
+    patch: &DefaultCustomPatch,
+) -> Result<(), yaml::YamlError> {
+    let base = if target.exists() {
+        Some(target)
+    } else if bundled.exists() {
+        Some(bundled)
     } else {
-        serde_yaml::from_str("patch: {}")?
+        None
+    };
+    let mut v: serde_yaml::Value = match base {
+        Some(p) => serde_yaml::from_str(&fs::read_to_string(p)?)?,
+        None => serde_yaml::from_str("patch: {}")?,
     };
     let patch_map = v
         .get_mut("patch")
@@ -116,36 +123,21 @@ pub fn write_default_custom_at(path: &Path, patch: &DefaultCustomPatch) -> Resul
         }
         patch_map.insert("schema_list".into(), serde_yaml::Value::Sequence(sl));
     }
+    if let Some(parent) = target.parent() {
+        fs::create_dir_all(parent)?;
+    }
     let s = serde_yaml::to_string(&v)?;
-    yaml::atomic_write_str(path, &s)
+    yaml::atomic_write_str(target, &s)
 }
 
-pub fn reset_to_defaults_with(bundled: &Path, rime: &Path) -> Result<(), yaml::YamlError> {
-    let user_dict = rime.join("thai_phonetic.user.dict.yaml");
-    let user_backup = if user_dict.exists() {
-        Some(fs::read(&user_dict)?)
-    } else {
-        None
-    };
-    for f in &[
-        "thai_phonetic.schema.yaml",
-        "thai_phonetic.dict.yaml",
-        "default.custom.yaml",
-    ] {
-        let src = bundled.join(f);
-        let dst = rime.join(f);
-        if src.exists() {
-            yaml::atomic_copy(&src, &dst)?;
+/// Move every user-dir override aside (`<name>.bak.<UTC timestamp>`) so Rime
+/// falls back to Smoodle.app's bundled files. Returns the backups created.
+pub fn reset_to_defaults_in(user_dir: &Path) -> Result<Vec<PathBuf>, yaml::YamlError> {
+    let mut moved = Vec::new();
+    for name in OVERRIDES {
+        if let Some(bak) = yaml::move_aside(&user_dir.join(name))? {
+            moved.push(bak);
         }
     }
-    if let Some(content) = user_backup {
-        let parent = user_dict.parent().ok_or_else(|| {
-            std::io::Error::new(std::io::ErrorKind::InvalidInput, "user_dict has no parent")
-        })?;
-        let mut tmp = tempfile::NamedTempFile::new_in(parent)?;
-        std::io::Write::write_all(tmp.as_file_mut(), &content)?;
-        tmp.as_file().sync_all()?;
-        tmp.persist(&user_dict).map_err(|e| e.error)?;
-    }
-    Ok(())
+    Ok(moved)
 }

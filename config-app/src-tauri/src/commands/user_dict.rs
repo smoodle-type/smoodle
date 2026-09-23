@@ -1,11 +1,15 @@
 //! User-dict CRUD: read_user_dict, add_user_word, delete_user_word.
 //!
+//! The file is `~/Library/Rime/Smoodle/thai_phonetic.user.dict.yaml` — the
+//! Rime user dir Smoodle.app reads. Smoodle.app's `thai_phonetic.extended`
+//! dictionary imports it, so a deploy makes new words typeable.
+//!
 //! NOTE: `write_entries_at` always emits the canonical `HEADER`. User
 //! edits to the front-matter or mid-file comments are NOT preserved.
 //! This file is Tauri-owned; manual edits are intentionally discouraged.
 
 use std::path::{Path, PathBuf};
-use crate::yaml;
+use crate::{paths, yaml};
 
 #[derive(serde::Serialize, serde::Deserialize, Debug, PartialEq, Clone)]
 pub struct DictEntry {
@@ -16,12 +20,8 @@ pub struct DictEntry {
 
 const HEADER: &str = "# Rime user dictionary\n---\nname: thai_phonetic.user\nversion: \"1\"\nsort: by_weight\n...\n";
 
-fn user_dict_path() -> Result<PathBuf, yaml::YamlError> {
-    dirs::home_dir()
-        .map(|h| h.join("Library/Rime/thai_phonetic.user.dict.yaml"))
-        .ok_or_else(|| yaml::YamlError::Io(std::io::Error::new(
-            std::io::ErrorKind::NotFound, "$HOME not set"
-        )))
+fn user_dict_path() -> Result<PathBuf, String> {
+    Ok(paths::rime_user_dir()?.join(paths::USER_DICT_FILE))
 }
 
 fn validate_single_line(s: &str, field: &str) -> Result<(), String> {
@@ -36,7 +36,7 @@ fn validate_single_line(s: &str, field: &str) -> Result<(), String> {
 /// Public Tauri command (registered via tauri::generate_handler).
 #[tauri::command]
 pub fn read_user_dict() -> Result<Vec<DictEntry>, String> {
-    let path = user_dict_path().map_err(|e| e.to_string())?;
+    let path = user_dict_path()?;
     read_user_dict_at(&path).map_err(|e| e.to_string())
 }
 
@@ -44,14 +44,14 @@ pub fn read_user_dict() -> Result<Vec<DictEntry>, String> {
 pub fn add_user_word(word: String, romanization: String, weight: i32) -> Result<(), String> {
     validate_single_line(&word, "word")?;
     validate_single_line(&romanization, "romanization")?;
-    let path = user_dict_path().map_err(|e| e.to_string())?;
+    let path = user_dict_path()?;
     add_user_word_at(&path, &word, &romanization, weight)
         .map_err(|e| e.to_string())
 }
 
 #[tauri::command]
 pub fn delete_user_word(line_id: usize) -> Result<(), String> {
-    let path = user_dict_path().map_err(|e| e.to_string())?;
+    let path = user_dict_path()?;
     delete_user_word_at(&path, line_id).map_err(|e| e.to_string())
 }
 
